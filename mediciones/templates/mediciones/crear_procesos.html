@@ -1,0 +1,165 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}Asignar Controles{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="d-flex justify-content-between align-items-center mb-4" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+        <div>
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">Paso 2: Selección de Controles</h2>
+            <div class="text-muted" style="font-size: 0.9rem; margin-top: 0.25rem;">
+                OP: <strong class="text-primary">{{ planilla.num_op }}</strong> &mdash; {{ planilla.articulo.nombre }}
+            </div>
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="openModal()">
+            + Crear Nuevo Control
+        </button>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 350px 1fr; gap: 2rem;">
+        
+        <!-- Left: Available Controls Catalog -->
+        <div style="background-color: #f8fafc; border-radius: 8px; padding: 1rem; border: 1px solid var(--border-color);">
+            <h3 style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 1rem;">
+                Catálogo Disponible
+            </h3>
+            
+            <form method="post" id="assignForm">
+                {% csrf_token %}
+                <div style="max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <!-- Search could go here -->
+                    {% for c in controls %}
+                    <label style="display: flex; align-items: center; padding: 0.75rem; background: white; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; transition: all 0.2s;">
+                        <input type="checkbox" name="controles" value="{{ c.id }}" style="margin-right: 0.75rem; width: 1.2em; height: 1.2em; accent-color: var(--primary);">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">{{ c.nombre }}</div>
+                        </div>
+                        {% if c.pnp %}
+                            <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--success); font-size: 0.7rem;">PnP</span>
+                        {% else %}
+                            <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); font-size: 0.7rem;">DIM</span>
+                        {% endif %}
+                    </label>
+                    {% endfor %}
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+                    Asignar Seleccionados &rarr;
+                </button>
+            </form>
+        </div>
+
+        <!-- Right: Assigned List -->
+        <div>
+            <h3 style="font-size: 0.9rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                Controles Asignados a la Planilla
+            </h3>
+
+            {% if assigned %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Orden</th>
+                            <th>Control</th>
+                            <th>Tipo</th>
+                            <th style="text-align: right;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in assigned %}
+                        <tr id="row-{{ item.id }}">
+                            <td style="color: var(--text-secondary);">{{ forloop.counter }}</td>
+                            <td style="font-weight: 500; color: var(--text-primary);">{{ item.control.nombre }}</td>
+                            <td>
+                                {% if item.control.pnp %}
+                                    <span class="text-success" style="font-size: 0.85rem; font-weight: 600;">Pasa / No Pasa</span>
+                                {% else %}
+                                    <span class="text-primary" style="font-size: 0.85rem; font-weight: 600;">Dimensional</span>
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right;">
+                                <button onclick="removeTolerancia({{item.id}})" class="btn btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.8rem; border-color: transparent; color: var(--danger);">
+                                    Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 2rem; text-align: right;">
+                    <a href="{% url 'asignar_tolerancias' planilla.id %}" class="btn btn-primary" style="padding-left: 2rem; padding-right: 2rem;">
+                        Continuar a Tolerancias &rarr;
+                    </a>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 4rem; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--border-color);">
+                    <div style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;">📋</div>
+                    <p class="text-muted">Aún no ha asignado controles.</p>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary);">Seleccione controles del panel izquierdo para comenzar.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="quickAddModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="card" style="width: 400px; padding: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid var(--border-color);">
+        <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 1.5rem;">Nuevo Control</h3>
+        
+        <div class="form-group">
+            <label class="form-label">Nombre del Control</label>
+            <input type="text" id="newItemName" class="form-control" placeholder="Ej: DIAMETRO EXTERNO...">
+        </div>
+
+        <div class="form-group">
+            <label style="display: flex; align-items: center; cursor: pointer; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px;">
+                <input type="checkbox" id="newItemPnp" style="margin-right: 0.75rem; width: 1.2em; height: 1.2em; accent-color: var(--primary);">
+                <span class="text-secondary">Es Control Pasa / No Pasa (PnP)</span>
+            </label>
+        </div>
+        
+        <div class="d-flex justify-content-end gap-2" style="margin-top: 1.5rem;">
+            <button type="button" onclick="closeModal()" class="btn btn-secondary">Cancelar</button>
+            <button type="button" onclick="saveNewItem()" class="btn btn-primary">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openModal() {
+        document.getElementById('newItemName').value = '';
+        document.getElementById('newItemPnp').checked = false;
+        document.getElementById('quickAddModal').style.display = 'flex';
+        document.getElementById('newItemName').focus();
+    }
+    function closeModal() { document.getElementById('quickAddModal').style.display = 'none'; }
+    
+    function saveNewItem() {
+        const name = document.getElementById('newItemName').value;
+        const pnp = document.getElementById('newItemPnp').checked;
+        if(!name) return;
+        
+        const formData = new FormData();
+        formData.append('nombre', name);
+        formData.append('pnp', pnp);
+        
+        fetch(`/api/create/control/`, {
+            method: 'POST', body: formData, headers: {'X-CSRFToken': '{{ csrf_token }}'}
+        }).then(r => r.json()).then(d => {
+            if(d.status === 'success') location.reload();
+            else alert(d.message);
+        });
+    }
+
+    function removeTolerancia(id) {
+        if(!confirm('¿Quitar control?')) return;
+        fetch(`/api/tolerancia/${id}/delete/`, {
+            method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}
+        }).then(r => r.json()).then(d => {
+            if(d.status === 'success') location.reload();
+        });
+    }
+</script>
+{% endblock %}

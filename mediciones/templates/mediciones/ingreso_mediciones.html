@@ -1,0 +1,454 @@
+{% extends 'mediciones/index.html' %}
+{% load static %}
+
+{% block title %}Ingreso de Mediciones{% endblock %}
+
+{% block content %}
+<!-- TEMPLATE VERSION 2.0 - GRID LAYOUT ENABLED -->
+<style>
+    /* Override content-wrapper for this page only */
+    .content-wrapper {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+    
+    /* Premium Grid Layout for two-column design */
+    .premium-grid-layout {
+        display: grid !important;
+        grid-template-columns: 320px 1fr !important;
+        gap: 2rem !important;
+        width: 100% !important;
+        max-width: 1800px !important;
+        margin: 0 auto !important;
+        padding: 1.5rem !important;
+    }
+    
+    .premium-sidebar-col {
+        position: relative !important;
+    }
+    
+    .premium-main-col {
+        position: relative !important;
+        min-width: 0 !important;
+    }
+    
+    @media (max-width: 992px) {
+        .premium-grid-layout {
+            grid-template-columns: 1fr !important;
+            gap: 1.5rem !important;
+        }
+    }
+</style>
+
+
+<div class="premium-page-container">
+    <form method="post">
+        {% csrf_token %}
+        <div class="premium-grid-layout">
+            <!-- Left Panel: Nueva Medición Form -->
+            <div class="premium-sidebar-col">
+                <div class="premium-panel-side">
+                    <!-- Top Title Section -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <a href="javascript:history.back()" class="btn-back-simple">
+                                <i class="ri-arrow-left-line"></i> Volver
+                            </a>
+                        </div>
+                        <h1 class="side-title-main">Nueva Medición</h1>
+                        <p class="side-subtitle-main">Seleccione el proyecto y proceso para ingresar valores.</p>
+                    </div>
+
+                    <!-- Proyecto -->
+                    <div class="config-card mb-3">
+                        <div class="config-card-header text-primary">
+                            <i class="ri-layout-grid-line"></i>
+                            <span>PROYECTO</span>
+                        </div>
+                        <div class="config-card-body">
+                            <input type="text" class="form-control input-clean" value="{{ planilla.proyecto }}" readonly>
+                        </div>
+                    </div>
+
+                    <!-- OP Section -->
+                    <div class="config-card mb-3">
+                        <div class="config-card-header text-primary">
+                            <i class="ri-file-list-3-line"></i>
+                            <span>OP #</span>
+                        </div>
+                        <div class="config-card-body">
+                            <input type="text" class="form-control input-clean" value="{{ planilla.num_op }}" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Cliente -->
+                    <div class="config-card mb-3">
+                        <div class="config-card-header text-primary">
+                            <i class="ri-user-heart-line"></i>
+                            <span>CLIENTE</span>
+                        </div>
+                        <div class="config-card-body">
+                            <div class="text-muted fw-medium">{{ planilla.cliente.nombre }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Proceso -->
+                    <div class="config-card mb-3">
+                        <div class="config-card-header text-success">
+                            <i class="ri-checkbox-circle-line"></i>
+                            <span>PROCESO</span>
+                        </div>
+                        <div class="config-card-body">
+                            <select name="proceso" class="form-select input-clean" required>
+                                <option value="">Seleccione Proceso...</option>
+                                <!-- Add your process options here -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Pieza Selector -->
+                    <div class="config-card mb-4">
+                        <div class="config-card-header text-info">
+                            <i class="ri-stack-line"></i>
+                            <span>PIEZA ACTUAL</span>
+                        </div>
+                        <div class="config-card-body">
+                            <div class="d-flex align-items-center gap-2">
+                                <a href="?pieza={{ prev_pieza }}" class="btn btn-sm btn-secondary" {% if not prev_pieza %}style="opacity:0.5; pointer-events:none;"{% endif %}>
+                                    <i class="ri-arrow-left-s-line"></i>
+                                </a>
+                                
+                                <input type="number" name="pieza" value="{{ pieza_actual }}" 
+                                       class="form-control input-clean text-center fw-bold" 
+                                       style="flex: 1;">
+                                
+                                <a href="?pieza={{ next_pieza }}" class="btn btn-sm btn-secondary">
+                                    <i class="ri-arrow-right-s-line"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-panel-dark" style="padding: 1rem;">
+                        <button type="submit" name="guardar" class="btn btn-secondary w-100 mb-2" style="border-radius: 10px; font-weight: 700;">
+                            <i class="ri-save-3-line"></i> Guardar Parcial
+                        </button>
+                        <button type="submit" name="guardar_siguiente" class="btn-guardar-estructura w-100" style="margin-top: 0 !important;">
+                            <i class="ri-check-double-line"></i> Confirmar y Siguiente
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Controls Hierarchy Display -->
+            <div class="premium-main-col">
+                <div class="main-canvas-premium">
+                    <div class="canvas-header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="blue-line-indicator"></div>
+                                <div>
+                                    <h3 class="canvas-title">CONTROLES A MEDIR - PIEZA {{ pieza_actual }}</h3>
+                                    <div class="text-muted fw-bold" style="font-size: 0.8rem; text-transform: uppercase; margin-top: 2px;">
+                                        {{ planilla.elemento.nombre|default:"-" }} / {{ planilla.proceso.nombre|default:"-" }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-muted small">
+                                <strong>ART:</strong> {{ planilla.articulo.nombre }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="controls-container" class="mt-4">
+                        {% if rows %}
+                            {% for row in rows %}
+                            <div class="control-measurement-card">
+                                <div class="control-card-header">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="ri-ruler-2-line text-primary"></i>
+                                        <span class="control-name">{{ row.tolerancia.control.nombre }}</span>
+                                    </div>
+                                    {% if row.tolerancia.id_instrumento %}
+                                    <div class="instrument-badge">
+                                        <i class="ri-tools-line"></i>
+                                        Instrumento #{{ row.tolerancia.id_instrumento }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="control-card-body">
+                                    <div class="measurement-grid">
+                                        <!-- Min Tolerance -->
+                                        <div class="measurement-col">
+                                            <label class="measurement-label">TOL. MÍN [-]</label>
+                                            <div class="measurement-value-display">
+                                                {% if not row.tolerancia.control.pnp %}
+                                                    {{ row.tolerancia.minimo|default:"-" }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Input Value -->
+                                        <div class="measurement-col measurement-col-input">
+                                            <label class="measurement-label">VALOR REAL</label>
+                                            {% if row.tolerancia.control.pnp %}
+                                                <select name="valorpnp_{{ row.tolerancia.id }}" class="form-select measurement-input-select">
+                                                    <option value="" {% if not row.valor %}selected{% endif %}>-</option>
+                                                    <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>APROBADO</option>
+                                                    <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>RECHAZADO</option>
+                                                </select>
+                                            {% else %}
+                                                <input type="number" step="0.001" name="valor_{{ row.tolerancia.id }}" 
+                                                       value="{{ row.valor|default:'' }}" 
+                                                       class="form-control measurement-input" 
+                                                       placeholder="...">
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Max Tolerance -->
+                                        <div class="measurement-col">
+                                            <label class="measurement-label">TOL. MÁX [+]</label>
+                                            <div class="measurement-value-display">
+                                                {% if not row.tolerancia.control.pnp %}
+                                                    {{ row.tolerancia.maximo|default:"-" }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <!-- Status -->
+                                        <div class="measurement-col">
+                                            <label class="measurement-label">ESTADO</label>
+                                            <div class="status-display">
+                                                {% if row.status == 'OK' %}
+                                                    <span class="status-badge status-ok">OK</span>
+                                                {% elif row.status == 'NOK' %}
+                                                    <span class="status-badge status-nok">NOK</span>
+                                                {% else %}
+                                                    <span class="status-badge status-pending">-</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <!-- Empty State -->
+                            <div class="empty-state-placeholder">
+                                <i class="ri-list-check-2"></i>
+                                <p>No hay controles definidos para este proceso.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    :root {
+        --primary-blue: #2563eb;
+        --success-green: #10b981;
+        --dark-bg: #0f172a;
+        --border-color: #e2e8f0;
+        --text-muted: #64748b;
+    }
+
+    .premium-page-container { padding: 1.5rem; max-width: 1700px; margin: 0 auto; }
+
+    /* Left Sidebar Styling */
+    .premium-panel-side { position: sticky; top: 1.5rem; }
+    
+    .btn-back-simple { color: #64748b; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; background: #f1f5f9; border-radius: 8px; transition: 0.2s; border: 1px solid #e2e8f0; width: fit-content; }
+    .btn-back-simple:hover { background: #e2e8f0; color: #1e293b; }
+
+    .side-title-main { font-size: 1.7rem; font-weight: 800; color: #0f172a; margin-top: 1rem; letter-spacing: -0.02em; }
+    .side-subtitle-main { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
+
+    .config-card { background: white; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .config-card-header { padding: 0.85rem 1rem 0.5rem; display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: none; }
+    .config-card-body { padding: 0.5rem 1rem 1rem; }
+
+    .input-clean { border-radius: 8px !important; border: 1px solid #cbd5e1 !important; padding: 0.6rem 0.75rem !important; font-size: 0.9rem !important; font-weight: 500 !important; color: #334155 !important; }
+    .input-clean:focus { border-color: var(--primary-blue) !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important; }
+
+    .action-panel-dark { background: #161e2e; border-radius: 12px; padding: 1.5rem; color: white; margin-top: 1rem; }
+    .btn-guardar-estructura { background: white; color: #161e2e; border: none; border-radius: 10px; padding: 0.85rem; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; transition: 0.2s; }
+    .btn-guardar-estructura:hover { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+    /* Right Canvas Styling */
+    .main-canvas-premium { background: white; border-radius: 16px; border: 1px solid var(--border-color); padding: 2rem; min-height: 800px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
+    .canvas-header { margin-bottom: 2rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; }
+    .blue-line-indicator { width: 4px; height: 20px; background: var(--primary-blue); border-radius: 4px; }
+    .canvas-title { font-size: 1rem; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: 0.02em; }
+
+    /* Control Measurement Cards */
+    .control-measurement-card {
+        background: #f8fafc;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+        transition: all 0.2s;
+    }
+    .control-measurement-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .control-card-header {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .control-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #1e293b;
+    }
+
+    .instrument-badge {
+        background: #eff6ff;
+        color: #2563eb;
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .control-card-body {
+        padding: 1.5rem;
+    }
+
+    .measurement-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr 1fr;
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    .measurement-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .measurement-col-input {
+        grid-column: span 1;
+    }
+
+    .measurement-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0;
+    }
+
+    .measurement-value-display {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 0.75rem;
+        text-align: center;
+        font-weight: 600;
+        color: #64748b;
+        font-family: 'Courier New', monospace;
+    }
+
+    .measurement-input {
+        border-radius: 8px !important;
+        border: 2px solid #2563eb !important;
+        padding: 0.75rem !important;
+        text-align: center !important;
+        font-weight: 700 !important;
+        font-size: 1.1rem !important;
+        color: #2563eb !important;
+        background: white !important;
+    }
+
+    .measurement-input:focus {
+        border-color: #1d4ed8 !important;
+        box-shadow: 0 0 0 4px rgba(37,99,235,0.1) !important;
+    }
+
+    .measurement-input-select {
+        border-radius: 8px !important;
+        border: 2px solid #2563eb !important;
+        padding: 0.75rem !important;
+        text-align: center !important;
+        font-weight: 700 !important;
+        color: #2563eb !important;
+        background: white !important;
+    }
+
+    .status-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .status-badge {
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        font-weight: 800;
+        font-size: 0.85rem;
+        text-align: center;
+        width: 100%;
+    }
+
+    .status-ok {
+        background: #d1fae5;
+        color: #065f46;
+        border: 1px solid #10b981;
+    }
+
+    .status-nok {
+        background: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #ef4444;
+    }
+
+    .status-pending {
+        background: #f1f5f9;
+        color: #94a3b8;
+        border: 1px solid #cbd5e1;
+    }
+
+    .empty-state-placeholder { text-align: center; padding: 8rem 2rem; color: #cbd5e1; }
+    .empty-state-placeholder i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
+    .empty-state-placeholder p { font-weight: 600; font-size: 0.95rem; }
+
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+        .measurement-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .measurement-col-input {
+            grid-column: span 1;
+        }
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+{% endblock %}
+

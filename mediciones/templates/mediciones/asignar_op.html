@@ -1,0 +1,139 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}Asignar Nueva Orden de Producción{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 1000px; margin: 0 auto;">
+    <div class="d-flex justify-content-between align-items-center mb-4" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+        <div>
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">Paso 1: Datos de la Orden</h2>
+            <p class="text-muted" style="font-size: 0.9rem; margin-top: 0.25rem;">Ingrese la información base para comenzar el control.</p>
+        </div>
+    </div>
+
+    <form method="post" id="mainForm">
+        {% csrf_token %}
+        
+        <div class="row">
+            <div class="col-md-12"> <!-- Full width container inside row -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    
+                    <!-- Left Column -->
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Cliente</label>
+                            <div class="d-flex gap-2">
+                                {{ form.cliente }}
+                                <button type="button" class="btn btn-secondary" onclick="openModal('cliente')">+</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Proyecto</label>
+                            {{ form.proyecto }}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Número de OP</label>
+                            {{ form.num_op }}
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Artículo / Plano</label>
+                            <div class="d-flex gap-2">
+                                {{ form.articulo }}
+                                <button type="button" class="btn btn-secondary" onclick="openModal('articulo')">+</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Proceso</label>
+                            <div class="d-flex gap-2">
+                                {{ form.proceso }}
+                                <button type="button" class="btn btn-secondary" onclick="openModal('proceso')">+</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Elemento</label>
+                            <div class="d-flex gap-2">
+                                {{ form.elemento }}
+                                <button type="button" class="btn btn-secondary" onclick="openModal('elemento')">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); text-align: right;">
+            <a href="{% url 'index' %}" class="btn btn-secondary" style="margin-right: 1rem;">Cancelar</a>
+            <button type="submit" class="btn btn-primary" style="padding-left: 2rem; padding-right: 2rem;">
+                Siguiente Paso &rarr;
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal -->
+<div id="quickAddModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="card" style="width: 400px; padding: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid var(--border-color);">
+        <h3 id="modalTitle" style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 1.5rem;">Agregar Nuevo</h3>
+        
+        <input type="text" id="newItemName" class="form-control" placeholder="Ingrese nombre..." style="margin-bottom: 1.5rem;">
+        <input type="hidden" id="currentModelType">
+        
+        <div class="d-flex justify-content-end gap-2">
+            <button type="button" onclick="closeModal()" class="btn btn-secondary">Cancelar</button>
+            <button type="button" onclick="saveNewItem()" class="btn btn-primary">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openModal(type) {
+        document.getElementById('currentModelType').value = type;
+        const typeMap = {
+            'cliente': 'Cliente', 'articulo': 'Artículo', 'proceso': 'Proceso', 'elemento': 'Elemento'
+        };
+        document.getElementById('modalTitle').innerText = 'Nuevo ' + (typeMap[type] || type);
+        document.getElementById('newItemName').value = '';
+        document.getElementById('quickAddModal').style.display = 'flex';
+        document.getElementById('newItemName').focus();
+    }
+
+    function closeModal() {
+        document.getElementById('quickAddModal').style.display = 'none';
+    }
+
+    function saveNewItem() {
+        const type = document.getElementById('currentModelType').value;
+        const name = document.getElementById('newItemName').value;
+        if(!name) return;
+
+        const formData = new FormData();
+        formData.append('nombre', name);
+        
+        fetch(`/api/create/${type}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': '{{ csrf_token }}'},
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === 'success') {
+                const selectId = 'id_' + type;
+                const selectElement = document.getElementById(selectId);
+                const option = new Option(data.nombre, data.id, true, true);
+                selectElement.add(option);
+                closeModal();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
+    }
+</script>
+{% endblock %}

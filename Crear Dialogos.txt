@@ -1,0 +1,5 @@
+pedir para hacer un dialogo
+
+"Crea un diálogo con el estilo 'ABBAMAT Premium' (como el de controles)"
+
+"Hacé un diálogo estilo ABBAMAT Premium que al darle 'Aceptar' me lleve a X pantalla o que limpie el formulario".

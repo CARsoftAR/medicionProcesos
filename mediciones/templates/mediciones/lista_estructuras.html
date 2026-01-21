@@ -1,0 +1,207 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}Estructuras de Medición{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 style="font-weight: 800; color: #0f172a; margin-bottom: 0.25rem;">Estructuras de Medición</h2>
+        <p style="color: #64748b; font-size: 0.95rem;">Gestione las configuraciones de procesos y controles por proyecto.</p>
+    </div>
+    <a href="{% url 'configurar_estructura' %}" class="btn btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;">
+        <i class="ri-add-line" style="margin-right: 0.5rem;"></i> Nueva Estructura
+    </a>
+</div>
+
+<div class="card" style="border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+    <div class="card-body p-0">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="padding: 1.25rem;">OP / PROYECTO</th>
+                    <th>CLIENTE</th>
+                    <th>DETALLE</th>
+                    <th style="text-align: right; padding-right: 1.25rem;">ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in estructuras %}
+                <tr>
+                    <td style="padding: 1.25rem;">
+                        <div style="font-weight: 700; color: #1e293b; font-size: 1.05rem;">
+                            {% if e.num_op %}{{ e.num_op }} / {% endif %}{{ e.proyecto }}
+                        </div>
+                    </td>
+                    <td>
+                        <span style="color: #475569; font-weight: 500;">{{ e.cliente.nombre|default:"-" }}</span>
+                    </td>
+                    <td>
+                        <span class="badge badge-info" style="background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 0.4rem 0.8rem; border-radius: 8px;">
+                            {{ e.articulo.nombre|default:"Sin Artículo" }}
+                        </span>
+                    </td>
+                    <td style="text-align: right; padding-right: 1.25rem;">
+                        <a href="{% url 'configurar_estructura' %}?op={{ e.num_op|default:'' }}&proy={{ e.proyecto|default:'' }}" 
+                           class="btn-action-edit" 
+                           title="Editar Estructura"
+                           style="background: #f1f5f9; color: #475569; width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
+                            <i class="ri-edit-line"></i>
+                        </a>
+                        <button type="button" 
+                                onclick="deleteStructure('{{ e.proyecto }}', '{{ e.num_op }}')"
+                                class="btn-action-delete ms-2"
+                                title="Eliminar Estructura"
+                                style="background: #fee2e2; color: #ef4444; width: 38px; height: 38px; border: none; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 4rem; color: #94a3b8;">
+                        <i class="ri-layout-grid-line" style="font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.3;"></i>
+                        Aún no se han definido estructuras de medición.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .btn-action-edit:hover {
+        background: #e2e8f0 !important;
+        color: #0f172a !important;
+        transform: translateY(-2px);
+    }
+
+    .btn-action-delete:hover {
+        background: #fecaca !important;
+        color: #dc2626 !important;
+        transform: translateY(-2px);
+    }
+    
+    .data-table thead th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .data-table tbody tr {
+        transition: background 0.2s;
+    }
+    
+    .data-table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .swal2-popup .swal2-icon.no-border {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function deleteStructure(proyecto, numOp) {
+        Swal.fire({
+            title: '¿Eliminar Estructura?',
+            text: `Se eliminarán todos los controles asociados a ${proyecto} (OP: ${numOp}). Esta acción no se puede deshacer.`,
+            iconHtml: '<div style="width: 80px; height: 80px; background-color: #fef2f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
+            showCancelButton: true,
+            confirmButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'premium-swal',
+                title: 'premium-title',
+                htmlContainer: 'premium-text',
+                actions: 'premium-actions',
+                confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-danger',
+                cancelButton: 'swal2-cancel premium-cancel-btn',
+                icon: 'no-border'
+            },
+            reverseButtons: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading with consistent style
+                Swal.fire({
+                    title: 'Eliminando...',
+                    html: 'Por favor espere',
+                    didOpen: () => Swal.showLoading(),
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    customClass: {
+                        popup: 'premium-swal'
+                    }
+                });
+
+                fetch("{% url 'eliminar_estructura' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ proyecto: proyecto, num_op: numOp })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            title: '¡Eliminado!',
+                            text: data.message,
+                            iconHtml: '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" stroke="#dcfce7" stroke-width="4" fill="white"/><path d="M50 50 L 50 50" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/><path d="M35 50 L 45 60 L 65 40" stroke="#4ade80" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
+                            confirmButtonText: 'Aceptar',
+                            buttonsStyling: false,
+                            customClass: {
+                                popup: 'premium-swal',
+                                title: 'premium-title',
+                                htmlContainer: 'premium-text',
+                                confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-primary',
+                                icon: 'no-border'
+                            }
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire({
+                            title: 'Error',
+                            text: data.message,
+                            icon: 'error',
+                            confirmButtonText: 'Aceptar',
+                            buttonsStyling: false,
+                            customClass: {
+                                popup: 'premium-swal',
+                                title: 'premium-title',
+                                htmlContainer: 'premium-text',
+                                confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-danger'
+                            }
+                        });
+                    }
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Ocurrió un error al procesar la solicitud.',
+                        icon: 'error',
+                        confirmButtonText: 'Cerrar',
+                        buttonsStyling: false,
+                        customClass: {
+                            popup: 'premium-swal',
+                            title: 'premium-title',
+                            htmlContainer: 'premium-text',
+                            confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-danger'
+                        }
+                    });
+                });
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,1026 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Override content-wrapper for full-width layout */
+    .content-wrapper {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+    }
+    
+    .topbar {
+        display: none !important;
+    }
+    
+    /* Grid System for two-column layout */
+    .row {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        margin: 0 -1rem !important;
+    }
+    
+    .g-4 {
+        gap: 1.5rem !important;
+    }
+    
+    .col-lg-4, .col-xl-3 {
+        flex: 0 0 auto !important;
+        width: 320px !important;
+        padding: 0 1rem !important;
+    }
+    
+    .col-lg-8, .col-xl-9 {
+        flex: 1 !important;
+        padding: 0 1rem !important;
+        min-width: 0 !important;
+    }
+    
+    @media (max-width: 992px) {
+        .col-lg-4, .col-xl-3,
+        .col-lg-8, .col-xl-9 {
+            width: 100% !important;
+        }
+    }
+
+    /* Piece Navigation Styles */
+    .piece-navigation-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .piece-nav-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 2px;
+        align-items: center;
+        width: 100%;
+    }
+
+    .piece-nav-wrapper {
+        flex: 1;
+        display: flex;
+    }
+
+    .piece-nav-btn {
+        flex: 1;
+        width: 100%;
+        min-width: 28px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        background: #fff;
+        border: 1.5px solid #cbd5e1;
+        color: #475569;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+        font-size: 0.75rem;
+        padding: 0;
+    }
+
+    .piece-nav-btn:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+        background: #f0f7ff;
+    }
+
+    .piece-nav-btn.active {
+        background: #3b82f6;
+        color: #ffffff;
+        border-color: #3b82f6;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+    }
+
+    .piece-nav-btn.arrow {
+        background: #f1f5f9;
+        color: #334155;
+        border-color: #e2e8f0;
+    }
+    
+    .piece-nav-btn.arrow:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .piece-nav-btn.arrow.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        pointer-events: none;
+        background: #f8fafc;
+    }
+
+    .piece-add-btn {
+        width: 100%;
+        padding: 10px;
+        border-radius: 10px;
+        background: #f0fdf4;
+        border: 1.5px dashed #22c55e;
+        color: #166534;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .piece-add-btn:hover {
+        background: #22c55e;
+        color: #ffffff;
+        border-style: solid;
+    }
+    .piece-nav-btn:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+        background: #eff6ff;
+        transform: translateY(-2px);
+    }
+    .piece-nav-btn.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+    }
+    .piece-nav-btn.add-new {
+        background: #f8fafc;
+        border-style: dashed;
+        color: #94a3b8;
+    }
+    .piece-nav-btn.add-new:hover {
+        border-style: solid;
+        background: #f0fdf4;
+        color: #22c55e;
+        border-color: #22c55e;
+    }
+
+    .piece-nav-wrapper {
+        position: relative;
+    }
+    .piece-delete-mini {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 20px;
+        height: 20px;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        z-index: 10;
+    }
+    .piece-nav-wrapper:hover .piece-delete-mini {
+        display: flex;
+    }
+    .piece-delete-mini:hover {
+        transform: scale(1.1);
+        background: #dc2626;
+    }
+
+    /* Premium SweetAlert Styling */
+    .swal2-popup.premium-swal-popup {
+        border-radius: 20px !important;
+        padding: 2rem !important;
+    }
+    .swal-icon-circle {
+        width: 80px;
+        height: 80px;
+        background: #f0f7ff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        color: #3b82f6;
+        font-size: 2.5rem;
+    }
+    .swal-icon-circle.danger {
+        background: #fef2f2;
+        color: #ef4444;
+    }
+    .premium-swal-confirm {
+        font-weight: 700 !important;
+        border-radius: 12px !important;
+        padding: 12px 30px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        transition: all 0.2s !important;
+    }
+    .premium-swal-confirm:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    .premium-swal-cancel {
+        font-weight: 700 !important;
+        color: #64748b !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 12px 20px !important;
+    }
+    .premium-swal-title {
+        font-size: 1.5rem !important;
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .premium-swal-html {
+        color: #64748b !important;
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+    }
+</style>
+
+<div class="premium-page-container">
+    <div class="row g-4">
+        <!-- Sidebar Selection -->
+        <div class="col-lg-4 col-xl-3 col-sidebar-premium">
+            <div class="premium-panel-side">
+                <div class="mb-3">
+                    <h1 class="side-title-main">Nueva Medición</h1>
+                    <p class="side-subtitle-main">Seleccione el proyecto y proceso para ingresar valores.</p>
+                </div>
+
+                <div class="config-card" style="margin-bottom: 2rem !important;">
+                    <div class="config-card-header text-primary">
+                        <i class="ri-folder-open-line"></i>
+                        <span>SELECCIÓN DE PROYECTO</span>
+                    </div>
+                    <div class="config-card-body">
+                        <label class="text-xxs fw-bold">PROYECTO</label>
+                        <input type="text" id="input_proyecto" class="form-control input-clean mb-3" value="{{ query_proy }}" placeholder="Ingrese Proyecto..." onchange="updateSelection()">
+                        
+                        <label class="text-xxs fw-bold">OP #</label>
+                        <input type="text" id="input_op" class="form-control input-clean mb-3" value="{{ query_op|default:'' }}" placeholder="Ingrese OP..." onchange="updateSelection()">
+
+                        {% if not planilla %}
+                        <label class="text-xxs fw-bold">PROCESO</label>
+                        <select id="select_proceso" class="form-select input-clean" onchange="updateProcess()" {% if not procesos_disponibles %}disabled{% endif %}>
+                            <option value="">Seleccione Proceso...</option>
+                            {% for proc in procesos_disponibles %}
+                            <option value="{{ proc.id }}" {% if proc.id == query_proc %}selected{% endif %}>{{ proc.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <input type="hidden" id="select_proceso" value="{{ query_proc }}">
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if planilla %}
+                <div class="config-card mb-4 animate__animated animate__fadeIn">
+                    <div class="config-card-header text-success">
+                        <i class="ri-information-line"></i>
+                        <span>DETALLES DEL PLAN</span>
+                    </div>
+                    <div class="config-card-body">
+                            <label class="text-xxs fw-bold">PROYECTO</label>
+                            <div class="fw-bold text-dark-value">
+                                {% if planilla.num_op %}{{ planilla.num_op }} / {% endif %}{{ planilla.proyecto }}
+                            </div>
+                        <div class="mb-2">
+                            <label class="text-xxs fw-bold">CLIENTE</label>
+                            <div class="fw-bold text-dark-value">{{ planilla.cliente.nombre|default:"-" }}</div>
+                        </div>
+                        <div>
+                            <label class="text-xxs fw-bold">PIEZA #</label>
+                            <div class="d-flex gap-2 align-items-center">
+                                <input type="number" id="input_pieza" class="form-control input-clean" value="{{ pieza_actual }}" onkeydown="if(event.key==='Enter') updatePiece()" min="1" style="font-size: 1.1rem; font-weight: 700; flex: 1;">
+                                <button onclick="deletePiece('{{ pieza_actual }}')" class="btn btn-outline-danger btn-sm d-flex align-items-center justify-content-center" style="border-radius: 8px; height: 45px; width: 45px;" title="Borrar esta pieza y sus valores">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                            </div>
+                            <div class="text-end mt-1">
+                                <a href="javascript:void(0)" onclick="deletePiece('{{ pieza_actual }}')" class="text-danger fw-bold" style="font-size: 0.65rem; text-decoration: none;">BORRAR PIEZA ACTUAL</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if planilla %}
+                <!-- Piece Navigation -->
+                <div class="config-card mb-0 animate__animated animate__fadeIn" style="margin-top: auto !important; margin-bottom: 0px !important;">
+                    <div class="config-card-header text-info">
+                        <i class="ri-history-line"></i>
+                        <span>NAVEGACIÓN DE PIEZAS</span>
+                    </div>
+                    <div class="config-card-body">
+                        <div class="piece-navigation-container">
+                            <!-- Main Paginator Row -->
+                            <div class="piece-nav-row">
+                                <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ first_p }}" 
+                                   class="piece-nav-btn arrow {% if not prev_p %}disabled{% endif %}" title="Primera">
+                                   <i class="ri-skip-back-fill"></i>
+                                </a>
+                                <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ prev_p }}" 
+                                   class="piece-nav-btn arrow {% if not prev_p %}disabled{% endif %}" title="Anterior">
+                                   <i class="ri-arrow-left-s-line"></i>
+                                </a>
+
+                                {% for p_num in piezas_navegacion %}
+                                <div class="piece-nav-wrapper">
+                                    <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ p_num }}" 
+                                       class="piece-nav-btn {% if p_num == pieza_actual %}active{% endif %}">
+                                        {{ p_num }}
+                                    </a>
+                                </div>
+                                {% endfor %}
+
+                                <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ next_p }}" 
+                                   class="piece-nav-btn arrow {% if not next_p %}disabled{% endif %}" title="Siguiente">
+                                   <i class="ri-arrow-right-s-line"></i>
+                                </a>
+                                <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ last_p }}" 
+                                   class="piece-nav-btn arrow {% if not next_p %}disabled{% endif %}" title="Última">
+                                   <i class="ri-skip-forward-fill"></i>
+                                </a>
+                            </div>
+
+                            <!-- Action Row -->
+                            <div class="piece-nav-row mt-1">
+                                <a href="javascript:void(0)" onclick="addNewPiece()" class="piece-add-btn">
+                                    <i class="ri-add-circle-line"></i> NUEVA PIEZA
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Main Canvas: Measurement Table -->
+        <div class="col-lg-8 col-xl-9 col-main-premium">
+            <div class="main-canvas-premium">
+                {% if planilla %}
+                <form method="post" id="measurementForm">
+                    {% csrf_token %}
+                    <div class="canvas-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="blue-line-indicator"></div>
+                            <div>
+                                <h3 class="canvas-title">CONTROLES A MEDIR - PIEZA {{ pieza_actual }}</h3>
+                                <div class="text-muted fw-bold" style="font-size: 0.85rem; text-transform: uppercase; margin-top: 2px;">
+                                    {{ planilla.elemento.nombre|default:"-" }} / {{ planilla.proceso.nombre|default:"-" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mt-4">
+                        <table class="table premium-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 300px;">CONTROL</th>
+                                    <th class="text-center">TOL. MÍN [-]</th>
+                                    <th class="text-center" style="width: 150px;">VALOR OBTENIDO</th>
+                                    <th class="text-center">TOL. MÁX [+]</th>
+                                    <th class="text-center">ESTADO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in rows %}
+                                <tr class="animate__animated animate__fadeIn">
+                                    <td class="control-name-cell">
+                                        <div class="fw-bold text-dark">{{ row.tolerancia.control.nombre }}</div>
+                                        <div class="text-xxs text-muted">REF: {{ row.tolerancia.nominal|floatformat:2|default:"-" }}</div>
+                                    </td>
+                                    <td class="text-center text-muted fw-bold">{{ row.tolerancia.minimo|floatformat:2|default:"-" }}</td>
+                                    <td class="text-center">
+                                        {% if row.tolerancia.control.pnp %}
+                                        <select name="valorpnp_{{ row.tolerancia.id }}" class="form-select input-clean text-center pnp-select" 
+                                                onchange="checkStatus(this, 'pnp')">
+                                            <option value="">-</option>
+                                            <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PACH (OK)</option>
+                                        </select>
+                                        {% else %}
+                                        <input type="number" step="0.01" name="valor_{{ row.tolerancia.id }}" 
+                                               class="form-control input-clean text-center measurement-input" 
+                                               value="{{ row.valor|floatformat:2|default:'' }}"
+                                               data-nominal="{{ row.tolerancia.nominal|default:'' }}"
+                                               data-min="{{ row.tolerancia.minimo|default:'' }}"
+                                               data-max="{{ row.tolerancia.maximo|default:'' }}"
+                                               oninput="checkStatus(this, 'numeric')">
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center text-muted fw-bold">{{ row.tolerancia.maximo|floatformat:2|default:"-" }}</td>
+                                    <td class="text-center status-col">
+                                        {% if row.status == 'OK' %}
+                                        <div class="status-indicator ok"></div>
+                                        {% elif row.status == 'NOK' %}
+                                        <div class="status-indicator nok"></div>
+                                        {% else %}
+                                        <div class="status-indicator pending"></div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+                {% else %}
+                <div class="empty-state-placeholder" style="padding: 10rem 2rem;">
+                    <i class="ri-search-eye-line" style="font-size: 4rem; opacity: 0.2;"></i>
+                    <p style="font-size: 1.1rem;">Seleccione un proyecto y proceso para cargar los controles.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .premium-page-container { 
+        padding: 1.5rem 2rem 40px 2rem; 
+        max-width: 1800px; 
+        margin: 0 auto;
+        background: #f8fafc;
+        min-height: 100vh;
+        overflow: visible; /* Allow natural scrolling */
+    }
+    
+    .premium-page-container > .row {
+        display: flex;
+        align-items: stretch; /* Crucial: Makes both column DIVs the same height */
+    }
+
+    .col-sidebar-premium, .col-main-premium {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .premium-panel-side { 
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Hide sidebar scrollbar but allow scrolling */
+    .premium-panel-side {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .premium-panel-side::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .side-title-main { 
+        font-size: 2rem; 
+        font-weight: 800; 
+        color: #1e293b; 
+        margin-top: 0; 
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+    }
+    
+    .side-subtitle-main { 
+        color: #64748b; 
+        font-size: 0.95rem; 
+        margin-bottom: 2rem;
+        line-height: 1.6;
+    }
+
+    .config-card { 
+        background: white;
+        border-radius: 16px; 
+        border: 1px solid #e2e8f0; 
+        overflow: hidden; 
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        transition: all 0.2s ease;
+    }
+    
+    .config-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    /* Colores pastel para cada tipo de card */
+    .config-card:nth-child(2) .config-card-header { 
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+    }
+    
+    .config-card:nth-child(3) .config-card-header { 
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+    
+    .config-card-header { 
+        padding: 1rem 1.25rem; 
+        display: flex; 
+        align-items: center; 
+        gap: 0.75rem; 
+        font-weight: 700; 
+        font-size: 0.8rem; 
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    
+    .config-card-header.text-primary {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af;
+    }
+    
+    .config-card-header.text-success {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        color: #065f46;
+    }
+    
+    .config-card-header i { 
+        font-size: 1.1rem; 
+    }
+    
+    .config-card-body { 
+        padding: 1.25rem; 
+    }
+    
+    .input-clean { 
+        border-radius: 10px !important; 
+        border: 2px solid #e2e8f0 !important; 
+        padding: 0.75rem 1rem !important; 
+        font-size: 0.95rem !important; 
+        font-weight: 500 !important; 
+        color: #1e293b !important;
+        transition: all 0.2s ease !important;
+        background: white !important;
+    }
+    
+    .input-clean:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+    }
+
+    .main-canvas-premium { 
+        background: white; 
+        border-radius: 20px; 
+        border: 1px solid #e2e8f0;
+        padding: 2.5rem; 
+        height: 100% !important; /* Force alignment with sidebar height */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        display: flex;
+        flex-direction: column;
+    }
+
+    #measurementForm {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .table-responsive {
+        flex: 1;
+    }
+
+    /* Elegant Scrollbar for Table */
+    .table-responsive::-webkit-scrollbar {
+        width: 6px;
+    }
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    .canvas-header { 
+        margin-bottom: 2rem; 
+        border-bottom: 2px solid #f1f5f9; 
+        padding-bottom: 1.5rem; 
+    }
+    
+    .blue-line-indicator { 
+        width: 4px; 
+        height: 28px; 
+        background: #3b82f6;
+        border-radius: 4px;
+    }
+    
+    .canvas-title { 
+        font-size: 1.4rem; 
+        font-weight: 800; 
+        color: #1e293b;
+        margin: 0; 
+    }
+
+    .premium-table { 
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 12px; 
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .premium-table thead th { 
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        border: none; 
+        color: #475569; 
+        font-weight: 800; 
+        font-size: 0.75rem; 
+        text-transform: uppercase; 
+        letter-spacing: 0.05em; 
+        padding: 1.25rem 1rem; 
+    }
+
+    .premium-table tbody td { 
+        padding: 1.1rem 1rem; 
+        vertical-align: middle; 
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s ease;
+    }
+    
+    .premium-table tbody tr:hover td {
+        background: #f8fafc;
+    }
+    
+    .status-indicator { 
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .status-indicator.ok { 
+        background: #10b981;
+    }
+    
+    .status-indicator.nok { 
+        background: #ef4444;
+    }
+    
+    .status-indicator.pending { 
+        background: #cbd5e1;
+    }
+
+    .text-xxs { 
+        font-size: 0.7rem; 
+        color: #64748b !important; 
+        text-transform: uppercase; 
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+    
+    .fw-bold.text-dark-value { 
+        font-size: 1.05rem; 
+        color: #0f172a !important;
+        font-weight: 600;
+    }
+    
+    .empty-state-placeholder { 
+        text-align: center; 
+        color: #cbd5e1; 
+        font-weight: 600; 
+    }
+    
+    .btn-primary {
+        background: #3b82f6 !important;
+        border: none !important;
+        box-shadow: 0 2px 4px rgba(59,130,246,0.2) !important;
+        transition: all 0.2s ease !important;
+        font-weight: 600 !important;
+    }
+    
+    .btn-primary:hover {
+        background: #2563eb !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(59,130,246,0.3) !important;
+    }
+    
+    .btn-outline-primary {
+        border: 2px solid #3b82f6 !important;
+        color: #3b82f6 !important;
+        background: white !important;
+        transition: all 0.2s ease !important;
+        font-weight: 600 !important;
+    }
+    
+    .btn-outline-primary:hover {
+        background: #eff6ff !important;
+        border-color: #2563eb !important;
+        color: #2563eb !important;
+    }
+    
+    .measurement-input {
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .measurement-input:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+    }
+    
+    .control-name-cell {
+        font-weight: 600;
+    }
+    
+    .control-name-cell .fw-bold {
+        color: #10b981;
+        font-weight: 700;
+    }
+    
+    .control-name-cell .text-muted {
+        color: #64748b !important;
+        font-size: 0.85rem;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    // List of existing pieces (truly measured) for validation
+    const PIEZAS_EXISTENTES = JSON.parse('{{ piezas_medidas|safe|default:"[]" }}');
+
+    function updateSelection() {
+        const proy = document.getElementById('input_proyecto').value;
+        const op = document.getElementById('input_op').value;
+        window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}`;
+    }
+
+    function updateProcess() {
+        const proy = document.getElementById('input_proyecto').value;
+        const op = document.getElementById('input_op').value;
+        const proc = document.getElementById('select_proceso').value;
+        window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}`;
+    }
+
+    function updatePiece() {
+        const proy = document.getElementById('input_proyecto').value;
+        const op = document.getElementById('input_op').value;
+        const proc = document.getElementById('select_proceso').value;
+        const inputPieza = document.getElementById('input_pieza');
+        const pieza = parseInt(inputPieza.value);
+        
+        if (!pieza || pieza < 1) return;
+
+        if (PIEZAS_EXISTENTES.includes(pieza)) {
+            window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}&pieza=${pieza}`;
+        } else {
+            Swal.fire({
+                html: `
+                    <div class="swal-icon-circle">
+                        <i class="ri-add-line"></i>
+                    </div>
+                    <div class="premium-swal-title">Nueva Medición</div>
+                    <div class="premium-swal-html">
+                        La pieza <strong>#${pieza}</strong> no tiene registros.<br>
+                        ¿Desea iniciar una nueva medición?
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="ri-check-line"></i> Iniciar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#3b82f6',
+                customClass: {
+                    popup: 'premium-swal-popup',
+                    confirmButton: 'premium-swal-confirm',
+                    cancelButton: 'premium-swal-cancel'
+                },
+                buttonsStyling: true,
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}&pieza=${pieza}`;
+                } else {
+                    inputPieza.value = "{{ pieza_actual }}";
+                }
+            });
+        }
+    }
+
+    function addNewPiece() {
+        Swal.fire({
+            title: 'Nueva Pieza',
+            text: 'Ingrese el número de la pieza que desea medir:',
+            input: 'number',
+            inputAttributes: {
+                min: 1,
+                step: 1
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Ir a medición',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#3b82f6',
+            preConfirm: (value) => {
+                if (!value || value < 1) {
+                    Swal.showValidationMessage('Por favor ingrese un número válido');
+                }
+                return value;
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const newPiece = result.value;
+                const proy = document.getElementById('input_proyecto').value;
+                const op = document.getElementById('input_op').value;
+                const proc = document.getElementById('select_proceso').value;
+                window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}&pieza=${newPiece}`;
+            }
+        });
+    }
+
+    function deletePiece(pieza) {
+        Swal.fire({
+            html: `
+                <div class="swal-icon-circle danger">
+                    <i class="ri-delete-bin-line"></i>
+                </div>
+                <div class="premium-swal-title">¿Borrar pieza?</div>
+                <div class="premium-swal-html">
+                    Se eliminarán todos los valores de la pieza <strong>#${pieza}</strong>.<br>
+                    Esta acción no se puede deshacer.
+                </div>
+            `,
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: '<i class="ri-delete-bin-line"></i> Sí, borrar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-swal-confirm',
+                cancelButton: 'premium-swal-cancel'
+            },
+            buttonsStyling: true,
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const proy = document.getElementById('input_proyecto').value;
+                const op = document.getElementById('input_op').value;
+                const proc = document.getElementById('select_proceso').value;
+
+                fetch("{% url 'eliminar_pieza_ajax' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify({
+                        proyecto: proy,
+                        op: op,
+                        proceso_id: proc,
+                        pieza: pieza
+                    })
+                }).then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // If the deleted piece is the current one, navigate to the PREVIOUS piece
+                        const isCurrent = (pieza == "{{ pieza_actual }}");
+                        if (isCurrent) {
+                            const prev = "{{ prev_p }}";
+                            const first = "{{ first_p }}";
+                            const target = (prev && prev !== "None") ? prev : (first && first !== "None" ? first : "1");
+                            window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}&pieza=${target}`;
+                        } else {
+                            window.location.reload();
+                        }
+                    } else {
+                        Swal.fire('Error', 'No se pudo eliminar la pieza.', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    function checkStatus(el, type) {
+        const row = el.closest('tr');
+        const statusCol = row.querySelector('.status-col');
+        
+        function parseLocalFloat(val) {
+            if (!val) return NaN;
+            if (typeof val === 'number') return val;
+            return parseFloat(val.toString().replace(',', '.'));
+        }
+        
+        if (type === 'pnp') {
+            const val = el.value;
+            if (val === 'OK') {
+                statusCol.innerHTML = '<div class="status-indicator ok"></div>';
+            } else if (val === 'NOK') {
+                statusCol.innerHTML = '<div class="status-indicator nok"></div>';
+            } else {
+                statusCol.innerHTML = '<div class="status-indicator pending"></div>';
+            }
+        } else {
+            const val = parseLocalFloat(el.value);
+            const nominal = parseLocalFloat(el.dataset.nominal);
+            const minDev = parseLocalFloat(el.dataset.min);
+            const maxDev = parseLocalFloat(el.dataset.max);
+            
+            if (isNaN(val)) {
+                statusCol.innerHTML = '<div class="status-indicator pending"></div>';
+                return;
+            }
+            
+            let ok = true;
+            
+            // Logic from Specification: LI = Vn - Tmin, LS = Vn + Tmax
+            const nominalVal = !isNaN(nominal) ? nominal : 0;
+            const minDevVal = !isNaN(minDev) ? minDev : 0;
+            const maxDevVal = !isNaN(maxDev) ? maxDev : 0;
+            
+            const minLimit = nominalVal - Math.abs(minDevVal);
+            const maxLimit = nominalVal + Math.abs(maxDevVal);
+            
+            // Validation (Closed interval)
+            if (val < minLimit || val > maxLimit) {
+                ok = false;
+            }
+            
+            if (ok) {
+                statusCol.innerHTML = '<div class="status-indicator ok"></div>';
+            } else {
+                statusCol.innerHTML = '<div class="status-indicator nok"></div>';
+            }
+        }
+    }
+
+    // Format value to 2 decimals
+    function formatValue(el) {
+        if (el.value === '' || isNaN(el.value)) return;
+        el.value = parseFloat(el.value).toFixed(2);
+    }
+
+    // Auto-save function
+    async function saveMeasurement(el) {
+        const idParts = el.name.split('_');
+        const tolId = idParts[1];
+        const val = el.value;
+        const pieza = "{{ pieza_actual }}";
+
+        try {
+            const response = await fetch("{% url 'guardar_medicion_ajax' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify({
+                    tolerancia_id: tolId,
+                    pieza: pieza,
+                    valor: val
+                })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                console.log("Guardado con éxito:", tolId);
+                // Optional: show a small success indicator
+            }
+        } catch (error) {
+            console.error("Error al guardar:", error);
+        }
+    }
+
+    // Auto-focus next input and SAVE on Enter
+    document.querySelectorAll('.measurement-input, .pnp-select').forEach((input, idx, list) => {
+        // Handle ENTER key
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                
+                // SAVE
+                saveMeasurement(input);
+                formatValue(input);
+
+                // FOCUS NEXT
+                const next = list[idx + 1];
+                if (next) next.focus();
+                else document.querySelector('button[name="guardar_siguiente"]').focus();
+            }
+        });
+
+        // Also save numeric inputs on blur (tabbing out)
+        if (input.classList.contains('measurement-input')) {
+            input.addEventListener('blur', () => {
+                formatValue(input);
+                saveMeasurement(input);
+            });
+        }
+
+        // Save select inputs on change
+        if (input.classList.contains('pnp-select')) {
+            input.addEventListener('change', () => {
+                saveMeasurement(input);
+            });
+        }
+    });
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}Definir Tolerancias{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-4" style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+        <div>
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary);">Paso 3: Definición de Tolerancias</h2>
+            <div class="text-muted" style="font-size: 0.9rem; margin-top: 0.25rem;">
+                OP: <strong class="text-primary">{{ planilla.num_op }}</strong>
+            </div>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <div class="badge badge-success" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                Pasa / No Pasa
+            </div>
+            <div class="badge badge-primary" style="background: rgba(59, 130, 246, 0.1); color: var(--primary);">
+                Dimensional (mm)
+            </div>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Control</th>
+                    <th style="text-align: center; width: 20%;">Nominal</th>
+                    <th style="text-align: center; width: 20%;">Mínimo</th>
+                    <th style="text-align: center; width: 20%;">Máximo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tolerancias %}
+                <tr>
+                    <td style="font-weight: 500; color: var(--text-primary);">
+                        {{ t.control.nombre }}
+                    </td>
+                    
+                    {% if t.control.pnp %}
+                        <td colspan="3" style="text-align: center; background: rgba(16, 185, 129, 0.05); color: var(--success); font-weight: 500; letter-spacing: 0.05em;">
+                            CRITERIO PASA / NO PASA
+                        </td>
+                    {% else %}
+                        <td>
+                            <input type="number" step="0.001" name="nominal_{{t.id}}" value="{{ t.nominal|default:'' }}" 
+                                   class="form-control" style="text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--border-color); border-radius: 0;"
+                                   placeholder="-">
+                        </td>
+                        <td>
+                            <input type="number" step="0.001" name="min_{{t.id}}" value="{{ t.minimo|default:'' }}" 
+                                   class="form-control" style="text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--border-color); border-radius: 0;"
+                                   placeholder="-">
+                        </td>
+                        <td>
+                            <input type="number" step="0.001" name="max_{{t.id}}" value="{{ t.maximo|default:'' }}" 
+                                   class="form-control" style="text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--border-color); border-radius: 0;"
+                                   placeholder="-">
+                        </td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <div class="text-muted" style="font-size: 0.9rem;">
+                <i style="color: var(--warning);">⚠</i> Verifique los valores antes de continuar.
+            </div>
+            <button type="submit" class="btn btn-primary" style="padding-left: 2rem; padding-right: 2rem;">
+                Finalizar Configuración &rarr;
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
