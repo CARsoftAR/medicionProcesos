@@ -126,3 +126,4 @@ class ValorMedicion(models.Model):
         ordering = ['pieza', 'posicion']
         verbose_name = 'Valor de Medición'
         verbose_name_plural = 'Valores de Medición'
+        unique_together = [['planilla', 'control', 'pieza']]

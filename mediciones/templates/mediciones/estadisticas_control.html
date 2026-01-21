@@ -1,0 +1,636 @@
+{% extends 'mediciones/index.html' %}
+{% load static %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="premium-page-container" style="padding: 1rem 2rem; background: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column;">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <div>
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: -0.025em;">
+                    SEGUIMIENTO DE PARÁMETROS: {{ tolerancia.control.nombre }}
+                </h1>
+                <p style="color: #64748b; font-size: 0.9rem; margin: 0;">
+                    Proyecto: {{ tolerancia.planilla.proyecto }} | OP: {{ tolerancia.planilla.num_op }} | Cliente: {{ tolerancia.planilla.cliente.nombre }}
+                </p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="javascript:history.back()" class="btn" style="background-color: #ef4444; color: white; padding: 0.6rem 1.5rem; border-radius: 12px; font-size: 0.9rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);">
+                <i class="ri-arrow-left-line"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats & Charts Flex Container -->
+    <div class="d-flex gap-4 mb-4 flex-column flex-md-row">
+        
+        <!-- Left Column: Stats (Fixed Width on Desktop) -->
+        <!-- Left Column: Stats (Fixed Width on Desktop) -->
+        <div style="flex: 0 0 320px; min-width: 320px;">
+            <div class="config-card">
+                <div class="config-card-header text-primary" style="background: #1e293b; color: white;">
+                    <i class="ri-settings-5-line"></i>
+                    <span>ESTADÍSTICOS X-R</span>
+                </div>
+                <div class="config-card-body p-0">
+                    <table class="table table-sm mb-0 stats-table-compact">
+                        <tr><td>Media (X̄)</td><td class="text-end fw-bold">{{ stats.mean|floatformat:2 }}</td></tr>
+                        <tr><td>L.I.C.</td><td class="text-end fw-bold">{{ stats.lic|floatformat:2 }}</td></tr>
+                        <tr><td>L.S.C.</td><td class="text-end fw-bold">{{ stats.lsc|floatformat:2 }}</td></tr>
+                        <tr><td>Rango (R)</td><td class="text-end fw-bold">{{ stats.range|floatformat:2 }}</td></tr>
+                        <tr><td>Lote (n)</td><td class="text-end fw-bold">{{ stats.n }}</td></tr>
+                        <tr><td>Desv. Est. (σ)</td><td class="text-end fw-bold">{{ stats.stdev|floatformat:2 }}</td></tr>
+                        <tr class="table-info"><td>L.S.E. (TOL+)</td><td class="text-end fw-bold text-danger">{{ stats.usl|floatformat:2 }}</td></tr>
+                        <tr class="table-info"><td>L.I.E. (TOL-)</td><td class="text-end fw-bold text-danger">{{ stats.lsl|floatformat:2 }}</td></tr>
+                        <tr>
+                            <td>Indice CP</td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <span class="fw-bold">{{ stats.cp|floatformat:2 }}</span>
+                                    {% if stats.cp_info %}
+                                    <span class="badge {{ stats.cp_info.class }}" style="font-size: 0.7rem;">{{ stats.cp_info.text }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Indice CPK</td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <span class="fw-bold">{{ stats.cpk|floatformat:2 }}</span>
+                                    {% if stats.cpk_info %}
+                                    <span class="badge {{ stats.cpk_info.class }}" style="font-size: 0.7rem;">{{ stats.cpk_info.text }}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Charts Gallery (Fills Remaining Space) -->
+        <div style="flex: 1; min-width: 0;">
+            <!-- Main Large Viewer -->
+            <div class="card border-0 shadow-sm mb-4 animate__animated animate__fadeIn" style="border-radius: 16px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0" id="mainChartTitle" style="font-size: 1.1rem; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em;">
+                            Gráfico de Medidas
+                        </h5>
+                        <div class="badge bg-light text-dark border">Vista Detallada</div>
+                    </div>
+                    
+                    <div style="position: relative; height: 42vh; width: 100%;">
+                        <canvas id="mainChartCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thumbnails Selector -->
+            <!-- Thumbnails Selector (Flex Fit) -->
+            <div class="d-flex gap-2 w-100">
+                <div style="flex: 1; min-width: 0;">
+                    <div class="card border-0 shadow-sm h-100 chart-thumb active" onclick="switchChart('trend', 'Gráfico de Medidas', this)" style="cursor: pointer; border-radius: 12px; transition: all 0.2s;">
+                        <div class="card-body p-2 text-center">
+                            <h6 class="text-xxs fw-bold mb-2 text-truncate">MEDIDAS</h6>
+                            <div style="height: 60px; width: 100%;"><canvas id="thumbTrend"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div class="card border-0 shadow-sm h-100 chart-thumb" onclick="switchChart('range', 'Gráfico de Amplitud (R)', this)" style="cursor: pointer; border-radius: 12px; transition: all 0.2s;">
+                        <div class="card-body p-2 text-center">
+                            <h6 class="text-xxs fw-bold mb-2 text-truncate">RANGOS</h6>
+                            <div style="height: 60px; width: 100%;"><canvas id="thumbRange"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div class="card border-0 shadow-sm h-100 chart-thumb" onclick="switchChart('freq', 'Distribución de Frecuencias', this)" style="cursor: pointer; border-radius: 12px; transition: all 0.2s;">
+                        <div class="card-body p-2 text-center">
+                            <h6 class="text-xxs fw-bold mb-2 text-truncate">HISTOGRAMA</h6>
+                            <div style="height: 60px; width: 100%;"><canvas id="thumbFreq"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div class="card border-0 shadow-sm h-100 chart-thumb" onclick="switchChart('gauss', 'Campana de Gauss (Capabilidad)', this)" style="cursor: pointer; border-radius: 12px; transition: all 0.2s;">
+                        <div class="card-body p-2 text-center">
+                            <h6 class="text-xxs fw-bold mb-2 text-truncate">CAPABILIDAD</h6>
+                            <div style="height: 60px; width: 100%;"><canvas id="thumbGauss"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div class="card border-0 shadow-sm h-100 chart-thumb" onclick="switchChart('pie', 'Estatus de Lote', this)" style="cursor: pointer; border-radius: 12px; transition: all 0.2s;">
+                        <div class="card-body p-2 text-center">
+                            <h6 class="text-xxs fw-bold mb-2 text-truncate">ESTATUS</h6>
+                            <div style="height: 60px; width: 100%;"><canvas id="thumbPie"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+<style>
+    /* Hide Vertical Scroll globally for this view */
+    body { overflow: hidden !important; }
+
+    .stats-table-compact td { 
+        padding: 0.6rem 0.5rem; 
+        font-size: 0.8rem; 
+        border-bottom: 1px solid #f1f5f9;
+        color: #475569;
+    }
+    .stats-table-compact tr:last-child td { border: none; }
+    
+    .btn-back-simple {
+        color: #64748b;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.8rem;
+        background: white;
+        border-radius: 8px;
+        transition: 0.2s;
+        border: 1px solid #e2e8f0;
+    }
+    .btn-back-simple:hover { background: #f8fafc; color: #1e293b; }
+
+    .chart-thumb:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid #3b82f6 !important;
+    }
+    .chart-thumb.active {
+        border: 2px solid #3b82f6 !important;
+        background: #eff6ff;
+    }
+</style>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const DATA = {
+        points: {{ data_points|safe }},
+        labels: {{ labels|safe }},
+        stats: {{ stats|safe }}
+    };
+
+    // Global Instances
+    let mainChartInstance = null;
+    const thumbInstances = {};
+
+    // --- Data Preparation Helpers ---
+    function getTrendConfig(isThumb = false) {
+        return {
+            type: 'line',
+            data: {
+                labels: DATA.labels,
+                datasets: [
+                    {
+                        label: 'Mediciones',
+                        data: DATA.points,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: isThumb ? 1 : 2,
+                        pointRadius: isThumb ? 0 : 4,
+                        tension: 0,
+                        order: 1
+                    },
+                    // --- Reference Lines (Only for Main Chart) ---
+                    (!isThumb && DATA.stats.mean) ? {
+                        label: 'Media (X̄)',
+                        data: DATA.labels.map(() => DATA.stats.mean),
+                        borderColor: '#10b981', // Emerald 500
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        order: 2
+                    } : null,
+                    (!isThumb && DATA.stats.lsc) ? {
+                        label: 'Límites Control (LSC)',
+                        data: DATA.labels.map(() => DATA.stats.lsc),
+                        borderColor: '#ef4444', // Red 500
+                        borderWidth: 1,
+                        borderDash: [2, 2],
+                        pointRadius: 0,
+                        order: 3
+                    } : null,
+                    (!isThumb && DATA.stats.lic) ? {
+                        label: 'Límites Control (LIC)',
+                        data: DATA.labels.map(() => DATA.stats.lic),
+                        borderColor: '#ef4444',
+                        borderWidth: 1,
+                        borderDash: [2, 2],
+                        pointRadius: 0,
+                        order: 3
+                    } : null,
+                    (!isThumb && DATA.stats.usl) ? {
+                        label: 'Límites Tol. (LSE)',
+                        data: DATA.labels.map(() => DATA.stats.usl),
+                        borderColor: '#0f172a', // Slate 900
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        order: 4
+                    } : null,
+                    (!isThumb && DATA.stats.lsl) ? {
+                        label: 'Límites Tol. (LIE)',
+                        data: DATA.labels.map(() => DATA.stats.lsl),
+                        borderColor: '#0f172a',
+                        borderWidth: 1.5,
+                        pointRadius: 0,
+                        order: 4
+                    } : null
+                ].filter(Boolean)
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: { 
+                    legend: { 
+                        display: !isThumb,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
+                    }, 
+                    tooltip: { enabled: !isThumb } 
+                },
+                scales: {
+                    x: { display: !isThumb, grid: { display: false } },
+                    y: { display: !isThumb }
+                }
+            }
+        };
+    }
+
+    function getRangeConfig(isThumb = false) {
+        const ranges = DATA.points.map((v, i) => i === 0 ? 0 : Math.abs(v - DATA.points[i-1]));
+        return {
+            type: 'line',
+            data: {
+                labels: DATA.labels,
+                datasets: [
+                    {
+                        label: 'Rango Móvil',
+                        data: ranges,
+                        borderColor: '#6366f1',
+                        borderWidth: isThumb ? 1 : 2,
+                        pointRadius: isThumb ? 0 : 3,
+                        tension: 0,
+                        order: 1
+                    },
+                    // --- Reference Lines (Only for Main Chart) ---
+                    (!isThumb && DATA.stats.r_mean) ? {
+                        label: 'Rango Medio (R̄)',
+                        data: DATA.labels.map(() => DATA.stats.r_mean),
+                        borderColor: '#10b981', // Emerald 500
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        order: 2
+                    } : null,
+                    (!isThumb && DATA.stats.r_lsc) ? {
+                        label: 'Límites Control (LSC)',
+                        data: DATA.labels.map(() => DATA.stats.r_lsc),
+                        borderColor: '#ef4444', // Red 500
+                        borderWidth: 1,
+                        borderDash: [2, 2],
+                        pointRadius: 0,
+                        order: 3
+                    } : null,
+                    (!isThumb && DATA.stats.r_lic !== undefined) ? { // Check undefined/null specifically as it might be 0
+                        label: 'Límites Control (LIC)',
+                        data: DATA.labels.map(() => DATA.stats.r_lic),
+                        borderColor: '#ef4444',
+                        borderWidth: 1,
+                        borderDash: [2, 2],
+                        pointRadius: 0,
+                        order: 3
+                    } : null
+                ].filter(Boolean)
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                plugins: { 
+                    legend: { 
+                        display: !isThumb,
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
+                    },
+                    tooltip: { enabled: !isThumb } 
+                },
+                scales: {
+                    x: { display: !isThumb, grid: { display: false } },
+                    y: { display: !isThumb, beginAtZero: true }
+                }
+            }
+        };
+    }
+
+    function getFreqConfig(isThumb = false) {
+        const bins = 8;
+        const min = Math.min(...DATA.points);
+        const max = Math.max(...DATA.points);
+        // Ensure non-zero range
+        const safeMax = max === min ? max + 1 : max;
+        const binWidth = (safeMax - min) / bins;
+        
+        const freqData = new Array(bins).fill(0);
+        DATA.points.forEach(v => {
+            let b = Math.floor((v - min) / binWidth);
+            if (b >= bins) b = bins - 1;
+            freqData[b]++;
+        });
+        
+        const labels = freqData.map((_, i) => (min + i * binWidth + binWidth/2).toFixed(2)); // Midpoint labels
+        
+        return {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Frecuencia',
+                        data: freqData,
+                        backgroundColor: 'rgba(99, 102, 241, 0.5)', // Indigo
+                        borderColor: '#6366f1',
+                        borderWidth: 1,
+                        barPercentage: 0.95,
+                        categoryPercentage: 0.95,
+                        order: 2
+                    },
+                    {
+                        type: 'line',
+                        label: 'Polígono',
+                        data: freqData,
+                        borderColor: '#10b981', // Emerald
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: isThumb ? 1 : 2,
+                        tension: 0.1,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#10b981',
+                        pointRadius: isThumb ? 0 : 4,
+                        order: 1,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: { 
+                    legend: { display: !isThumb, position: 'top' }, 
+                    tooltip: { enabled: !isThumb } 
+                },
+                scales: {
+                    x: { display: !isThumb, grid: { display: false } },
+                    y: { display: !isThumb, beginAtZero: true }
+                }
+            }
+        };
+    }
+
+    function getGaussConfig(isThumb = false) {
+        const mean = DATA.stats.mean;
+        const std = DATA.stats.stdev || 0.0001; 
+        const nominal = DATA.stats.nominal || mean;
+        
+        // Calculate Specified Sigma based on Tolerance / 6 (Cp=1 basis)
+        // If no tolerance, fallback to process std
+        let specStd = std;
+        if (DATA.stats.usl !== undefined && DATA.stats.lsl !== undefined) {
+             specStd = (DATA.stats.usl - DATA.stats.lsl) / 6;
+             if (specStd <= 0) specStd = std; // Fallback
+        }
+
+        // --- Determine X-Axis Range to fit BOTH curves ---
+        const range1 = [mean - 4.5 * std, mean + 4.5 * std];
+        const range2 = [nominal - 4.5 * specStd, nominal + 4.5 * specStd];
+        
+        const start = Math.min(range1[0], range2[0]);
+        const end = Math.max(range1[1], range2[1]);
+        const step = (end - start) / 80;
+
+        // --- Generate Data ---
+        const gaussDataObtenido = [];
+        const gaussDataEspecificado = [];
+        
+        let maxY = 0;
+        
+        for (let x = start; x <= end; x += step) {
+            // Actual Process Curve (Blue)
+            const y1 = (1 / (std * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - mean) / std, 2));
+            gaussDataObtenido.push({x: x, y: y1});
+            
+            // Specified Curve (Red)
+            const y2 = (1 / (specStd * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - nominal) / specStd, 2));
+            gaussDataEspecificado.push({x: x, y: y2});
+
+            if(y1 > maxY) maxY = y1;
+            if(y2 > maxY) maxY = y2;
+        }
+
+        // Helper for vertical lines
+        const createVerticalLine = (val, color, label) => val ? ({
+            label: label,
+            data: [{x: val, y: 0}, {x: val, y: maxY * 1.05}],
+            borderColor: color,
+            borderWidth: 2,
+            borderDash: [5, 5],
+            pointRadius: 0,
+            type: 'line',
+            fill: false,
+            showLine: true,
+            order: 0
+        }) : null;
+
+        return {
+            type: 'line',
+            data: {
+                datasets: [
+                    // Actual Process
+                    {
+                        label: 'Obtenido',
+                        data: gaussDataObtenido,
+                        borderColor: '#0284c7', // Sky 600
+                        backgroundColor: 'rgba(2, 132, 199, 0.2)',
+                        borderWidth: isThumb ? 1 : 3,
+                        pointRadius: 0,
+                        fill: true,
+                        tension: 0.4,
+                        order: 2
+                    },
+                    // Specified Target
+                    (!isThumb) ? {
+                        label: 'Especificado',
+                        data: gaussDataEspecificado,
+                        borderColor: '#ef4444', // Red 500
+                        borderWidth: 2,
+                        borderDash: [4, 4],
+                        pointRadius: 0,
+                        fill: false, // Usually specification is just outline
+                        tension: 0.4,
+                        order: 1
+                    } : null,
+                    
+                    !isThumb ? createVerticalLine(DATA.stats.mean, '#0284c7', 'Media (X̄)') : null,
+                    !isThumb ? createVerticalLine(DATA.stats.lsl, '#ef4444', 'Límite Inf. (LIE)') : null,
+                    !isThumb ? createVerticalLine(DATA.stats.usl, '#ef4444', 'Límite Sup. (LSE)') : null
+                ].filter(Boolean)
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'nearest', axis: 'x', intersect: false },
+                plugins: { 
+                    legend: { display: !isThumb, position: 'top' }, 
+                    tooltip: { enabled: !isThumb, callbacks: { title: (ctx) => 'Valor: ' + ctx[0].parsed.x.toFixed(4) } } 
+                },
+                scales: { 
+                    x: { 
+                        type: 'linear', 
+                        display: !isThumb,
+                        min: start,
+                        max: end,
+                        grid: { display: true, color: '#f1f5f9' }
+                    }, 
+                    y: { display: !isThumb, beginAtZero: true, grid: { display: false } } 
+                },
+                elements: { point: { radius: 0 } }
+            }
+        };
+    }
+
+    function getPieConfig(isThumb = false) {
+        // Count Approved vs Rejected
+        let approved = 0;
+        let rejected = 0;
+        
+        DATA.points.forEach(p => {
+            if (DATA.stats.usl !== undefined && DATA.stats.lsl !== undefined) {
+                // Check if within tolerances
+                if (p <= DATA.stats.usl && p >= DATA.stats.lsl) {
+                    approved++;
+                } else {
+                    rejected++;
+                }
+            } else {
+                approved++; // Assume approved if no tolerances defined
+            }
+        });
+
+        // Calculate %.
+        const total = approved + rejected;
+        const approvedPct = total ? ((approved / total) * 100).toFixed(1) : 0;
+
+        return {
+            type: 'doughnut',
+            data: {
+                labels: ['Aceptadas', 'Rechazadas'],
+                datasets: [{
+                    data: [approved, rejected],
+                    backgroundColor: ['#10b981', '#ef4444'], // Emerald, Red
+                    borderColor: '#ffffff',
+                    borderWidth: 2,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: { display: !isThumb, position: 'right' },
+                    tooltip: { 
+                        enabled: true,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                let value = context.parsed;
+                                let pct = total ? ((value / total) * 100).toFixed(1) + '%' : '';
+                                return label + value + ' (' + pct + ')';
+                            }
+                        }
+                    },
+                    title: {
+                        display: !isThumb,
+                        text: `Índice de Aprobación: ${approvedPct}%`,
+                        position: 'bottom',
+                        font: { size: 16 }
+                    }
+                }
+            }
+        };
+    }
+
+    // --- Switcher Logic ---
+    function switchChart(type, title, element) {
+        document.getElementById('mainChartTitle').innerText = title;
+        
+        if (mainChartInstance) mainChartInstance.destroy();
+        
+        const ctx = document.getElementById('mainChartCanvas').getContext('2d');
+        let config;
+        
+        switch(type) {
+            case 'trend': config = getTrendConfig(false); break;
+            case 'range': config = getRangeConfig(false); break;
+            case 'freq': config = getFreqConfig(false); break;
+            case 'gauss': config = getGaussConfig(false); break;
+            case 'pie': config = getPieConfig(false); break;
+        }
+        
+        mainChartInstance = new Chart(ctx, config);
+
+        // Update active class on thumbnails
+        if (element) {
+            document.querySelectorAll('.chart-thumb').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
+    }
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Init Thumbnails
+        new Chart(document.getElementById('thumbTrend'), getTrendConfig(true));
+        new Chart(document.getElementById('thumbRange'), getRangeConfig(true));
+        new Chart(document.getElementById('thumbFreq'), getFreqConfig(true));
+        new Chart(document.getElementById('thumbGauss'), getGaussConfig(true));
+        new Chart(document.getElementById('thumbPie'), getPieConfig(true));
+
+        // Init Main Chart (Default Trend)
+        switchChart('trend', 'Gráfico de Medidas');
+    });
+
+</script>
+{% endblock %}

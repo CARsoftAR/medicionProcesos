@@ -187,7 +187,11 @@
                                             <label class="measurement-label">TOL. MÍN [-]</label>
                                             <div class="measurement-value-display">
                                                 {% if not row.tolerancia.control.pnp %}
-                                                    {{ row.tolerancia.minimo|default:"-" }}
+                                                    {% if row.tolerancia.minimo is not None %}
+                                                        {{ row.tolerancia.minimo }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
                                                 {% else %}
                                                     -
                                                 {% endif %}
@@ -200,12 +204,12 @@
                                             {% if row.tolerancia.control.pnp %}
                                                 <select name="valorpnp_{{ row.tolerancia.id }}" class="form-select measurement-input-select">
                                                     <option value="" {% if not row.valor %}selected{% endif %}>-</option>
-                                                    <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>APROBADO</option>
-                                                    <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>RECHAZADO</option>
+                                                    <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PASA</option>
+                                                    <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>NO PASA</option>
                                                 </select>
                                             {% else %}
-                                                <input type="number" step="0.001" name="valor_{{ row.tolerancia.id }}" 
-                                                       value="{{ row.valor|default:'' }}" 
+                                                <input type="number" step="0.01" name="valor_{{ row.tolerancia.id }}" 
+                                                       value="{% if row.valor is not None %}{{ row.valor|floatformat:2 }}{% endif %}" 
                                                        class="form-control measurement-input" 
                                                        placeholder="...">
                                             {% endif %}
@@ -216,7 +220,11 @@
                                             <label class="measurement-label">TOL. MÁX [+]</label>
                                             <div class="measurement-value-display">
                                                 {% if not row.tolerancia.control.pnp %}
-                                                    {{ row.tolerancia.maximo|default:"-" }}
+                                                    {% if row.tolerancia.maximo is not None %}
+                                                        {{ row.tolerancia.maximo }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
                                                 {% else %}
                                                     -
                                                 {% endif %}
@@ -421,9 +429,9 @@
     }
 
     .status-nok {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #ef4444;
+        background: #ef4444;
+        color: #ffffff;
+        border: 1px solid #dc2626;
     }
 
     .status-pending {

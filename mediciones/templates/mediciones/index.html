@@ -21,12 +21,14 @@
                 <div class="nav-section">
                     <div class="nav-header">PRINCIPAL</div>
                     <ul class="nav-list">
+                        <!-- 
                         <li>
                             <a href="{% url 'index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
                                 <i class="ri-dashboard-2-line"></i>
                                 <span>Dashboard</span>
                             </a>
                         </li>
+                        -->
                         <!-- Operaciones Group -->
                         <li class="nav-item-group">
                             <a href="#" class="nav-link group-trigger" onclick="toggleMenu(event, this)">
@@ -130,6 +132,7 @@
         <!-- Main Content -->
         <div class="main-content">
             <!-- Topbar -->
+            {% block topbar %}
             <header class="topbar">
                 <div class="breadcrumb">
                     <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #1e293b; letter-spacing: -0.025em;">
@@ -140,6 +143,7 @@
                     {{ now|date:"l, d F Y" }}
                 </div>
             </header>
+            {% endblock %}
 
             <!-- Content Area -->
             <div class="content-wrapper">
@@ -168,6 +172,7 @@
 
                 {% block content %}
                 <!-- Dashboard Statistics (Default Content) -->
+                <!-- 
                 <div class="grid-cols-4 mb-4">
                     <div class="card">
                         <div class="card-title">Mediciones Hoy</div>
@@ -182,6 +187,7 @@
                         <div class="metric-value">0</div>
                     </div>
                 </div>
+                -->
 
                 <!-- Recent Activity Table -->
                 <div class="card">
@@ -218,7 +224,7 @@
                                 <td>{{ p.articulo.nombre|default:"-" }}</td>
                                 <td style="font-size: 0.8rem; color: #64748b;">{{ p.fecha_creacion|date:"d/m/y H:i" }}</td>
                                 <td style="text-align: right;">
-                                    <a href="{% url 'ingreso_mediciones' p.id %}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Ver</a>
+                                    <a href="{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Ver</a>
                                 </td>
                             </tr>
                             {% empty %}

@@ -3,11 +3,7 @@
 {% block title %}Estructuras de Medición{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 style="font-weight: 800; color: #0f172a; margin-bottom: 0.25rem;">Estructuras de Medición</h2>
-        <p style="color: #64748b; font-size: 0.95rem;">Gestione las configuraciones de procesos y controles por proyecto.</p>
-    </div>
+<div class="d-flex justify-content-end align-items-center mb-4">
     <a href="{% url 'configurar_estructura' %}" class="btn btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;">
         <i class="ri-add-line" style="margin-right: 0.5rem;"></i> Nueva Estructura
     </a>
@@ -20,7 +16,7 @@
                 <tr>
                     <th style="padding: 1.25rem;">OP / PROYECTO</th>
                     <th>CLIENTE</th>
-                    <th>DETALLE</th>
+                    <th>ARTÍCULO</th>
                     <th style="text-align: right; padding-right: 1.25rem;">ACCIONES</th>
                 </tr>
             </thead>

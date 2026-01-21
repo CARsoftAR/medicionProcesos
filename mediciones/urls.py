@@ -28,4 +28,5 @@ urlpatterns = [
     path('api/tolerancia/<int:tolerancia_id>/delete/', views.api_delete_tolerancia, name='api_delete_tolerancia'),
     path('api/medicion/guardar/', views.guardar_medicion_ajax, name='guardar_medicion_ajax'),
     path('api/medicion/eliminar-pieza/', views.eliminar_pieza_ajax, name='eliminar_pieza_ajax'),
+    path('mediciones/estadisticas/<int:tolerancia_id>/', views.estadisticas_control, name='estadisticas_control'),
 ]

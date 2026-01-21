@@ -248,7 +248,7 @@
 <div class="premium-page-container">
     <div class="row g-4">
         <!-- Sidebar Selection -->
-        <div class="col-lg-4 col-xl-3 col-sidebar-premium">
+        <div class="col-lg-5 col-xl-4 col-sidebar-premium">
             <div class="premium-panel-side">
                 <div class="mb-3">
                     <h1 class="side-title-main">Nueva Medición</h1>
@@ -267,17 +267,8 @@
                         <label class="text-xxs fw-bold">OP #</label>
                         <input type="text" id="input_op" class="form-control input-clean mb-3" value="{{ query_op|default:'' }}" placeholder="Ingrese OP..." onchange="updateSelection()">
 
-                        {% if not planilla %}
-                        <label class="text-xxs fw-bold">PROCESO</label>
-                        <select id="select_proceso" class="form-select input-clean" onchange="updateProcess()" {% if not procesos_disponibles %}disabled{% endif %}>
-                            <option value="">Seleccione Proceso...</option>
-                            {% for proc in procesos_disponibles %}
-                            <option value="{{ proc.id }}" {% if proc.id == query_proc %}selected{% endif %}>{{ proc.nombre }}</option>
-                            {% endfor %}
-                        </select>
-                        {% else %}
-                        <input type="hidden" id="select_proceso" value="{{ query_proc }}">
-                        {% endif %}
+                        <!-- Process Hidden (Auto-select/All mode) -->
+                        <input type="hidden" id="select_proceso" value="{{ query_proc|default:'' }}">
                     </div>
                 </div>
 
@@ -300,8 +291,8 @@
                             <label class="text-xxs fw-bold">PIEZA #</label>
                             <div class="d-flex gap-2 align-items-center">
                                 <input type="number" id="input_pieza" class="form-control input-clean" value="{{ pieza_actual }}" onkeydown="if(event.key==='Enter') updatePiece()" min="1" style="font-size: 1.1rem; font-weight: 700; flex: 1;">
-                                <button onclick="deletePiece('{{ pieza_actual }}')" class="btn btn-outline-danger btn-sm d-flex align-items-center justify-content-center" style="border-radius: 8px; height: 45px; width: 45px;" title="Borrar esta pieza y sus valores">
-                                    <i class="ri-delete-bin-line"></i>
+                                <button onclick="deletePiece('{{ pieza_actual }}')" style="display: grid !important; place-items: center !important; border-radius: 50% !important; height: 45px !important; width: 45px !important; min-width: 45px !important; background-color: #fee2e2 !important; color: #ef4444 !important; border: none !important; transition: 0.2s; padding: 0 !important; cursor: pointer; line-height: 0 !important;" title="Borrar esta pieza y sus valores">
+                                    <i class="ri-delete-bin-line" style="font-size: 1.25rem; margin: 0 !important; padding: 0 !important; line-height: 1 !important;"></i>
                                 </button>
                             </div>
                             <div class="text-end mt-1">
@@ -365,7 +356,7 @@
         </div>
 
         <!-- Main Canvas: Measurement Table -->
-        <div class="col-lg-8 col-xl-9 col-main-premium">
+        <div class="col-lg-7 col-xl-8 col-main-premium">
             <div class="main-canvas-premium">
                 {% if planilla %}
                 <form method="post" id="measurementForm">
@@ -400,33 +391,46 @@
                                         <div class="fw-bold text-dark">{{ row.tolerancia.control.nombre }}</div>
                                         <div class="text-xxs text-muted">REF: {{ row.tolerancia.nominal|floatformat:2|default:"-" }}</div>
                                     </td>
-                                    <td class="text-center text-muted fw-bold">{{ row.tolerancia.minimo|floatformat:2|default:"-" }}</td>
+                                    <td class="text-center text-muted fw-bold">
+                                        {% if row.tolerancia.minimo is not None %}{{ row.tolerancia.minimo|floatformat:2 }}{% else %}-{% endif %}
+                                    </td>
                                     <td class="text-center">
                                         {% if row.tolerancia.control.pnp %}
                                         <select name="valorpnp_{{ row.tolerancia.id }}" class="form-select input-clean text-center pnp-select" 
                                                 onchange="checkStatus(this, 'pnp')">
                                             <option value="">-</option>
-                                            <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PACH (OK)</option>
+                                            <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PASA</option>
+                                            <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>NO PASA</option>
                                         </select>
                                         {% else %}
-                                        <input type="number" step="0.01" name="valor_{{ row.tolerancia.id }}" 
+                                        <input type="text" inputmode="decimal" autocomplete="off" name="valor_{{ row.tolerancia.id }}" 
                                                class="form-control input-clean text-center measurement-input" 
-                                               value="{{ row.valor|floatformat:2|default:'' }}"
+                                               value="{% if row.valor is not None %}{{ row.valor|floatformat:2 }}{% endif %}"
                                                data-nominal="{{ row.tolerancia.nominal|default:'' }}"
                                                data-min="{{ row.tolerancia.minimo|default:'' }}"
                                                data-max="{{ row.tolerancia.maximo|default:'' }}"
                                                oninput="checkStatus(this, 'numeric')">
                                         {% endif %}
                                     </td>
-                                    <td class="text-center text-muted fw-bold">{{ row.tolerancia.maximo|floatformat:2|default:"-" }}</td>
+                                    <td class="text-center text-muted fw-bold">
+                                        {% if row.tolerancia.maximo is not None %}{{ row.tolerancia.maximo|floatformat:2 }}{% else %}-{% endif %}
+                                    </td>
                                     <td class="text-center status-col">
-                                        {% if row.status == 'OK' %}
-                                        <div class="status-indicator ok"></div>
-                                        {% elif row.status == 'NOK' %}
-                                        <div class="status-indicator nok"></div>
-                                        {% else %}
-                                        <div class="status-indicator pending"></div>
-                                        {% endif %}
+                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                            <div class="status-target">
+                                                {% if row.status == 'OK' %}
+                                                <div class="status-indicator ok"></div>
+                                                {% elif row.status == 'NOK' %}
+                                                <div class="status-indicator nok"></div>
+                                                {% else %}
+                                                <div class="status-indicator pending"></div>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <a href="{% url 'estadisticas_control' row.tolerancia.id %}" class="btn-stats-mini" title="Ver Estadísticas SPC">
+                                                <i class="ri-bar-chart-box-line"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -447,12 +451,12 @@
 
 <style>
     .premium-page-container { 
-        padding: 1.5rem 2rem 40px 2rem; 
+        padding: 1.5rem 2rem 1.5rem 2rem; 
         max-width: 1800px; 
         margin: 0 auto;
         background: #f8fafc;
-        min-height: 100vh;
-        overflow: visible; /* Allow natural scrolling */
+        height: 100vh;
+        overflow: hidden; /* Disable general page scroll */
     }
     
     .premium-page-container > .row {
@@ -468,9 +472,10 @@
     .premium-panel-side { 
         display: flex !important;
         flex-direction: column !important;
-        height: 100% !important;
+        height: calc(100vh - 3rem) !important;
         margin: 0 !important;
         padding: 0 !important;
+        overflow-y: auto;
     }
 
     /* Hide sidebar scrollbar but allow scrolling */
@@ -571,11 +576,23 @@
         background: white; 
         border-radius: 20px; 
         border: 1px solid #e2e8f0;
-        padding: 2.5rem; 
-        height: 100% !important; /* Force alignment with sidebar height */
+        padding: 2rem; 
+        height: calc(100vh - 3rem) !important; /* Fixed height for scrolling */
+        overflow-y: auto;
         box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         display: flex;
         flex-direction: column;
+    }
+    
+    .main-canvas-premium::-webkit-scrollbar {
+        width: 8px;
+    }
+    .main-canvas-premium::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+    .main-canvas-premium::-webkit-scrollbar-track {
+        background: #f8fafc;
     }
 
     #measurementForm {
@@ -627,9 +644,9 @@
     }
     
     .premium-table thead th { 
-        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        background: #1e293b;
         border: none; 
-        color: #475569; 
+        color: #ffffff; 
         font-weight: 800; 
         font-size: 0.75rem; 
         text-transform: uppercase; 
@@ -730,6 +747,22 @@
         box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
     }
     
+    .pnp-select {
+        border: 2px solid #e2e8f0 !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        font-size: 1.1rem !important;
+        padding: 0.6rem 0.75rem !important;
+        transition: all 0.2s ease !important;
+        min-width: 140px !important;
+    }
+    
+    .pnp-select:focus {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+        outline: none !important;
+    }
+    
     .control-name-cell {
         font-weight: 600;
     }
@@ -742,6 +775,27 @@
     .control-name-cell .text-muted {
         color: #64748b !important;
         font-size: 0.85rem;
+    }
+
+    .btn-stats-mini {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f5f9;
+        color: #3b82f6;
+        border: 1px solid #e2e8f0;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-stats-mini:hover {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+        transform: translateY(-2px);
     }
 </style>
 
@@ -766,7 +820,9 @@
     function updatePiece() {
         const proy = document.getElementById('input_proyecto').value;
         const op = document.getElementById('input_op').value;
-        const proc = document.getElementById('select_proceso').value;
+        let proc = document.getElementById('select_proceso').value;
+        if (proc === 'None' || proc === 'null') proc = '';
+        
         const inputPieza = document.getElementById('input_pieza');
         const pieza = parseInt(inputPieza.value);
         
@@ -831,7 +887,8 @@
                 const newPiece = result.value;
                 const proy = document.getElementById('input_proyecto').value;
                 const op = document.getElementById('input_op').value;
-                const proc = document.getElementById('select_proceso').value;
+                let proc = document.getElementById('select_proceso').value;
+                if (proc === 'None' || proc === 'null') proc = '';
                 window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}&pieza=${newPiece}`;
             }
         });
@@ -864,7 +921,8 @@
             if (result.isConfirmed) {
                 const proy = document.getElementById('input_proyecto').value;
                 const op = document.getElementById('input_op').value;
-                const proc = document.getElementById('select_proceso').value;
+                let proc = document.getElementById('select_proceso').value;
+                if (proc === 'None' || proc === 'null') proc = '';
 
                 fetch("{% url 'eliminar_pieza_ajax' %}", {
                     method: "POST",
@@ -901,10 +959,11 @@
 
     function checkStatus(el, type) {
         const row = el.closest('tr');
-        const statusCol = row.querySelector('.status-col');
+        // Targeted update to avoid overwriting the chart button
+        const statusTarget = row.querySelector('.status-target');
         
         function parseLocalFloat(val) {
-            if (!val) return NaN;
+            if (val === '' || val === null || val === undefined) return NaN;
             if (typeof val === 'number') return val;
             return parseFloat(val.toString().replace(',', '.'));
         }
@@ -912,58 +971,94 @@
         if (type === 'pnp') {
             const val = el.value;
             if (val === 'OK') {
-                statusCol.innerHTML = '<div class="status-indicator ok"></div>';
+                statusTarget.innerHTML = '<div class="status-indicator ok"></div>';
             } else if (val === 'NOK') {
-                statusCol.innerHTML = '<div class="status-indicator nok"></div>';
+                statusTarget.innerHTML = '<div class="status-indicator nok"></div>';
             } else {
-                statusCol.innerHTML = '<div class="status-indicator pending"></div>';
+                statusTarget.innerHTML = '<div class="status-indicator pending"></div>';
             }
         } else {
             const val = parseLocalFloat(el.value);
-            const nominal = parseLocalFloat(el.dataset.nominal);
-            const minDev = parseLocalFloat(el.dataset.min);
-            const maxDev = parseLocalFloat(el.dataset.max);
+            // Handle data attributes explicitly
+            let nominalStr = el.dataset.nominal;
+            let minStr = el.dataset.min;
+            let maxStr = el.dataset.max;
             
+            // Treat empty as null
+            const nominal = nominalStr !== '' ? parseLocalFloat(nominalStr) : null;
+            const minVal = minStr !== '' ? parseLocalFloat(minStr) : null;
+            const maxVal = maxStr !== '' ? parseLocalFloat(maxStr) : null;
+
             if (isNaN(val)) {
-                statusCol.innerHTML = '<div class="status-indicator pending"></div>';
+                statusTarget.innerHTML = '<div class="status-indicator pending"></div>';
                 return;
             }
             
+            let minLimit = -Infinity;
+            let maxLimit = Infinity;
+
+            if (nominal !== null && !isNaN(nominal)) {
+                // Hybrid Logic matching Backend
+                // Min Logic
+                if (minVal !== null && !isNaN(minVal)) {
+                    // Check if Deviation (small relative to nominal) or Absolute (large)
+                    if (Math.abs(minVal) < (Math.abs(nominal) / 2.0)) {
+                        minLimit = nominal - Math.abs(minVal);
+                    } else {
+                        minLimit = minVal;
+                    }
+                }
+                // Max Logic
+                if (maxVal !== null && !isNaN(maxVal)) {
+                    if (Math.abs(maxVal) < (Math.abs(nominal) / 2.0)) {
+                        maxLimit = nominal + Math.abs(maxVal);
+                    } else {
+                        maxLimit = maxVal;
+                    }
+                }
+            } else {
+                 // No nominal -> Strictly Absolute Limits
+                 if (minVal !== null && !isNaN(minVal)) minLimit = minVal;
+                 if (maxVal !== null && !isNaN(maxVal)) maxLimit = maxVal;
+            }
+            
             let ok = true;
-            
-            // Logic from Specification: LI = Vn - Tmin, LS = Vn + Tmax
-            const nominalVal = !isNaN(nominal) ? nominal : 0;
-            const minDevVal = !isNaN(minDev) ? minDev : 0;
-            const maxDevVal = !isNaN(maxDev) ? maxDev : 0;
-            
-            const minLimit = nominalVal - Math.abs(minDevVal);
-            const maxLimit = nominalVal + Math.abs(maxDevVal);
-            
-            // Validation (Closed interval)
             if (val < minLimit || val > maxLimit) {
                 ok = false;
             }
             
             if (ok) {
-                statusCol.innerHTML = '<div class="status-indicator ok"></div>';
+                statusTarget.innerHTML = '<div class="status-indicator ok"></div>';
             } else {
-                statusCol.innerHTML = '<div class="status-indicator nok"></div>';
+                statusTarget.innerHTML = '<div class="status-indicator nok"></div>';
             }
         }
     }
 
-    // Format value to 2 decimals
+    // Format value to 2 decimals (handling comma)
     function formatValue(el) {
-        if (el.value === '' || isNaN(el.value)) return;
-        el.value = parseFloat(el.value).toFixed(2);
+        if (!el.value) return;
+        // Handle comma for clean parsing
+        let valStr = el.value.toString().replace(',', '.');
+        let val = parseFloat(valStr);
+        
+        if (isNaN(val)) return;
+        
+        // Standardize display to 2 decimals (dot separator)
+        el.value = val.toFixed(2);
     }
 
     // Auto-save function
     async function saveMeasurement(el) {
+        if (!el.name) return;
         const idParts = el.name.split('_');
+        if (idParts.length < 2) return;
+        
         const tolId = idParts[1];
         const val = el.value;
         const pieza = "{{ pieza_actual }}";
+
+        console.log(`[SAVE] Sending to server: tolId=${tolId}, pieza=${pieza}, valor="${val}"`);
 
         try {
             const response = await fetch("{% url 'guardar_medicion_ajax' %}", {
@@ -979,12 +1074,35 @@
                 })
             });
             const result = await response.json();
+            console.log(`[SAVE] Server response:`, result);
+            
             if (result.status === 'success') {
-                console.log("Guardado con éxito:", tolId);
-                // Optional: show a small success indicator
+                // Flash success
+                el.style.borderColor = '#22c55e';
+                el.style.backgroundColor = '#f0fdf4';
+                
+                // Update with Server Value (Source of Truth)
+                if (result.saved_value !== null && result.saved_value !== undefined) {
+                    console.log(`[SAVE] Updating field from ${el.value} to ${result.saved_value}`);
+                    // Only update if element is still active or valid? 
+                    // Yes, update strictly to match DB.
+                    if (el.tagName === 'INPUT' && el.type !== 'hidden') {
+                        el.value = parseFloat(result.saved_value).toFixed(2);
+                    }
+                    // For PNP select, value is already correct or handled
+                }
+                
+                setTimeout(() => {
+                    el.style.borderColor = '';
+                    el.style.backgroundColor = '';
+                }, 500);
+            } else {
+                 console.error("[SAVE] Server Error:", result);
+                 el.style.borderColor = '#ef4444';
             }
         } catch (error) {
-            console.error("Error al guardar:", error);
+            console.error("[SAVE] Network Error:", error);
+            el.style.borderColor = '#ef4444';
         }
     }
 
@@ -997,7 +1115,7 @@
                 
                 // SAVE
                 saveMeasurement(input);
-                formatValue(input);
+                // formatValue moved to async success callback
 
                 // FOCUS NEXT
                 const next = list[idx + 1];

@@ -98,7 +98,7 @@ def asignar_tolerancias(request, planilla_id):
             tolerancia.save()
             
         messages.success(request, 'Tolerancias guardadas correctamente.')
-        return redirect('ingreso_mediciones', planilla_id=planilla.id)
+        return redirect(f"{reverse('nueva_medicion_op')}?proy={planilla.proyecto}&op={planilla.num_op}&proc={planilla.proceso.id}")
 
     context = {
         'planilla': planilla,
@@ -108,41 +108,9 @@ def asignar_tolerancias(request, planilla_id):
 
 def ingreso_mediciones(request, planilla_id):
     planilla = get_object_or_404(PlanillaMedicion, id=planilla_id)
-    tolerancias = Tolerancia.objects.filter(planilla=planilla).select_related('control').order_by('posicion')
-    
-    pieza_actual = request.GET.get('pieza', 1)
-    try:
-        pieza_actual = int(pieza_actual)
-    except:
-        pieza_actual = 1
+    return redirect(f"{reverse('nueva_medicion_op')}?proy={planilla.proyecto}&op={planilla.num_op}&proc={planilla.proceso.id}")
 
-    if request.method == 'POST':
-        for tol in tolerancias:
-            valor_input = request.POST.get(f'valor_{tol.id}')
-            if not valor_input and not tol.control.pnp: continue
-            
-            val, created = ValorMedicion.objects.update_or_create(
-                planilla=planilla,
-                control=tol.control,
-                pieza=pieza_actual,
-                defaults={
-                    'tolerancia': tol,
-                    'posicion': tol.posicion,
-                }
-            )
-            
-            if tol.control.pnp:
-                val.valor_pnp = request.POST.get(f'valorpnp_{tol.id}')
-            else:
-                try:
-                    val.valor_pieza = float(valor_input)
-                except:
-                    pass
-            val.save()
-            
-        messages.success(request, f'Mediciones de Pieza {pieza_actual} guardadas.')
-        if 'guardar_siguiente' in request.POST:
-             return redirect(f"{reverse('ingreso_mediciones', args=[planilla.id])}?pieza={pieza_actual+1}")
+def OLD_ingreso_mediciones(request, planilla_id):
         
     valores_existentes = ValorMedicion.objects.filter(planilla=planilla, pieza=pieza_actual)
     valores_dict = { v.control_id: v for v in valores_existentes }
@@ -611,8 +579,14 @@ def nueva_medicion_op(request):
     rows = []
     
     # 1. Selection logic
-    if proy_query and op_query and proc_id:
-        planillas = PlanillaMedicion.objects.filter(proyecto=proy_query, num_op=op_query, proceso_id=proc_id).select_related('elemento', 'proceso')
+    if proy_query and op_query:
+        # Build filter dynamically
+        filters = {'proyecto': proy_query, 'num_op': op_query}
+        if proc_id and proc_id != 'None':
+            filters['proceso_id'] = proc_id
+            
+        planillas = PlanillaMedicion.objects.filter(**filters).select_related('elemento', 'proceso')
+        
         if planillas.exists():
             # 2. Load Controls/Tolerances from ALL planillas found
             tolerancias = Tolerancia.objects.filter(planilla__in=planillas).select_related('control', 'planilla__elemento', 'planilla__proceso').order_by('planilla__elemento__nombre', 'posicion')
@@ -620,31 +594,42 @@ def nueva_medicion_op(request):
             # 3. Handle POST (Save measurements)
             if request.method == 'POST':
                 for tol in tolerancias:
-                    val_input = request.POST.get(f'valor_{tol.id}')
-                    if not val_input and not tol.control.pnp: 
-                        continue
-                    
-                    val_obj, created = ValorMedicion.objects.update_or_create(
-                        planilla=tol.planilla,
-                        control=tol.control,
-                        pieza=pieza_actual,
-                        tolerancia=tol,
-                        defaults={
-                            'posicion': tol.posicion,
-                            'op': str(tol.planilla.num_op) if tol.planilla.num_op else ''
-                        }
-                    )
-                    
+                    # Determine Input Value based on Type
                     if tol.control.pnp:
-                        val_obj.valor_pnp = request.POST.get(f'valorpnp_{tol.id}')
-                        val_obj.valor_pieza = None # Enforce data integrity
+                        # PNP Logic
+                        val_input = request.POST.get(f'valorpnp_{tol.id}')
+                        # Proceed if key exists (even if empty to allow clearing)
+                        if val_input is not None:
+                            val_obj, _ = ValorMedicion.objects.update_or_create(
+                                planilla=tol.planilla, control=tol.control, pieza=pieza_actual, tolerancia=tol,
+                                defaults={'posicion': tol.posicion, 'op': str(tol.planilla.num_op) if tol.planilla.num_op else ''}
+                            )
+                            val_obj.valor_pnp = val_input if val_input else None
+                            val_obj.valor_pieza = None
+                            val_obj.save()
                     else:
-                        val_obj.valor_pnp = None 
-                        try:
-                            val_obj.valor_pieza = float(val_input)
-                        except:
-                            pass
-                    val_obj.save()
+                        # Numeric Logic
+                        val_input = request.POST.get(f'valor_{tol.id}')
+                        # Proceed if key exists (standard form submission includes all inputs)
+                        if val_input is not None:
+                            val_obj, _ = ValorMedicion.objects.update_or_create(
+                                planilla=tol.planilla, control=tol.control, pieza=pieza_actual, tolerancia=tol,
+                                defaults={'posicion': tol.posicion, 'op': str(tol.planilla.num_op) if tol.planilla.num_op else ''}
+                            )
+                            
+                            val_obj.valor_pnp = None
+                            if val_input.strip() == '':
+                                val_obj.valor_pieza = None
+                            else:
+                                try:
+                                    clean_val = val_input.replace(',', '.')
+                                    val_obj.valor_pieza = float(clean_val)
+                                except:
+                                    # If invalid number, do not update (pass) or set None?
+                                    # Previously 'pass' kept old value. Let's keep 'pass' for safety against random junk,
+                                    # but empty string is handled above.
+                                    pass
+                            val_obj.save()
                 
                 messages.success(request, f'Mediciones de Pieza {pieza_actual} guardadas.')
                 if 'guardar_siguiente' in request.POST:
@@ -669,15 +654,38 @@ def nueva_medicion_op(request):
                         current_val = val_obj.valor_pieza
                         if current_val is not None:
                             try:
-                                # Logic from Specification: LI = Vn - Tmin, LS = Vn + Tmax
                                 val_f = float(current_val)
-                                nominal_f = float(tol.nominal) if tol.nominal else 0.0
-                                min_dev = float(tol.minimo) if tol.minimo is not None else 0.0
-                                max_dev = float(tol.maximo) if tol.maximo is not None else 0.0
                                 
-                                min_limit = nominal_f - abs(min_dev)
-                                max_limit = nominal_f + abs(max_dev)
+                                nominal_f = float(tol.nominal) if tol.nominal is not None else None
+                                min_val = float(tol.minimo) if tol.minimo is not None else None
+                                max_val = float(tol.maximo) if tol.maximo is not None else None
                                 
+                                min_limit = float('-inf')
+                                max_limit = float('inf')
+
+                                if nominal_f is not None:
+                                    # Hybrid Logic: Check if inputs are Deviations or Absolute Values
+                                    # Heuristic: If val < Nominal/2, assume it's a deviation (e.g. 0.5 for 60.5)
+                                    # If val > Nominal/2, assume it's absolute (e.g. 60.0 for 60.5)
+                                    
+                                    # Min Logic
+                                    if min_val is not None:
+                                        if abs(min_val) < (abs(nominal_f) / 2.0):
+                                            min_limit = nominal_f - abs(min_val) # Treat as deviation
+                                        else:
+                                            min_limit = min_val # Treat as absolute
+                                    
+                                    # Max Logic
+                                    if max_val is not None:
+                                        if abs(max_val) < (abs(nominal_f) / 2.0):
+                                            max_limit = nominal_f + abs(max_val) # Treat as deviation
+                                        else:
+                                            max_limit = max_val # Treat as absolute
+                                else:
+                                    # No nominal -> Absolutely absolute
+                                    if min_val is not None: min_limit = min_val
+                                    if max_val is not None: max_limit = max_val
+
                                 if val_f < min_limit or val_f > max_limit: 
                                     status = 'NOK'
                                 else: 
@@ -751,7 +759,7 @@ def nueva_medicion_op(request):
         'procesos_disponibles': procesos_disponibles,
         'query_proy': proy_query,
         'query_op': int(op_query) if op_query and op_query.isdigit() else op_query,
-        'query_proc': int(proc_id) if proc_id else None,
+        'query_proc': int(proc_id) if proc_id and proc_id != 'None' and proc_id.isdigit() else None,
         'planilla': planilla,
         'rows': rows,
         'pieza_actual': pieza_actual,
@@ -768,11 +776,16 @@ def nueva_medicion_op(request):
 def guardar_medicion_ajax(request):
     if request.method == 'POST':
         import json
+        import logging
+        logger = logging.getLogger(__name__)
+        
         data = json.loads(request.body)
         
         tol_id = data.get('tolerancia_id')
         pieza = data.get('pieza')
         valor = data.get('valor')
+        
+        logger.info(f"AJAX Save - Received: tol_id={tol_id}, pieza={pieza}, valor='{valor}' (type: {type(valor)})")
         
         try:
             tol = Tolerancia.objects.get(id=tol_id)
@@ -793,14 +806,26 @@ def guardar_medicion_ajax(request):
                 val_obj.valor_pieza = None
             else:
                 val_obj.valor_pnp = None
-                try:
-                    val_obj.valor_pieza = float(valor.replace(',', '.')) if valor else None
-                except:
+                if valor and valor.strip():
+                    try:
+                        clean_valor = valor.replace(',', '.')
+                        val_obj.valor_pieza = float(clean_valor)
+                        logger.info(f"AJAX Save - Converted '{valor}' -> {val_obj.valor_pieza}")
+                    except Exception as conv_err:
+                        logger.error(f"AJAX Save - Conversion failed: {conv_err}")
+                        val_obj.valor_pieza = None
+                else:
                     val_obj.valor_pieza = None
             
             val_obj.save()
-            return JsonResponse({'status': 'success'})
+            logger.info(f"AJAX Save - Saved: valor_pieza={val_obj.valor_pieza}")
+            
+            return JsonResponse({
+                'status': 'success',
+                'saved_value': val_obj.valor_pieza if not tol.control.pnp else val_obj.valor_pnp
+            })
         except Exception as e:
+            logger.error(f"AJAX Save - Error: {e}")
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     
     return JsonResponse({'status': 'error', 'message': 'Only POST allowed'}, status=405)
@@ -827,3 +852,107 @@ def eliminar_pieza_ajax(request):
         return JsonResponse({'status': 'error', 'message': 'Operación fallida'}, status=400)
     
     return JsonResponse({'status': 'error', 'message': 'Only POST allowed'}, status=405)
+
+def estadisticas_control(request, tolerancia_id):
+    import math
+    import statistics
+    from django.shortcuts import render, get_object_or_404
+    from .models import Tolerancia, ValorMedicion
+
+    tolerancia = get_object_or_404(Tolerancia, id=tolerancia_id)
+    # Get all values for this specific control in this specific structure (Planilla)
+    valores_query = ValorMedicion.objects.filter(
+        planilla=tolerancia.planilla, 
+        control=tolerancia.control
+    ).order_by('pieza')
+    
+    # Filter only numeric values
+    data_points = []
+    labels = []
+    for v in valores_query:
+        if v.valor_pieza is not None:
+            data_points.append(float(v.valor_pieza))
+            labels.append(f"P{v.pieza}")
+
+    # Calculations
+    stats = {}
+    if len(data_points) > 1:
+        mean = statistics.mean(data_points)
+        try:
+            stdev = statistics.stdev(data_points)
+        except:
+            stdev = 0
+            
+        nominal = float(tolerancia.nominal) if tolerancia.nominal else mean
+        min_dev = float(tolerancia.minimo) if tolerancia.minimo is not None else 0
+        max_dev = float(tolerancia.maximo) if tolerancia.maximo is not None else 0
+        
+        lsl = nominal - min_dev
+        usl = nominal + max_dev
+        
+        # Cp and Cpk
+        cp = (usl - lsl) / (6 * stdev) if stdev > 0 else 0
+        cpk = min((usl - mean) / (3 * stdev), (mean - lsl) / (3 * stdev)) if stdev > 0 else 0
+        
+        # Ranges for R chart
+        ranges = []
+        for i in range(1, len(data_points)):
+            ranges.append(abs(data_points[i] - data_points[i-1]))
+        r_mean = statistics.mean(ranges) if ranges else 0
+        
+        # Control Limits (R-Chart Moving Range n=2)
+        r_lsc = r_mean * 3.267
+        r_lic = 0 # D3 is 0 for n=2
+        
+        # Control Limits (X-bar chart) - Using individuals logic
+        lic = mean - (3 * stdev)
+        lsc = mean + (3 * stdev)
+        
+        stats = {
+            'n': len(data_points),
+            'mean': round(mean, 4),
+            'stdev': round(stdev, 4),
+            'max': round(max(data_points), 4),
+            'min': round(min(data_points), 4),
+            'range': round(max(data_points) - min(data_points), 4),
+            'lsl': round(lsl, 4),
+            'usl': round(usl, 4),
+            'cp': round(cp, 2),
+            'cpk': round(cpk, 2),
+            'lic': round(lic, 4),
+            'lsc': round(lsc, 4),
+            'r_mean': round(r_mean, 4),
+            'r_lsc': round(r_lsc, 4),
+            'r_lic': round(r_lic, 4),
+            'nominal': round(nominal, 4)
+        }
+
+        # Classification Logic
+        def get_capability_status(value):
+            if value < 1.0:
+                return {'text': 'INACEPTABLE', 'class': 'bg-danger'}
+            elif value < 1.33:
+                return {'text': 'ACEPTABLE CON INSPECCIÓN RIGUROSA', 'class': 'bg-warning text-dark'}
+            elif value < 2.0:
+                return {'text': 'ACEPTABLE', 'class': 'bg-success'}
+            else:
+                return {'text': 'EXCELENTE', 'class': 'bg-success'} # Or a distinctive green
+
+        stats['cp_info'] = get_capability_status(cp)
+        stats['cpk_info'] = get_capability_status(cpk)
+    
+    # Fetch siblings for navigation
+    hermanos = Tolerancia.objects.filter(
+        planilla__proyecto=tolerancia.planilla.proyecto,
+        planilla__num_op=tolerancia.planilla.num_op
+    ).select_related('control', 'planilla', 'planilla__elemento').order_by('planilla__elemento__nombre', 'posicion')
+
+    context = {
+        'tolerancia': tolerancia,
+        'controles_hermanos': hermanos,
+        'stats': stats,
+        'data_points': data_points,
+        'labels': labels,
+        'titulo': f'SPC - {tolerancia.control.nombre}'
+    }
+    return render(request, 'mediciones/estadisticas_control.html', context)
