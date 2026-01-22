@@ -887,8 +887,8 @@ def estadisticas_control(request, tolerancia_id):
         min_dev = float(tolerancia.minimo) if tolerancia.minimo is not None else 0
         max_dev = float(tolerancia.maximo) if tolerancia.maximo is not None else 0
         
-        lsl = nominal - min_dev
-        usl = nominal + max_dev
+        lsl = nominal - abs(min_dev)
+        usl = nominal + abs(max_dev)
         
         # Cp and Cpk
         cp = (usl - lsl) / (6 * stdev) if stdev > 0 else 0

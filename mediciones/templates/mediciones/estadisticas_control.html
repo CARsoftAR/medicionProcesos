@@ -282,7 +282,7 @@
     }
 
     function getRangeConfig(isThumb = false) {
-        const ranges = DATA.points.map((v, i) => i === 0 ? 0 : Math.abs(v - DATA.points[i-1]));
+        const ranges = DATA.points.map((v, i) => i === 0 ? null : Math.abs(v - DATA.points[i-1]));
         return {
             type: 'line',
             data: {
