@@ -257,6 +257,54 @@ def eliminar_proceso(request, pk):
         messages.success(request, 'Proceso eliminado.')
     return redirect('lista_procesos')
 
+def lista_clientes(request):
+    per_page = request.GET.get('per_page')
+    if per_page:
+        request.session['clientes_per_page'] = per_page
+    else:
+        per_page = request.session.get('clientes_per_page', 10)
+    
+    clientes_list = Cliente.objects.all().order_by('nombre')
+    paginator = Paginator(clientes_list, per_page)
+    
+    page_number = request.GET.get('page')
+    clientes = paginator.get_page(page_number)
+    
+    return render(request, 'mediciones/lista_clientes.html', {
+        'clientes': clientes,
+        'per_page': int(per_page)
+    })
+
+def crear_cliente(request):
+    if request.method == 'POST':
+        form = ClienteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cliente creado correctamente.')
+            return redirect('lista_clientes')
+    else:
+        form = ClienteForm()
+    return render(request, 'mediciones/crear_cliente.html', {'form': form, 'titulo': 'Nuevo Cliente'})
+
+def editar_cliente(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    if request.method == 'POST':
+        form = ClienteForm(request.POST, instance=cliente)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cliente actualizado correctamente.')
+            return redirect('lista_clientes')
+    else:
+        form = ClienteForm(instance=cliente)
+    return render(request, 'mediciones/crear_cliente.html', {'form': form, 'titulo': 'Editar Cliente', 'is_edit': True})
+
+def eliminar_cliente(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    if request.method == 'POST':
+        cliente.delete()
+        messages.success(request, 'Cliente eliminado.')
+    return redirect('lista_clientes')
+
 def lista_controles(request):
     # Get per_page from request or session, default to 10
     per_page = request.GET.get('per_page')
@@ -655,38 +703,13 @@ def nueva_medicion_op(request):
                         if current_val is not None:
                             try:
                                 val_f = float(current_val)
+                                min_limit, max_limit = tol.get_absolute_limits()
                                 
-                                nominal_f = float(tol.nominal) if tol.nominal is not None else None
-                                min_val = float(tol.minimo) if tol.minimo is not None else None
-                                max_val = float(tol.maximo) if tol.maximo is not None else None
+                                is_ok = True
+                                if min_limit is not None and val_f < min_limit: is_ok = False
+                                if max_limit is not None and val_f > max_limit: is_ok = False
                                 
-                                min_limit = float('-inf')
-                                max_limit = float('inf')
-
-                                if nominal_f is not None:
-                                    # Hybrid Logic: Check if inputs are Deviations or Absolute Values
-                                    # Heuristic: If val < Nominal/2, assume it's a deviation (e.g. 0.5 for 60.5)
-                                    # If val > Nominal/2, assume it's absolute (e.g. 60.0 for 60.5)
-                                    
-                                    # Min Logic
-                                    if min_val is not None:
-                                        if abs(min_val) < (abs(nominal_f) / 2.0):
-                                            min_limit = nominal_f - abs(min_val) # Treat as deviation
-                                        else:
-                                            min_limit = min_val # Treat as absolute
-                                    
-                                    # Max Logic
-                                    if max_val is not None:
-                                        if abs(max_val) < (abs(nominal_f) / 2.0):
-                                            max_limit = nominal_f + abs(max_val) # Treat as deviation
-                                        else:
-                                            max_limit = max_val # Treat as absolute
-                                else:
-                                    # No nominal -> Absolutely absolute
-                                    if min_val is not None: min_limit = min_val
-                                    if max_val is not None: max_limit = max_val
-
-                                if val_f < min_limit or val_f > max_limit: 
+                                if not is_ok:
                                     status = 'NOK'
                                 else: 
                                     status = 'OK'
@@ -883,16 +906,42 @@ def estadisticas_control(request, tolerancia_id):
         except:
             stdev = 0
             
-        nominal = float(tolerancia.nominal) if tolerancia.nominal else mean
-        min_dev = float(tolerancia.minimo) if tolerancia.minimo is not None else 0
-        max_dev = float(tolerancia.maximo) if tolerancia.maximo is not None else 0
+        lsl, usl = tolerancia.get_absolute_limits()
+        nominal = float(tolerancia.nominal) if tolerancia.nominal is not None else mean
         
-        lsl = nominal - abs(min_dev)
-        usl = nominal + abs(max_dev)
-        
+        # Batch Status Calculation (Corrected)
+        n_approved = 0
+        n_rejected = 0
+        for v in valores_query:
+            if tolerancia.control.pnp:
+                if v.valor_pnp == 'OK': n_approved += 1
+                elif v.valor_pnp == 'NOK': n_rejected += 1
+            else:
+                if v.valor_pieza is not None:
+                    try:
+                        vf = float(v.valor_pieza)
+                        is_ok = True
+                        if lsl is not None and vf < lsl: is_ok = False
+                        if usl is not None and vf > usl: is_ok = False
+                        
+                        if not is_ok: n_rejected += 1
+                        else: n_approved += 1
+                    except: pass
+
         # Cp and Cpk
-        cp = (usl - lsl) / (6 * stdev) if stdev > 0 else 0
-        cpk = min((usl - mean) / (3 * stdev), (mean - lsl) / (3 * stdev)) if stdev > 0 else 0
+        cp = None
+        cpk = None
+        
+        if stdev > 0:
+            # Cp requires both limits
+            if usl is not None and lsl is not None:
+                cp = (usl - lsl) / (6 * stdev)
+            
+            # Cpk can be calculated with one or both
+            cpk_u = (usl - mean) / (3 * stdev) if usl is not None else float('inf')
+            cpk_l = (mean - lsl) / (3 * stdev) if lsl is not None else float('inf')
+            cpk = min(cpk_u, cpk_l)
+            if cpk == float('inf'): cpk = None
         
         # Ranges for R chart
         ranges = []
@@ -908,35 +957,49 @@ def estadisticas_control(request, tolerancia_id):
         lic = mean - (3 * stdev)
         lsc = mean + (3 * stdev)
         
+        def safe_round(val, digits=4):
+            if val is None: return None
+            try:
+                import math
+                if math.isinf(val) or math.isnan(val): return None
+                return round(float(val), digits)
+            except:
+                return None
+
         stats = {
             'n': len(data_points),
-            'mean': round(mean, 4),
-            'stdev': round(stdev, 4),
-            'max': round(max(data_points), 4),
-            'min': round(min(data_points), 4),
-            'range': round(max(data_points) - min(data_points), 4),
-            'lsl': round(lsl, 4),
-            'usl': round(usl, 4),
-            'cp': round(cp, 2),
-            'cpk': round(cpk, 2),
-            'lic': round(lic, 4),
-            'lsc': round(lsc, 4),
-            'r_mean': round(r_mean, 4),
-            'r_lsc': round(r_lsc, 4),
-            'r_lic': round(r_lic, 4),
-            'nominal': round(nominal, 4)
+            'mean': safe_round(mean),
+            'stdev': safe_round(stdev),
+            'max': safe_round(max(data_points)),
+            'min': safe_round(min(data_points)),
+            'range': safe_round(max(data_points) - min(data_points)),
+            'lsl': safe_round(lsl),
+            'usl': safe_round(usl),
+            'cp': safe_round(cp, 2),
+            'cpk': safe_round(cpk, 2),
+            'lic': safe_round(lic),
+            'lsc': safe_round(lsc),
+            'r_mean': safe_round(r_mean),
+            'r_lsc': safe_round(r_lsc),
+            'r_lic': safe_round(r_lic),
+            'nominal': safe_round(nominal),
+            'n_approved': n_approved,
+            'n_rejected': n_rejected,
+            'n_total': n_approved + n_rejected
         }
 
         # Classification Logic
         def get_capability_status(value):
+            if value is None:
+                return None
             if value < 1.0:
-                return {'text': 'INACEPTABLE', 'class': 'bg-danger'}
+                return {'text': 'INACEPTABLE', 'class': 'badge-soft-danger'}
             elif value < 1.33:
-                return {'text': 'ACEPTABLE CON INSPECCIÓN RIGUROSA', 'class': 'bg-warning text-dark'}
+                return {'text': 'ACEPTABLE CON INSPECCIÓN RIGUROSA', 'class': 'badge-soft-warning'}
             elif value < 2.0:
-                return {'text': 'ACEPTABLE', 'class': 'bg-success'}
+                return {'text': 'ACEPTABLE', 'class': 'badge-soft-success'}
             else:
-                return {'text': 'EXCELENTE', 'class': 'bg-success'} # Or a distinctive green
+                return {'text': 'EXCELENTE', 'class': 'badge-soft-excellent'} # Or a distinctive green
 
         stats['cp_info'] = get_capability_status(cp)
         stats['cpk_info'] = get_capability_status(cpk)
@@ -947,12 +1010,16 @@ def estadisticas_control(request, tolerancia_id):
         planilla__num_op=tolerancia.planilla.num_op
     ).select_related('control', 'planilla', 'planilla__elemento').order_by('planilla__elemento__nombre', 'posicion')
 
+    import json
     context = {
         'tolerancia': tolerancia,
         'controles_hermanos': hermanos,
         'stats': stats,
         'data_points': data_points,
         'labels': labels,
+        'stats_json': json.dumps(stats),
+        'data_points_json': json.dumps(data_points),
+        'labels_json': json.dumps(labels),
         'titulo': f'SPC - {tolerancia.control.nombre}'
     }
     return render(request, 'mediciones/estadisticas_control.html', context)

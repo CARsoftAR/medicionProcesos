@@ -1,0 +1,133 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}Maestro de Clientes{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="card-title" style="font-size: 1.25rem;">Clientes</h2>
+            <div class="text-muted" style="font-size: 0.95rem;">
+                Administra la base de datos de clientes.
+            </div>
+        </div>
+        <a href="{% url 'crear_cliente' %}" class="btn btn-primary">
+            <i class="ri-add-line"></i> Nuevo Cliente
+        </a>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th style="text-align: right;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+            <tr>
+                <td style="width: 80px; font-family: monospace; color: var(--text-secondary);">#{{ cliente.id }}</td>
+                <td class="fw-bold">{{ cliente.nombre }}</td>
+                <td style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <a href="{% url 'editar_cliente' cliente.pk %}" class="btn-soft-primary">
+                        <i class="ri-edit-line"></i> Editar
+                    </a>
+                    <form action="{% url 'eliminar_cliente' cliente.pk %}" method="post" style="display: inline;" id="delete-form-cliente-{{ cliente.pk }}">
+                        {% csrf_token %}
+                        <button type="button" class="btn-soft-danger" onclick="confirmDelete('{{ cliente.nombre }}', 'delete-form-cliente-{{ cliente.pk }}')">
+                            <i class="ri-delete-bin-line"></i> Borrar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="ri-user-line"></i>
+                    </div>
+                    <div class="empty-state-title">No hay clientes definidos</div>
+                    <div>Comienza registrando tu primer cliente.</div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination and Per Page Selector -->
+    <div class="pagination-container">
+        <div class="per-page-selector">
+            <span>Registros por página:</span>
+            <input type="number" class="per-page-input" value="{{ per_page }}" min="1" max="100" 
+                   onchange="changePerPage(this.value)"
+                   onkeydown="if(event.key==='Enter') changePerPage(this.value)">
+        </div>
+
+        <div class="pagination-controls">
+            {% if clientes.has_previous %}
+                <a href="?page=1&per_page={{ per_page }}" class="page-link-premium">
+                    <i class="ri-double-left-line"></i>
+                </a>
+                <a href="?page={{ clientes.previous_page_number }}&per_page={{ per_page }}" class="page-link-premium">
+                    <i class="ri-arrow-left-s-line"></i>
+                </a>
+            {% else %}
+                <div class="page-link-premium disabled"><i class="ri-double-left-line"></i></div>
+                <div class="page-link-premium disabled"><i class="ri-arrow-left-s-line"></i></div>
+            {% endif %}
+
+            <div class="page-link-premium active">
+                {{ clientes.number }} de {{ clientes.paginator.num_pages }}
+            </div>
+
+            {% if clientes.has_next %}
+                <a href="?page={{ clientes.next_page_number }}&per_page={{ per_page }}" class="page-link-premium">
+                    <i class="ri-arrow-right-s-line"></i>
+                </a>
+                <a href="?page={{ clientes.paginator.num_pages }}&per_page={{ per_page }}" class="page-link-premium">
+                    <i class="ri-double-right-line"></i>
+                </a>
+            {% else %}
+                <div class="page-link-premium disabled"><i class="ri-arrow-right-s-line"></i></div>
+                <div class="page-link-premium disabled"><i class="ri-double-right-line"></i></div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function changePerPage(value) {
+    if (value < 1) value = 1;
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('per_page', value);
+    urlParams.set('page', 1);
+    window.location.search = urlParams.toString();
+}
+function confirmDelete(name, formId) {
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: `Vas a eliminar al cliente: "${name}". Esta acción no se puede deshacer.`,
+        iconHtml: '<i class="ri-delete-bin-line" style="font-size: 3rem; color: #ef4444;"></i>',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        buttonsStyling: false,
+        customClass: {
+            popup: 'premium-swal',
+            title: 'premium-title',
+            htmlContainer: 'premium-text',
+            actions: 'premium-actions',
+            confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-danger',
+            cancelButton: 'swal2-cancel premium-cancel-btn',
+            icon: 'premium-icon-warning-box'
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById(formId).submit();
+        }
+    });
+}
+</script>
+{% endblock %}

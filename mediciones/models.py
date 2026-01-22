@@ -99,6 +99,46 @@ class Tolerancia(models.Model):
     
     id_instrumento = models.IntegerField(blank=True, null=True)
 
+    def get_absolute_limits(self):
+        """
+        Returns (min_limit, max_limit) ensuring absolute values are handled correctly.
+        Uses same heuristic as nueva_medicion_op view.
+        If nominal exists, missing limits default to nominal.
+        """
+        nominal_f = float(self.nominal) if self.nominal is not None else None
+        min_val = float(self.minimo) if self.minimo is not None else None
+        max_val = float(self.maximo) if self.maximo is not None else None
+        
+        min_limit = None
+        max_limit = None
+
+        if nominal_f is not None:
+            # Heuristic: If val < Nominal/2, assume it's a deviation
+            # If val > Nominal/2, assume it's absolute
+            
+            # Min Logic
+            if min_val is not None:
+                if abs(min_val) < (abs(nominal_f) / 2.0):
+                    min_limit = nominal_f - abs(min_val)
+                else:
+                    min_limit = min_val
+            else:
+                min_limit = nominal_f
+
+            # Max Logic
+            if max_val is not None:
+                if abs(max_val) < (abs(nominal_f) / 2.0):
+                    max_limit = nominal_f + abs(max_val)
+                else:
+                    max_limit = max_val
+            else:
+                max_limit = nominal_f
+        else:
+            if min_val is not None: min_limit = min_val
+            if max_val is not None: max_limit = max_val
+            
+        return min_limit, max_limit
+
     class Meta:
         db_table = 'TOLERANCIAS'
         ordering = ['posicion']

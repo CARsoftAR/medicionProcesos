@@ -23,6 +23,11 @@ urlpatterns = [
     path('maestros/controles/<int:pk>/editar/', views.editar_control, name='editar_control'),
     path('maestros/controles/<int:pk>/eliminar/', views.eliminar_control, name='eliminar_control'),
     
+    path('maestros/clientes/', views.lista_clientes, name='lista_clientes'),
+    path('maestros/clientes/nuevo/', views.crear_cliente, name='crear_cliente'),
+    path('maestros/clientes/<int:pk>/editar/', views.editar_cliente, name='editar_cliente'),
+    path('maestros/clientes/<int:pk>/eliminar/', views.eliminar_cliente, name='eliminar_cliente'),
+    
     # API
     path('api/create/<str:model_name>/', views.api_create_master, name='api_create_master'),
     path('api/tolerancia/<int:tolerancia_id>/delete/', views.api_delete_tolerancia, name='api_delete_tolerancia'),

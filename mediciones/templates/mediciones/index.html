@@ -59,7 +59,7 @@
                         </li>
                         
                         <li>
-                            <a href="#" class="nav-link">
+                            <a href="{% url 'lista_clientes' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_clientes' %}active{% endif %}">
                                 <i class="ri-user-line"></i>
                                 <span>Clientes</span>
                             </a>

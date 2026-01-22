@@ -18,6 +18,9 @@ class ClienteForm(forms.ModelForm):
     class Meta:
         model = Cliente
         fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del Cliente / Razón Social'}),
+        }
 
 class ArticuloForm(forms.ModelForm):
     class Meta:
