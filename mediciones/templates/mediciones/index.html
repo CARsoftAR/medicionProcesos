@@ -6,60 +6,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABBAMAT - Calidad</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mediciones/css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'mediciones/css/index.css' %}?v=5.0">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
     <div class="app-layout">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-header">
+            <div class="sidebar-header" style="height: 100px; padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.03);">
                 <div class="brand-icon">A</div>
-                <div class="brand-text">ABBAMAT QM</div>
+                <div class="brand-text">ABBAMAT</div>
             </div>
             
             <div class="sidebar-content">
+                <!-- SECCIÓN PRINCIPAL -->
                 <div class="nav-section">
                     <div class="nav-header">PRINCIPAL</div>
                     <ul class="nav-list">
-                        <!-- 
-                        <li>
-                            <a href="{% url 'index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                                <i class="ri-dashboard-2-line"></i>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        -->
                         <!-- Operaciones Group -->
                         <li class="nav-item-group">
-                            <a href="#" class="nav-link group-trigger" onclick="toggleMenu(event, this)">
+                            <a href="#" class="nav-link active-indigo group-trigger {% if 'mediciones' in request.path or 'panel-geografico' in request.path or 'nueva-op' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
                                 <i class="ri-clipboard-line"></i>
                                 <span>Operaciones</span>
                                 <i class="ri-arrow-down-s-line chevron"></i>
                             </a>
                             <ul class="sub-menu">
+                                {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                                 <li>
-                                    <a href="{% url 'lista_estructuras' %}">
-                                        <i class="ri-git-merge-line" style="font-size: 0.9em; margin-right: 0.5rem; color: #2563eb;"></i>
-                                        Armar Estructura
-                                    </a>
-                                </li>
+                                     <a href="{% url 'lista_estructuras' %}" class="active-indigo {% if request.resolver_match.url_name == 'lista_estructuras' %}active{% endif %}">
+                                         <i class="ri-git-merge-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                         Armar Estructura
+                                     </a>
+                                 </li>
+                                {% endif %}
                                 <li>
-                                    <a href="{% url 'nueva_medicion_op' %}">
-                                        <i class="ri-add-circle-line" style="font-size: 0.9em; margin-right: 0.5rem; color: inherit;"></i>
-                                        Nueva Medición (OP)
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <i class="ri-history-line" style="font-size: 0.9em; margin-right: 0.5rem; color: inherit;"></i>
-                                        Historial
-                                    </a>
-                                </li>
+                                     <a href="{% url 'nueva_medicion_op' %}" class="active-indigo {% if request.resolver_match.url_name == 'nueva_medicion_op' %}active{% endif %}">
+                                         <i class="ri-add-circle-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                         Nueva Medición (OP)
+                                     </a>
+                                 </li>
                             </ul>
                         </li>
                         
                         <li>
-                            <a href="{% url 'lista_clientes' %}" class="nav-link {% if request.resolver_match.url_name == 'lista_clientes' %}active{% endif %}">
+                            <a href="{% url 'lista_clientes' %}" class="nav-link active-cyan {% if request.resolver_match.url_name == 'lista_clientes' %}active{% endif %}">
                                 <i class="ri-user-line"></i>
                                 <span>Clientes</span>
                             </a>
@@ -67,29 +58,50 @@
                     </ul>
                 </div>
 
+                <!-- SECCIÓN ADMINISTRACIÓN -->
                 <div class="nav-section">
-                    <div class="nav-header">DATOS VARIOS</div>
+                    <div class="nav-header">ADMINISTRACIÓN</div>
                     <ul class="nav-list">
-                        <!-- Maestros Group (Corrected) -->
+                        {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                         <li class="nav-item-group">
-                            <a href="#" class="nav-link group-trigger" onclick="toggleMenu(event, this)">
+                            <a href="#" class="nav-link active-purple group-trigger {% if 'maestros' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
                                 <i class="ri-booklet-line"></i>
                                 <span>Maestros</span>
                                 <i class="ri-arrow-down-s-line chevron"></i>
                             </a>
                             <ul class="sub-menu">
-                                <li><a href="{% url 'lista_procesos' %}">Procesos</a></li>
-                                <li><a href="{% url 'lista_controles' %}">Controles</a></li>
+                                <li>
+                                    <a href="{% url 'lista_procesos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_procesos' %}active{% endif %}">
+                                        <i class="ri-node-tree" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        Procesos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'lista_controles' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_controles' %}active{% endif %}">
+                                        <i class="ri-shield-check-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        Controles
+                                    </a>
+                                </li>
                             </ul>
                         </li>
+                        {% endif %}
                     </ul>
                 </div>
 
+                <!-- SECCIÓN SISTEMA -->
                 <div class="nav-section">
                     <div class="nav-header">SISTEMA</div>
                     <ul class="nav-list">
+                        {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                         <li>
-                            <a href="#" class="nav-link">
+                            <a href="{% url 'lista_usuarios' %}" class="nav-link active-emerald {% if 'usuarios' in request.path %}active{% endif %}">
+                                <i class="ri-group-line"></i>
+                                <span>Usuarios</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <a href="#" class="nav-link active-orange {% if 'configuracion' in request.path %}active{% endif %}">
                                 <i class="ri-settings-3-line"></i>
                                 <span>Configuración</span>
                                 <i class="ri-arrow-right-s-line chevron"></i>
@@ -99,13 +111,21 @@
                 </div>
             </div>
 
-            <div class="user-profile">
-                <div class="user-avatar">
-                   <i class="ri-user-3-fill"></i>
-                </div>
-                <div class="user-info">
-                   <div class="user-name">Operador</div>
-                   <div class="user-role">Producción</div>
+            <!-- Perfil de Usuario -->
+            <div class="user-profile-wrapper" style="border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); margin-top: auto;">
+                <a href="{% url 'perfil_usuario' %}" class="user-profile-link" style="text-decoration: none; display: flex; align-items: center; padding: 1.5rem 1.25rem; transition: all 0.2s;">
+                    <div class="user-avatar" style="width: 44px; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="ri-user-3-fill" style="font-size: 1.2rem;"></i>
+                    </div>
+                    <div class="user-info" style="margin-left: 1rem; flex: 1;">
+                        <div class="user-name" style="color: white; font-weight: 600; font-size: 0.95rem;">{{ user.username }}</div>
+                        <div class="user-role" style="color: #94a3b8; font-size: 0.8rem; margin-top: 2px;">{{ user.profile.get_role_display|default:"Usuario" }}</div>
+                    </div>
+                </a>
+                <div style="padding: 0 1.25rem 1.5rem 1.25rem;">
+                    <a href="{% url 'logout' %}" class="btn-logout-premium" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 0.75rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;">
+                        <i class="ri-logout-box-r-line"></i> Cerrar Sesión
+                    </a>
                 </div>
             </div>
         </aside>
@@ -113,15 +133,9 @@
         <script>
             function toggleMenu(e, element) {
                 e.preventDefault();
-                
-                // Toggle 'active-parent' on the link itself for color changes
                 element.classList.toggle('active-parent');
-                
-                // Handle aria-expanded for chevron rotation
                 const isExpanded = element.getAttribute('aria-expanded') === 'true';
                 element.setAttribute('aria-expanded', !isExpanded);
-                
-                // Find and toggle the sub-menu sibling
                 const subMenu = element.nextElementSibling;
                 if (subMenu && subMenu.classList.contains('sub-menu')) {
                     subMenu.classList.toggle('open');
@@ -135,8 +149,8 @@
             {% block topbar %}
             <header class="topbar">
                 <div class="breadcrumb">
-                    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #1e293b; letter-spacing: -0.025em;">
-                        {% block title %}Tablero de Control{% endblock %}
+                    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.025em;">
+                        {% block title %}Sistema de Calidad{% endblock %}
                     </h2>
                 </div>
                 <div class="current-date">
@@ -156,9 +170,7 @@
                             </div>
                         {% endfor %}
                     </div>
-
                     <script>
-                        // Auto-hide messages after 1.2 seconds
                         setTimeout(function() {
                             const container = document.getElementById('messages-container');
                             if (container) {
@@ -171,71 +183,55 @@
                 {% endif %}
 
                 {% block content %}
-                <!-- Dashboard Statistics (Default Content) -->
-                <!-- 
-                <div class="grid-cols-4 mb-4">
-                    <div class="card">
-                        <div class="card-title">Mediciones Hoy</div>
-                        <div class="metric-value">0</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Eficiencia</div>
-                        <div class="metric-value text-success">100%</div>
-                    </div>
-                    <div class="card">
-                        <div class="card-title">Rechazos</div>
-                        <div class="metric-value">0</div>
-                    </div>
-                </div>
-                -->
+                <!-- KPI Dashboard Grid y Charts eliminados por solicitud del usuario (No es un tablero de control) -->
 
-                <!-- Recent Activity Table -->
+
                 <div class="card">
                     <div class="d-flex justify-content-between align-items-center mb-4" style="margin-bottom: 1.5rem;">
                         <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin: 0;">Mediciones en Curso</h3>
-                        <a href="{% url 'asignar_op' %}" class="btn btn-primary">
-                            + Nueva OP
-                        </a>
+                        <a href="{% url 'asignar_op' %}" class="btn btn-primary">+ Nueva OP</a>
                     </div>
-
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>OP / Proyecto</th>
-                                <th>Proceso</th>
-                                <th>Cliente</th>
-                                <th>Artículo</th>
-                                <th>Fecha</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for p in planillas %}
-                            <tr>
-                                <td style="font-weight: 600; color: #1e293b;">
-                                    {% if p.num_op %}{{ p.num_op }} / {% endif %}{{ p.proyecto|default:"-" }}
-                                </td>
-                                <td>
-                                    <span class="badge badge-info" style="background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe;">
-                                        {{ p.proceso.nombre }}
-                                    </span>
-                                </td>
-                                <td>{{ p.cliente.nombre|default:"-" }}</td>
-                                <td>{{ p.articulo.nombre|default:"-" }}</td>
-                                <td style="font-size: 0.8rem; color: #64748b;">{{ p.fecha_creacion|date:"d/m/y H:i" }}</td>
-                                <td style="text-align: right;">
-                                    <a href="{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Ver</a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                                    No hay mediciones activas.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>OP / Proyecto</th>
+                                    <th>Proceso</th>
+                                    <th>Cliente</th>
+                                    <th>Artículo</th>
+                                    <th>Fecha</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in planillas %}
+                                <tr>
+                                    <td style="font-weight: 600;">
+                                        {% if p.num_op %}<span style="color: var(--primary);">{{ p.num_op }}</span> / {% endif %}{{ p.proyecto|default:"-" }}
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.2);">
+                                            {{ p.proceso.nombre }}
+                                        </span>
+                                    </td>
+                                    <td>{{ p.cliente.nombre|default:"-" }}</td>
+                                    <td>{{ p.articulo.nombre|default:"-" }}</td>
+                                    <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ p.fecha_creacion|date:"d/m/y H:i" }}</td>
+                                    <td style="text-align: right;">
+                                        <a href="{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 10px;">
+                                            <i class="ri-eye-line"></i> Abrir
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" style="text-align: center; padding: 4rem; color: var(--text-muted);">
+                                    <i class="ri-inbox-line" style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.2;"></i>
+                                    No hay mediciones activas en este momento.
+                                </td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
                 {% endblock %}
             </div>

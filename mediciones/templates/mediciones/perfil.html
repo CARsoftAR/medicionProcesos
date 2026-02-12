@@ -1,0 +1,67 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card animate__animated animate__fadeInUp" style="border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2.5rem; background: #3b82f6; color: white; border-radius: 20px;">
+                        <i class="ri-user-3-fill"></i>
+                    </div>
+                    <h3 style="font-weight: 800; color: #1e293b; margin-bottom: 0.25rem;">{{ user.username }}</h3>
+                    <span class="badge" style="background: #e0e7ff; color: #4338ca; padding: 0.5rem 1rem; border-radius: 10px;">
+                        {{ user.profile.get_role_display }}
+                    </span>
+                </div>
+
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre</label>
+                            {{ user_form.first_name }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Apellido</label>
+                            {{ user_form.last_name }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Correo Electrónico</label>
+                        {{ user_form.email }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label">Rol del Sistema</label>
+                        {{ user_form.role }}
+                        <div class="form-text mt-1" style="font-size: 0.75rem;">
+                            <i class="ri-information-line"></i> Solo los supervisores pueden modificar roles.
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-4 mb-4" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
+                        <label class="form-label d-flex align-items-center gap-2">
+                           <i class="ri-lock-password-line"></i> Seguridad
+                        </label>
+                        {{ user_form.password }}
+                        <div class="form-text mt-1 text-muted">
+                            {{ user_form.password.help_text }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary" style="border-radius: 12px; padding: 0.75rem;">
+                            <i class="ri-save-line"></i> Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

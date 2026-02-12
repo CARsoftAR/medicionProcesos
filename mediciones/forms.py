@@ -1,5 +1,39 @@
 from django import forms
-from .models import PlanillaMedicion, Cliente, Articulo, Proceso, Elemento, Control
+from django.contrib.auth.models import User
+from .models import PlanillaMedicion, Cliente, Articulo, Proceso, Elemento, Control, Maquina, Instrumento, Profile
+
+class UserForm(forms.ModelForm):
+    role = forms.ChoiceField(choices=Profile.ROLE_CHOICES, widget=forms.Select(attrs={'class': 'form-select'}))
+    password = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}), required=False, help_text="Dejar en blanco para no cambiar la contraseña")
+    
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            try:
+                self.fields['role'].initial = self.instance.profile.role
+            except Profile.DoesNotExist:
+                pass
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if self.cleaned_data.get('password'):
+            user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+            profile, created = Profile.objects.get_or_create(user=user)
+            profile.role = self.cleaned_data.get('role')
+            profile.save()
+        return user
 
 class PlanillaForm(forms.ModelForm):
     class Meta:
@@ -61,3 +95,25 @@ class ControlForm(forms.ModelForm):
             if qs.exists():
                 raise forms.ValidationError(f'Ya existe un control con el nombre "{nombre}".')
         return nombre
+
+class MaquinaForm(forms.ModelForm):
+    class Meta:
+        model = Maquina
+        fields = ['nombre', 'codigo', 'descripcion']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'codigo': forms.TextInput(attrs={'class': 'form-control'}),
+            'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+class InstrumentoForm(forms.ModelForm):
+    class Meta:
+        model = Instrumento
+        fields = ['nombre', 'codigo', 'tipo', 'marca', 'ultima_calibracion']
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'codigo': forms.TextInput(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(attrs={'class': 'form-select'}),
+            'marca': forms.TextInput(attrs={'class': 'form-control'}),
+            'ultima_calibracion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+        }

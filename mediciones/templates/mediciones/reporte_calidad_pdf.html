@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 8pt;
+            color: #000;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed; /* Keep fixed but ensure math is exact */
+        }
+        th, td {
+            border: 0.5pt solid #000;
+            padding: 2pt;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 7pt;
+        }
+        
+        .bg-gray { background-color: #f1f5f9; }
+        .bg-green { background-color: #27ae60; color: white; }
+        .bg-blue-soft { background-color: #3498db; color: white; }
+        .bg-pink { background-color: #fce4ec; }
+        .bg-orange { background-color: #f39c12; color: white; }
+        .bg-purple { background-color: #8e44ad; color: white; }
+        
+        .text-left { text-align: left; padding-left: 4pt; }
+        .fw-bold { font-weight: bold; }
+        
+        .header-title {
+            font-size: 14pt;
+            font-weight: bold;
+        }
+        
+        .label-cell {
+            font-weight: bold;
+            font-size: 6.5pt;
+            background-color: #f1f5f9;
+        }
+
+        /* Columns: Detalle(15) + Sol(7) + Tol(10) + Inst(8) = 40% 
+           Pieces: 15 columns * 4% = 60%
+           Total = 100%
+        */
+        .col-detalle { width: 15%; }
+        .col-solicitado { width: 7%; }
+        .col-tolerancia { width: 10%; }
+        .col-instrumento { width: 8%; }
+        .col-pieza { width: 4%; }
+
+        .obs-box {
+            height: 50pt;
+            text-align: left;
+            vertical-align: top;
+            padding: 5pt;
+            font-size: 8pt;
+        }
+
+        .sig-table td {
+            border: none;
+            padding: 0;
+            font-size: 6pt;
+        }
+        .sig-box {
+            border: 0.5pt solid #000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PRIMARY HEADER -->
+    <table>
+        <tr>
+            <td colspan="4" style="text-align: left; padding: 5pt; border-bottom: none;">
+                <div style="font-size: 8pt; color: #444;">GRUPO</div>
+                <div style="font-size: 16pt; font-weight: bold;">ABBAMAT</div>
+            </td>
+            <td colspan="10" class="header-title">REPORTE DE CALIDAD</td>
+            <td colspan="3" class="label-cell">FECHA DE EMISION</td>
+            <td colspan="3">{{ fecha_emision }}</td>
+        </tr>
+        <tr>
+            <td colspan="4" style="border-top: none;"></td>
+            <td colspan="3" class="label-cell">CLIENTE</td>
+            <td colspan="7" class="bg-green fw-bold" style="font-size: 10pt;">{{ planilla.cliente.nombre|upper }}</td>
+            <td colspan="3" class="label-cell">HOJA</td>
+            <td colspan="3">1</td>
+        </tr>
+    </table>
+
+    <!-- SECONDARY INFO -->
+    <table style="margin-top: -0.5pt;">
+        <tr>
+            <td colspan="4" class="label-cell">DENOMINACION</td>
+            <td colspan="6" class="bg-purple fw-bold">{{ planilla.proceso.nombre|upper }}</td>
+            <td colspan="3" class="label-cell">NUMERO DE REGISTRO</td>
+            <td colspan="7">{{ num_registro }}</td>
+        </tr>
+        <tr>
+            <td colspan="4" class="label-cell">PROYECTO N°</td>
+            <td colspan="2" class="bg-blue-soft fw-bold">{{ planilla.proyecto|default:"-" }}</td>
+            <td colspan="2" class="label-cell">ARTICULO</td>
+            <td colspan="4" class="bg-pink fw-bold">{{ planilla.articulo.nombre|default:"-" }}</td>
+            <td colspan="2" class="label-cell">CANTIDAD</td>
+            <td colspan="2" class="bg-orange fw-bold">{{ planilla.cantidad|default:"0"|floatformat:0 }}</td>
+            <td colspan="1" class="label-cell">REV</td>
+            <td colspan="3">{{ rev }} - {{ rev_fecha }}</td>
+        </tr>
+    </table>
+
+    <!-- MAIN MEASUREMENTS TABLE -->
+    <table style="margin-top: -0.5pt;">
+        <thead>
+            <tr class="bg-gray">
+                <th class="col-detalle" rowspan="2">DETALLE</th>
+                <th class="col-solicitado" rowspan="2">SOLICITADO</th>
+                <th class="col-tolerancia" rowspan="2">TOLERANCIA</th>
+                <th class="col-instrumento" rowspan="2">INSTRUN.</th>
+                <th colspan="15">NUMERO DE PIEZA</th>
+            </tr>
+            <tr class="bg-gray">
+                {% for i in "123456789012345"|make_list %}
+                <th class="col-pieza">{{ forloop.counter }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td class="text-left fw-bold" style="background-color: #f8fafc;">{{ row.detalle }}</td>
+                <td class="bg-pink fw-bold">{{ row.solicitado }}</td>
+                <td>{{ row.tolerancia }}</td>
+                <td>{{ row.instrumento }}</td>
+                
+                {% for p_val in row.piezas|slice:":15" %}
+                <td {% if p_val.val == 'OK' or p_val.val == 'PAS' %}style="color: #27ae60; font-weight: bold;"{% elif p_val.val == 'NOK' or p_val.val == 'NO PASA' %}style="color: #c0392b; font-weight: bold;"{% endif %}>
+                    {{ p_val.val }}
+                </td>
+                {% endfor %}
+                
+                {# Fill blanks #}
+                {% with row.piezas|length as count %}
+                {% if count < 15 %}
+                    {% for i in "123456789012345"|make_list %}
+                        {% if forloop.counter > count %}
+                        <td></td>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </tr>
+            {% endfor %}
+            
+            {# Fill empty rows for aesthetics #}
+            {% with rows|length as r_count %}
+            {% if r_count < 12 %}
+                {% for i in "1234567890"|make_list %}
+                    {% if forloop.counter <= 8 %}
+                    <tr>
+                        <td style="height: 12pt;">&nbsp;</td><td></td><td></td><td></td>
+                        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                        <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </tbody>
+    </table>
+
+    <!-- FOOTER -->
+    <table style="margin-top: -0.5pt;">
+        <tr>
+            <td colspan="4" class="label-cell fw-bold">OBSERVACIONES</td>
+            <td colspan="11" class="obs-box">{{ observaciones|linebreaksbr }}</td>
+            <td colspan="5" style="padding: 0;">
+                <table class="sig-table">
+                    <tr>
+                        <td style="width: 25%;"></td>
+                        <td class="label-cell sig-box">ELABORO</td>
+                        <td class="label-cell sig-box">APROBO</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell text-right" style="padding-right: 2pt;">NOMBRE</td>
+                        <td class="sig-box">{{ elaborador_nombre }}</td>
+                        <td class="sig-box">{{ aprobador_nombre }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label-cell text-right" style="padding-right: 2pt;">CARGO</td>
+                        <td class="sig-box">DEPTO TECNICO</td>
+                        <td class="sig-box">DEPTO TECNICO</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

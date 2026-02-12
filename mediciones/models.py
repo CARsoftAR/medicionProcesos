@@ -1,4 +1,74 @@
 from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
+class Profile(models.Model):
+    ROLE_CHOICES = [
+        ('OPERADOR', 'Operador (Carga de Datos)'),
+        ('CALIDAD', 'Supervisor / Calidad (Control Total)'),
+    ]
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='OPERADOR')
+
+    class Meta:
+        db_table = 'USER_PROFILES'
+        verbose_name = 'Perfil de Usuario'
+        verbose_name_plural = 'Perfiles de Usuarios'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.role}"
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    try:
+        instance.profile.save()
+    except Profile.DoesNotExist:
+        Profile.objects.create(user=instance)
+
+
+class Maquina(models.Model):
+    nombre = models.CharField(max_length=100)
+    codigo = models.CharField(max_length=50, blank=True, null=True, verbose_name="Código/Interno")
+    descripcion = models.TextField(blank=True, null=True)
+    x_pos = models.FloatField(blank=True, null=True, verbose_name="Posición X (%)")
+    y_pos = models.FloatField(blank=True, null=True, verbose_name="Posición Y (%)")
+
+
+    class Meta:
+        db_table = 'MAQUINAS'
+        verbose_name = 'Máquina'
+        verbose_name_plural = 'Máquinas'
+
+    def __str__(self):
+        return f"{self.nombre} ({self.codigo})" if self.codigo else self.nombre
+
+class Instrumento(models.Model):
+    TIPO_CHOICES = [
+        ('CALIBRE', 'Calibre'),
+        ('MICROMETRO', 'Micrómetro'),
+        ('COMPARADOR', 'Comparador'),
+        ('GALGA', 'Galga'),
+        ('OTRO', 'Otro'),
+    ]
+    nombre = models.CharField(max_length=100)
+    codigo = models.CharField(max_length=50, blank=True, null=True, verbose_name="Código/Inventario")
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='CALIBRE')
+    marca = models.CharField(max_length=50, blank=True, null=True)
+    ultima_calibracion = models.DateField(blank=True, null=True, verbose_name="Última Calibración")
+
+    class Meta:
+        db_table = 'INSTRUMENTOS'
+        verbose_name = 'Instrumento'
+        verbose_name_plural = 'Instrumentos'
+
+    def __str__(self):
+        return f"{self.nombre} ({self.codigo})" if self.codigo else self.nombre
 
 class Articulo(models.Model):
     nombre = models.CharField(max_length=50)
@@ -69,12 +139,15 @@ class PlanillaMedicion(models.Model):
     articulo = models.ForeignKey(Articulo, on_delete=models.SET_NULL, null=True, blank=True, db_column='id_articulo')
     proceso = models.ForeignKey(Proceso, on_delete=models.SET_NULL, null=True, db_column='id_proceso')
     elemento = models.ForeignKey(Elemento, on_delete=models.SET_NULL, null=True, db_column='id_elemento')
+    maquina = models.ForeignKey(Maquina, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Máquina", db_column='id_maquina')
     
     cantidad = models.FloatField(blank=True, null=True)
     cantidad_realizada = models.FloatField(blank=True, null=True)
     
     id_elaborador = models.IntegerField(blank=True, null=True)
     id_aprobador = models.IntegerField(blank=True, null=True)
+    aprobador = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='planillas_aprobadas', db_column='fk_aprobador')
+    observaciones = models.TextField(blank=True, null=True)
     
     fecha_elaborador = models.DateField(blank=True, null=True)
     fecha_aprobador = models.DateField(blank=True, null=True)
@@ -91,13 +164,14 @@ class Tolerancia(models.Model):
     planilla = models.ForeignKey(PlanillaMedicion, on_delete=models.CASCADE, db_column='id_planilla')
     control = models.ForeignKey(Control, on_delete=models.CASCADE, db_column='id_control')
     
-    minimo = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    nominal = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
-    maximo = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    minimo = models.DecimalField(max_digits=12, decimal_places=4, blank=True, null=True)
+    nominal = models.DecimalField(max_digits=12, decimal_places=4, blank=True, null=True)
+    maximo = models.DecimalField(max_digits=12, decimal_places=4, blank=True, null=True)
     
     posicion = models.IntegerField(default=0)
     
     id_instrumento = models.IntegerField(blank=True, null=True)
+    instrumento = models.ForeignKey(Instrumento, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Instrumento", db_column='fk_instrumento')
 
     def get_absolute_limits(self):
         """

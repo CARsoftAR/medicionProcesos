@@ -9,83 +9,87 @@
     </a>
 </div>
 
-<div class="card" style="border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+<div class="card">
     <div class="card-body p-0">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th style="padding: 1.25rem;">OP / PROYECTO</th>
-                    <th>CLIENTE</th>
-                    <th>ARTÍCULO</th>
-                    <th style="text-align: right; padding-right: 1.25rem;">ACCIONES</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for e in estructuras %}
-                <tr>
-                    <td style="padding: 1.25rem;">
-                        <div style="font-weight: 700; color: #1e293b; font-size: 1.05rem;">
-                            {% if e.num_op %}{{ e.num_op }} / {% endif %}{{ e.proyecto }}
-                        </div>
-                    </td>
-                    <td>
-                        <span style="color: #475569; font-weight: 500;">{{ e.cliente.nombre|default:"-" }}</span>
-                    </td>
-                    <td>
-                        <span class="badge badge-info" style="background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; padding: 0.4rem 0.8rem; border-radius: 8px;">
-                            {{ e.articulo.nombre|default:"Sin Artículo" }}
-                        </span>
-                    </td>
-                    <td style="text-align: right; padding-right: 1.25rem;">
-                        <a href="{% url 'configurar_estructura' %}?op={{ e.num_op|default:'' }}&proy={{ e.proyecto|default:'' }}" 
-                           class="btn-action-edit" 
-                           title="Editar Estructura"
-                           style="background: #f1f5f9; color: #475569; width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
-                            <i class="ri-edit-line"></i>
-                        </a>
-                        <button type="button" 
-                                onclick="deleteStructure('{{ e.proyecto }}', '{{ e.num_op }}')"
-                                class="btn-action-delete ms-2"
-                                title="Eliminar Estructura"
-                                style="background: #fee2e2; color: #ef4444; width: 38px; height: 38px; border: none; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s;">
-                            <i class="ri-delete-bin-line"></i>
-                        </button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" style="text-align: center; padding: 4rem; color: #94a3b8;">
-                        <i class="ri-layout-grid-line" style="font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.3;"></i>
-                        Aún no se han definido estructuras de medición.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="padding: 1.25rem;">OP / PROYECTO</th>
+                        <th>CLIENTE</th>
+                        <th>ARTÍCULO</th>
+                        <th class="text-end" style="padding-right: 1.25rem;">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in estructuras %}
+                    <tr>
+                        <td style="padding: 1.25rem;">
+                            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">
+                                {% if e.num_op %}{{ e.num_op }} / {% endif %}{{ e.proyecto }}
+                            </div>
+                        </td>
+                        <td>
+                            <span style="color: var(--text-secondary); font-weight: 500;">{{ e.cliente.nombre|default:"-" }}</span>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.2); padding: 0.4rem 0.8rem; border-radius: 8px;">
+                                {{ e.articulo.nombre|default:"Sin Artículo" }}
+                            </span>
+                        </td>
+                        <td class="text-end" style="padding-right: 1.25rem;">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{% url 'configurar_estructura' %}?op={{ e.num_op|default:'' }}&proy={{ e.proyecto|default:'' }}" 
+                                   class="btn-action-edit" 
+                                   title="Editar Estructura"
+                                   style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid var(--border-light);">
+                                    <i class="ri-edit-line"></i>
+                                </a>
+                                <button type="button" 
+                                        onclick="deleteStructure('{{ e.proyecto }}', '{{ e.num_op }}')"
+                                        class="btn-action-delete"
+                                        title="Eliminar Estructura"
+                                        style="background: rgba(239, 68, 68, 0.1); color: #ef4444; width: 38px; height: 38px; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            <i class="ri-layout-grid-line" style="font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.1;"></i>
+                            Aún no se han definido estructuras de medición.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
 <style>
     .btn-action-edit:hover {
-        background: #e2e8f0 !important;
-        color: #0f172a !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        color: var(--text-primary) !important;
         transform: translateY(-2px);
     }
 
     .btn-action-delete:hover {
-        background: #fecaca !important;
-        color: #dc2626 !important;
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #f87171 !important;
         transform: translateY(-2px);
     }
     
     .data-table thead th {
-        background: #f8fafc;
-        color: #64748b;
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text-secondary);
         font-weight: 600;
         text-transform: uppercase;
         font-size: 0.75rem;
         letter-spacing: 0.05em;
-        border-bottom: 1px solid #e2e8f0;
+        border-bottom: 1px solid var(--border-color);
     }
     
     .data-table tbody tr {
@@ -93,7 +97,7 @@
     }
     
     .data-table tbody tr:hover {
-        background: #f8fafc;
+        background: rgba(255, 255, 255, 0.03) !important;
     }
 
     .swal2-popup .swal2-icon.no-border {

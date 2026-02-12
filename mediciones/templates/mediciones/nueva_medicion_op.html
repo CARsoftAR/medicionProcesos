@@ -199,6 +199,48 @@
     .swal-icon-circle {
         width: 80px;
         height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+    }
+
+    /* Sidebar piece navigation styles */
+    .pieza-nav-badge {
+        width: 38px;
+        height: 38px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        color: #64748b;
+    }
+
+    .btn-delete-piece-side {
+        width: 38px;
+        height: 38px;
+        background: #fee2e2;
+        color: #ef4444;
+        border: none;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .btn-delete-piece-side:hover {
+        background: #fecaca;
+        transform: scale(1.05);
+    }
+    .swal-icon-circle-success {
+        width: 80px;
+        height: 80px;
         background: #f0f7ff;
         border-radius: 50%;
         display: flex;
@@ -248,69 +290,118 @@
 <div class="premium-page-container">
     <div class="row g-4">
         <!-- Sidebar Selection -->
-        <div class="col-lg-5 col-xl-4 col-sidebar-premium">
+        <div class="col-lg-4 col-xl-3 col-sidebar-premium">
             <div class="premium-panel-side">
                 <div class="mb-3">
                     <h1 class="side-title-main">Nueva Medición</h1>
                     <p class="side-subtitle-main">Seleccione el proyecto y proceso para ingresar valores.</p>
                 </div>
 
-                <div class="config-card" style="margin-bottom: 2rem !important;">
-                    <div class="config-card-header text-primary">
-                        <i class="ri-folder-open-line"></i>
-                        <span>SELECCIÓN DE PROYECTO</span>
+                <div class="config-card mb-3 card-blue">
+                    <div class="config-card-header">
+                        <i class="ri-search-eye-line"></i>
+                        <span>BUSCAR POR OP</span>
                     </div>
                     <div class="config-card-body">
-                        <label class="text-xxs fw-bold">PROYECTO</label>
-                        <input type="text" id="input_proyecto" class="form-control input-clean mb-3" value="{{ query_proy }}" placeholder="Ingrese Proyecto..." onchange="updateSelection()">
-                        
-                        <label class="text-xxs fw-bold">OP #</label>
-                        <input type="text" id="input_op" class="form-control input-clean mb-3" value="{{ query_op|default:'' }}" placeholder="Ingrese OP..." onchange="updateSelection()">
-
-                        <!-- Process Hidden (Auto-select/All mode) -->
+                        <label class="text-xxs fw-bold text-muted">NUMERO DE OP</label>
+                        <input type="text" id="input_op" class="form-control input-clean" value="{{ query_op|default:'' }}" placeholder="Ej: 5000" onchange="updateSelection()" style="font-size: 1rem; font-weight: 700; padding: 0.5rem 0.8rem !important;">
+                        <input type="hidden" id="input_proyecto" value="{{ query_proy }}">
                         <input type="hidden" id="select_proceso" value="{{ query_proc|default:'' }}">
                     </div>
                 </div>
 
                 {% if planilla %}
-                <div class="config-card mb-4 animate__animated animate__fadeIn">
-                    <div class="config-card-header text-success">
+                <div class="config-card mb-3 animate__animated animate__fadeIn card-green">
+                    <div class="config-card-header">
                         <i class="ri-information-line"></i>
                         <span>DETALLES DEL PLAN</span>
                     </div>
                     <div class="config-card-body">
-                            <label class="text-xxs fw-bold">PROYECTO</label>
-                            <div class="fw-bold text-dark-value">
-                                {% if planilla.num_op %}{{ planilla.num_op }} / {% endif %}{{ planilla.proyecto }}
+                        <div class="mb-3">
+                            <label class="text-xxs fw-bold text-muted">OP / PROYECTO</label>
+                            <div class="fw-bold text-dark-value" style="font-size: 1.1rem;">
+                                {% if planilla.num_op %}<span class="text-primary">{{ planilla.num_op }}</span> <span class="text-muted mx-1">/</span> {% endif %}{{ planilla.proyecto }}
                             </div>
-                        <div class="mb-2">
-                            <label class="text-xxs fw-bold">CLIENTE</label>
-                            <div class="fw-bold text-dark-value">{{ planilla.cliente.nombre|default:"-" }}</div>
                         </div>
-                        <div>
-                            <label class="text-xxs fw-bold">PIEZA #</label>
-                            <div class="d-flex gap-2 align-items-center">
-                                <input type="number" id="input_pieza" class="form-control input-clean" value="{{ pieza_actual }}" onkeydown="if(event.key==='Enter') updatePiece()" min="1" style="font-size: 1.1rem; font-weight: 700; flex: 1;">
-                                <button onclick="deletePiece('{{ pieza_actual }}')" style="display: grid !important; place-items: center !important; border-radius: 50% !important; height: 45px !important; width: 45px !important; min-width: 45px !important; background-color: #fee2e2 !important; color: #ef4444 !important; border: none !important; transition: 0.2s; padding: 0 !important; cursor: pointer; line-height: 0 !important;" title="Borrar esta pieza y sus valores">
-                                    <i class="ri-delete-bin-line" style="font-size: 1.25rem; margin: 0 !important; padding: 0 !important; line-height: 1 !important;"></i>
-                                </button>
-                            </div>
-                            <div class="text-end mt-1">
-                                <a href="javascript:void(0)" onclick="deletePiece('{{ pieza_actual }}')" class="text-danger fw-bold" style="font-size: 0.65rem; text-decoration: none;">BORRAR PIEZA ACTUAL</a>
-                            </div>
+                        <div class="mb-0">
+                            <label class="text-xxs fw-bold text-muted">CLIENTE</label>
+                            <div class="fw-bold text-dark-value">{{ planilla.cliente.nombre|default:"-" }}</div>
                         </div>
                     </div>
                 </div>
+
+                <div class="config-card mb-3 animate__animated animate__fadeIn card-yellow">
+                    <div class="config-card-header">
+                        <i class="ri-chat-1-line"></i>
+                        <span>OBSERVACIONES / NOTAS</span>
+                    </div>
+                    <div class="config-card-body">
+                        <textarea id="texto_observaciones" class="form-control" rows="3" 
+                                  placeholder="Notas adicionales para el reporte..."
+                                  style="font-size: 0.85rem; border: 1px solid #e2e8f0; border-radius: 8px; resize: none;"
+                                  onblur="saveObservations()">{{ planilla.observaciones|default:'' }}</textarea>
+                        <div id="obs_status" style="font-size: 0.6rem; color: #94a3b8; margin-top: 4px; text-align: right;"></div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <a href="{% url 'exportar_pdf' planilla.id %}" target="_blank" class="btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2" 
+                       style="background: #1e293b !important; padding: 10px 16px !important; border-radius: 12px !important; color: white !important; font-weight: 700; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                        <i class="ri-file-pdf-2-line" style="font-size: 1.1rem;"></i>
+                        REPORTE DE CALIDAD PRO
+                    </a>
+                </div>
                 {% endif %}
+
+                <script>
+                    function saveObservations() {
+                        const obs = document.getElementById('texto_observaciones').value;
+                        const status = document.getElementById('obs_status');
+                        status.innerText = "Guardando...";
+                        
+                        fetch('{% url "guardar_observaciones_ajax" %}', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                            body: JSON.stringify({ 
+                                planilla_id: '{{ planilla.id }}',
+                                observaciones: obs 
+                            })
+                        }).then(r => r.json()).then(data => {
+                            if (data.status === 'success') {
+                                status.innerText = "Guardado ✓";
+                                setTimeout(() => { status.innerText = ""; }, 2000);
+                            } else {
+                                status.innerText = "Error al guardar";
+                            }
+                        }).catch(e => {
+                            status.innerText = "Error de conexión";
+                        });
+                    }
+                </script>
                 
                 {% if planilla %}
                 <!-- Piece Navigation -->
-                <div class="config-card mb-0 animate__animated animate__fadeIn" style="margin-top: auto !important; margin-bottom: 0px !important;">
-                    <div class="config-card-header text-info">
+                <div class="config-card mb-3 animate__animated animate__fadeIn card-cyan">
+                    <div class="config-card-header">
                         <i class="ri-history-line"></i>
                         <span>NAVEGACIÓN DE PIEZAS</span>
                     </div>
                     <div class="config-card-body">
+                        <div class="mb-3">
+                            <label class="text-xxs fw-bold text-muted">PIEZA SELECCIONADA</label>
+                            <div class="d-flex gap-2 align-items-center">
+                                <div class="pieza-nav-badge">
+                                    <i class="ri-focus-3-line"></i>
+                                </div>
+                                <input type="number" id="input_pieza" class="form-control input-clean" value="{{ pieza_actual }}" onkeydown="if(event.key==='Enter') updatePiece()" min="1" style="font-size: 1.1rem; font-weight: 800; flex: 1; color: var(--primary); padding: 0.4rem !important; height: 38px;">
+                                {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                                <button onclick="deletePiece('{{ pieza_actual }}')" class="btn-delete-piece-side" title="Borrar esta pieza y sus valores">
+                                    <i class="ri-delete-bin-line"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+
                         <div class="piece-navigation-container">
                             <!-- Main Paginator Row -->
                             <div class="piece-nav-row">
@@ -356,7 +447,7 @@
         </div>
 
         <!-- Main Canvas: Measurement Table -->
-        <div class="col-lg-7 col-xl-8 col-main-premium">
+        <div class="col-lg-8 col-xl-9 col-main-premium">
             <div class="main-canvas-premium">
                 {% if planilla %}
                 <form method="post" id="measurementForm">
@@ -377,11 +468,12 @@
                         <table class="table premium-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 300px;">CONTROL</th>
-                                    <th class="text-center">TOL. MÍN [-]</th>
-                                    <th class="text-center" style="width: 150px;">VALOR OBTENIDO</th>
-                                    <th class="text-center">TOL. MÁX [+]</th>
-                                    <th class="text-center">ESTADO</th>
+                                    <th style="width: 280px;">CONTROL</th>
+                                    <th class="text-center" style="width: 80px;">TOL. MÍN [-]</th>
+                                    <th class="text-center" style="width: 120px;">VALOR OBTENIDO</th>
+                                    <th class="text-center" style="width: 80px;">TOL. MÁX [+]</th>
+                                    <th class="text-center" style="width: 220px;">INSTRUMENTO</th>
+                                    <th class="text-center" style="width: 80px;">ESTADO</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -389,10 +481,10 @@
                                 <tr class="animate__animated animate__fadeIn">
                                     <td class="control-name-cell">
                                         <div class="fw-bold text-dark">{{ row.tolerancia.control.nombre }}</div>
-                                        <div class="text-xxs text-muted">REF: {{ row.tolerancia.nominal|floatformat:2|default:"-" }}</div>
+                                        <div class="text-xxs text-muted">REF: {{ row.tolerancia.nominal|floatformat:3|default:"-" }}</div>
                                     </td>
                                     <td class="text-center text-muted fw-bold">
-                                        {% if row.tolerancia.minimo is not None %}{{ row.tolerancia.minimo|floatformat:2 }}{% else %}-{% endif %}
+                                        {% if row.tolerancia.minimo is not None %}{{ row.tolerancia.minimo|floatformat:3 }}{% else %}-{% endif %}
                                     </td>
                                     <td class="text-center">
                                         {% if row.tolerancia.control.pnp %}
@@ -405,7 +497,7 @@
                                         {% else %}
                                         <input type="text" inputmode="decimal" autocomplete="off" name="valor_{{ row.tolerancia.id }}" 
                                                class="form-control input-clean text-center measurement-input" 
-                                               value="{% if row.valor is not None %}{{ row.valor|floatformat:2 }}{% endif %}"
+                                               value="{% if row.valor is not None %}{{ row.valor|floatformat:3 }}{% endif %}"
                                                data-nominal="{{ row.tolerancia.nominal|default:'' }}"
                                                data-min="{{ row.tolerancia.minimo|default:'' }}"
                                                data-max="{{ row.tolerancia.maximo|default:'' }}"
@@ -413,7 +505,23 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-center text-muted fw-bold">
-                                        {% if row.tolerancia.maximo is not None %}{{ row.tolerancia.maximo|floatformat:2 }}{% else %}-{% endif %}
+                                        {% if row.tolerancia.maximo is not None %}{{ row.tolerancia.maximo|floatformat:3 }}{% else %}-{% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex gap-1 align-items-center">
+                                            <select id="instr_{{ row.tolerancia.id }}" name="instrumento_{{ row.tolerancia.id }}" class="form-select input-clean text-center instrument-select" 
+                                                    onchange="saveInstrumentSelection(this, '{{ row.tolerancia.id }}')" style="font-size: 0.75rem; padding: 0.4rem !important; flex: 1;">
+                                                <option value="">- Herramienta -</option>
+                                                {% for inst in instrumentos %}
+                                                <option value="{{ inst.id }}" {% if row.tolerancia.instrumento_id == inst.id %}selected{% endif %}>{{ inst.nombre }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                                            <button type="button" onclick="quickAdd('instrumento', 'instr_{{ row.tolerancia.id }}')" class="btn btn-xs btn-light border p-1" style="border-radius: 4px; line-height: 1;" title="Nuevo Instrumento">
+                                                <i class="ri-add-line text-primary" style="font-size: 0.8rem;"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                     <td class="text-center status-col">
                                         <div class="d-flex align-items-center justify-content-center gap-2">
@@ -427,9 +535,11 @@
                                                 {% endif %}
                                             </div>
                                             
+                                            {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                                             <a href="{% url 'estadisticas_control' row.tolerancia.id %}" class="btn-stats-mini" title="Ver Estadísticas SPC">
                                                 <i class="ri-bar-chart-box-line"></i>
                                             </a>
+                                            {% endif %}
                                         </div>
                                     </td>
                                 </tr>
@@ -461,7 +571,8 @@
     
     .premium-page-container > .row {
         display: flex;
-        align-items: stretch; /* Crucial: Makes both column DIVs the same height */
+        flex-wrap: nowrap; /* Prevent wrapping even if content is slightly wider */
+        align-items: stretch;
     }
 
     .col-sidebar-premium, .col-main-premium {
@@ -488,19 +599,19 @@
     }
     
     .side-title-main { 
-        font-size: 2rem; 
+        font-size: 1.5rem; 
         font-weight: 800; 
         color: #1e293b; 
         margin-top: 0; 
         letter-spacing: -0.02em;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.25rem;
     }
     
     .side-subtitle-main { 
         color: #64748b; 
-        font-size: 0.95rem; 
-        margin-bottom: 2rem;
-        line-height: 1.6;
+        font-size: 0.85rem; 
+        margin-bottom: 1.25rem;
+        line-height: 1.4;
     }
 
     .config-card { 
@@ -516,24 +627,34 @@
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
     
-    /* Colores pastel para cada tipo de card */
-    .config-card:nth-child(2) .config-card-header { 
+    /* Card Coloring via Classes */
+    .card-blue .config-card-header { 
         background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
         color: #1e40af;
     }
     
-    .config-card:nth-child(3) .config-card-header { 
+    .card-green .config-card-header { 
         background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
         color: #065f46;
     }
+
+    .card-yellow .config-card-header { 
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e;
+    }
+
+    .card-cyan .config-card-header { 
+        background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
+        color: #0891b2;
+    }
     
     .config-card-header { 
-        padding: 1rem 1.25rem; 
+        padding: 0.65rem 1rem; 
         display: flex; 
         align-items: center; 
         gap: 0.75rem; 
         font-weight: 700; 
-        font-size: 0.8rem; 
+        font-size: 0.75rem; 
         letter-spacing: 0.05em;
         text-transform: uppercase;
     }
@@ -553,7 +674,7 @@
     }
     
     .config-card-body { 
-        padding: 1.25rem; 
+        padding: 0.85rem 1rem; 
     }
     
     .input-clean { 
@@ -805,9 +926,9 @@
     const PIEZAS_EXISTENTES = JSON.parse('{{ piezas_medidas|safe|default:"[]" }}');
 
     function updateSelection() {
-        const proy = document.getElementById('input_proyecto').value;
+        // const proy = document.getElementById('input_proyecto').value;
         const op = document.getElementById('input_op').value;
-        window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}`;
+        window.location.href = `?op=${encodeURIComponent(op)}`;
     }
 
     function updateProcess() {
@@ -828,8 +949,13 @@
         
         if (!pieza || pieza < 1) return;
 
+        // Function helper to navigate with autofocus
+        const navigateToPiece = (p) => {
+            window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}&pieza=${p}&autofocus=1`;
+        };
+
         if (PIEZAS_EXISTENTES.includes(pieza)) {
-            window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}&pieza=${pieza}`;
+            navigateToPiece(pieza);
         } else {
             Swal.fire({
                 html: `
@@ -855,7 +981,7 @@
                 reverseButtons: true
             }).then((result) => {
                 if (result.isConfirmed) {
-                    window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}&pieza=${pieza}`;
+                    navigateToPiece(pieza);
                 } else {
                     inputPieza.value = "{{ pieza_actual }}";
                 }
@@ -865,17 +991,25 @@
 
     function addNewPiece() {
         Swal.fire({
-            title: 'Nueva Pieza',
-            text: 'Ingrese el número de la pieza que desea medir:',
+            html: `
+                <div class="swal-icon-circle">
+                    <i class="ri-add-circle-line"></i>
+                </div>
+                <div class="premium-swal-title">Nueva Pieza</div>
+                <div class="premium-swal-html">Ingrese el número de la pieza que desea comenzar a medir.</div>
+            `,
             input: 'number',
-            inputAttributes: {
-                min: 1,
-                step: 1
-            },
+            inputAttributes: { min: 1, step: 1 },
             showCancelButton: true,
-            confirmButtonText: 'Ir a medición',
+            confirmButtonText: '<i class="ri-check-line"></i> Ir a medición',
             cancelButtonText: 'Cancelar',
             confirmButtonColor: '#3b82f6',
+            customClass: {
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-swal-confirm',
+                cancelButton: 'premium-swal-cancel',
+                input: 'form-control input-clean text-center'
+            },
             preConfirm: (value) => {
                 if (!value || value < 1) {
                     Swal.showValidationMessage('Por favor ingrese un número válido');
@@ -1044,8 +1178,8 @@
         
         if (isNaN(val)) return;
         
-        // Standardize display to 2 decimals (dot separator)
-        el.value = val.toFixed(2);
+        // Standardize display to 3 decimals (dot separator)
+        el.value = val.toFixed(3);
     }
 
     // Auto-save function
@@ -1087,7 +1221,7 @@
                     // Only update if element is still active or valid? 
                     // Yes, update strictly to match DB.
                     if (el.tagName === 'INPUT' && el.type !== 'hidden') {
-                        el.value = parseFloat(result.saved_value).toFixed(2);
+                        el.value = parseFloat(result.saved_value).toFixed(3);
                     }
                     // For PNP select, value is already correct or handled
                 }
@@ -1119,8 +1253,16 @@
 
                 // FOCUS NEXT
                 const next = list[idx + 1];
-                if (next) next.focus();
-                else document.querySelector('button[name="guardar_siguiente"]').focus();
+                if (next) {
+                    next.focus();
+                } else {
+                    // Last input -> Focus "PIEZA #" for new cycle
+                    const piezaInput = document.getElementById('input_pieza');
+                    if (piezaInput) {
+                        piezaInput.focus();
+                        piezaInput.select();
+                    }
+                }
             }
         });
 
@@ -1137,6 +1279,119 @@
             input.addEventListener('change', () => {
                 saveMeasurement(input);
             });
+        }
+    });
+
+    async function quickAdd(model, selectId) {
+        const { value: name } = await Swal.fire({
+            html: `
+                <div class="swal-icon-circle">
+                    <i class="ri-${model === 'maquina' ? 'settings-3-line' : 'tools-line'}"></i>
+                </div>
+                <div class="premium-swal-title">Agregar ${model.charAt(0).toUpperCase() + model.slice(1)}</div>
+                <div class="premium-swal-html">Ingrese el nombre del nuevo maestro para darlo de alta en el sistema.</div>
+            `,
+            input: 'text',
+            inputPlaceholder: 'Escriba el nombre aquí...',
+            showCancelButton: true,
+            confirmButtonColor: '#3b82f6',
+            confirmButtonText: '<i class="ri-save-line"></i> Guardar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-swal-confirm',
+                cancelButton: 'premium-swal-cancel',
+                input: 'form-control input-clean'
+            },
+            inputValidator: (value) => { if (!value) return 'El nombre es requerido'; }
+        });
+
+        if (name) {
+            const formData = new FormData();
+            formData.append('nombre', name);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            try {
+                const response = await fetch(`/api/create/${model}/`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    const selects = selectId ? [document.getElementById(selectId)] : document.querySelectorAll(`select[id*="${model}"], select[name*="${model}"]`);
+                    selects.forEach(sel => {
+                        if (sel) {
+                            const opt = new Option(result.nombre, result.id);
+                            sel.add(opt);
+                            sel.value = result.id;
+                            sel.dispatchEvent(new Event('change')); // Trigger auto-save if applicable
+                        }
+                    });
+                    Swal.fire({
+                        html: `
+                            <div class="swal-icon-circle">
+                                <i class="ri-checkbox-circle-line"></i>
+                            </div>
+                            <div class="premium-swal-title">¡Guardado!</div>
+                            <div class="premium-swal-html">El nuevo registro se ha creado correctamente.</div>
+                        `,
+                        confirmButtonText: 'Aceptar',
+                        confirmButtonColor: '#3b82f6',
+                        customClass: {
+                            popup: 'premium-swal-popup',
+                            confirmButton: 'premium-swal-confirm'
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        html: `
+                            <div class="swal-icon-circle danger">
+                                <i class="ri-error-warning-line"></i>
+                            </div>
+                            <div class="premium-swal-title">Error</div>
+                            <div class="premium-swal-html">${result.message}</div>
+                        `,
+                        confirmButtonText: 'Cerrar',
+                        confirmButtonColor: '#ef4444',
+                        customClass: {
+                            popup: 'premium-swal-popup',
+                            confirmButton: 'premium-swal-confirm'
+                        }
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+    }
+    async function saveInstrumentSelection(el, tolId) {
+        const instrId = el.value;
+        console.log(`[TRACE] Saving Instrument: ${instrId} for Tolerance ${tolId}`);
+        
+        try {
+            const response = await fetch("{% url 'guardar_instrumento_ajax' %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ tolerancia_id: tolId, instrumento_id: instrId })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                el.style.borderColor = '#22c55e';
+                el.style.backgroundColor = '#f0fdf4';
+                setTimeout(() => { 
+                    el.style.borderColor = ''; 
+                    el.style.backgroundColor = '';
+                }, 1000);
+            }
+        } catch (e) { console.error(e); }
+    }
+    // Check for autofocus param on load
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('autofocus')) {
+            const firstInput = document.querySelector('.measurement-input, .pnp-select');
+            if (firstInput) {
+                firstInput.focus();
+                if (firstInput.select) firstInput.select();
+            }
         }
     });
 </script>

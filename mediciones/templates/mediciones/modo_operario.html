@@ -1,0 +1,195 @@
+{% extends 'mediciones/index.html' %}
+{% load static %}
+
+{% block title %}Modo Operario - Medición{% endblock %}
+
+{% block topbar %}{% endblock %}
+
+{% block content %}
+<style>
+    /* Estilos específicos para modo operario (Limpios, Botones Grandes) */
+    .op-container {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .search-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+
+    .op-input-large {
+        font-size: 2rem;
+        text-align: center;
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(255,255,255,0.05);
+        border: 2px solid var(--border-color);
+        color: white;
+        width: 100%;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+    }
+    
+    .op-input-large:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        outline: none;
+    }
+
+    .btn-large-search {
+        font-size: 1.2rem;
+        padding: 1rem 3rem;
+        border-radius: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Estilos para cuando ya se cargó la OP */
+    .info-panel {
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-value {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .metric-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+</style>
+
+<div class="op-container">
+    
+    <!-- PANTALLA 1: BÚSQUEDA DE OP -->
+    <div id="pantalla-busqueda" class="animate__animated animate__fadeIn">
+        <div class="text-center mb-5">
+            <h1 style="font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">Modo Operario</h1>
+            <p style="color: var(--text-muted);">Ingrese el número de OP para comenzar a medir.</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="search-card">
+                    <label style="display: block; text-align: left; margin-bottom: 0.5rem; color: var(--primary); font-weight: 700;">NÚMERO DE OP</label>
+                    <input type="number" id="op-search-input" class="op-input-large" placeholder="Eje: 4680" autofocus>
+                    <button type="button" class="btn btn-primary w-100 btn-large-search" onclick="buscarOP()">
+                        <i class="ri-search-line"></i> BUSCAR OP
+                    </button>
+                    <p id="error-msg" style="color: var(--danger); margin-top: 1rem; display: none; font-weight: 600;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: SELECCIÓN DE PLANILLA (Si hay varias para la misma OP) -->
+    <!-- Se manejará redirigiendo directamente a la vista nueva_medicion_op con filtros -->
+
+</div>
+
+<script>
+    document.getElementById('op-search-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') buscarOP();
+    });
+
+    function buscarOP() {
+        const op = document.getElementById('op-search-input').value.trim();
+        const errorMsg = document.getElementById('error-msg');
+        
+        if (!op) {
+            errorMsg.innerText = "Por favor ingrese un número de OP.";
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        // Consultar API para verificar si existe la OP y obtener detalles básicos
+        // O simplificamos: Redirigimos a nueva_medicion_op filtrando por OP.
+        // Pero el usuario pidió: "Podes crear una pantalla para el operario para que solo tenga que entrar los valores y piezas"
+        // La vista actual "nueva_medicion_op" ya hace eso PERO requiere seleccionar Proyecto.
+        // Si buscamos por OP, podemos autocompletar el proyecto si es único.
+        
+        // Vamos a hacer un fetch para buscar planillas con esa OP
+        
+        errorMsg.style.display = 'none';
+        Swal.showLoading();
+
+        fetch(`/api/buscar-op/${op}`)
+            .then(res => res.json())
+            .then(data => {
+                Swal.close();
+                if (data.status === 'success') {
+                    if (data.count === 1) {
+                        // Única coincidencia, vamos directo
+                        window.location.href = `{% url 'nueva_medicion_op' %}?proy=${encodeURIComponent(data.proyecto)}&op=${encodeURIComponent(op)}&proc=${data.proceso_id}`;
+                    } else if (data.count > 1) {
+                        // Múltiples procesos o proyectos para esa OP
+                        // Podríamos mostrar un selector simple aquí o redirigir pre-filtrado
+                        // Para simplificar al operario, mostremos un modal simple para elegir el PROCESO
+                        
+                        let options = {};
+                        data.results.forEach(r => {
+                            options[r.proceso_id] = `${r.proceso_nombre} (${r.proyecto})`;
+                        });
+
+                        Swal.fire({
+                            title: 'Seleccione Proceso',
+                            input: 'select',
+                            inputOptions: options,
+                            inputPlaceholder: 'Seleccione un proceso',
+                            showCancelButton: true,
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                const selectedProcId = result.value;
+                                const selected = data.results.find(r => r.proceso_id == selectedProcId);
+                                window.location.href = `{% url 'nueva_medicion_op' %}?proy=${encodeURIComponent(selected.proyecto)}&op=${encodeURIComponent(op)}&proc=${selectedProcId}`;
+                            }
+                        });
+
+                    } else {
+                        errorMsg.innerText = "No se encontraron planillas activas para la OP #" + op;
+                        errorMsg.style.display = 'block';
+                    }
+                } else {
+                    errorMsg.innerText = "Error: " + data.message;
+                    errorMsg.style.display = 'block';
+                }
+            })
+            .catch(err => {
+                Swal.close();
+                console.error(err);
+                errorMsg.innerText = "Error de conexión.";
+                errorMsg.style.display = 'block';
+            });
+    }
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+{% endblock %}

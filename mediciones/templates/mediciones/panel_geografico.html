@@ -1,0 +1,480 @@
+{% extends 'mediciones/index.html' %}
+{% load static %}
+
+{% block content %}
+<div class="geo-panel-root">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4 dashboard-header">
+        <div class="header-content">
+            <h1 class="dashboard-title">Mapa de Planta</h1>
+            <div class="status-ticker">
+                <span class="ticker-dot"></span>
+                Monitoreo en Tiempo Real
+            </div>
+        </div>
+        <div class="header-actions">
+            <button id="btnEditMode" class="btn-clean-action">
+                <i class="ri-edit-2-line"></i>
+                <span>Editar Distribución</span>
+            </button>
+            <button onclick="location.reload()" class="btn-clean-icon">
+                <i class="ri-refresh-line"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Main Map Area -->
+        <div class="map-section">
+            <div id="mapContainer" class="blueprint-canvas">
+                <!-- Simple Grid -->
+                <div class="simple-grid"></div>
+                
+                {% for item in maquina_status %}
+                <div class="machine-node status-{{ item.status }}" 
+                     id="machine-{{ item.id }}"
+                     data-id="{{ item.id }}"
+                     data-x="{{ item.x_pos|default:5 }}" 
+                     data-y="{{ item.y_pos|default:5 }}"
+                     style="left: {{ item.x_pos|default:5 }}%; top: {{ item.y_pos|default:5 }}%; z-index: 100;">
+                    
+                    <div class="node-body">
+                         <div class="node-icon">
+                            {% if item.status == 'approved' %}
+                                <i class="ri-checkbox-circle-fill"></i>
+                            {% elif item.status == 'failed' %}
+                                <i class="ri-alert-fill"></i>
+                            {% else %}
+                                <i class="ri-indeterminate-circle-fill"></i>
+                            {% endif %}
+                         </div>
+                         <span class="node-name">{{ item.nombre }}</span>
+                    </div>
+                    
+                    <!-- Clean Tooltip -->
+                    <div class="node-details">
+                        <div class="detail-header">
+                            <strong>{{ item.nombre }}</strong>
+                            <span class="badge {{ item.status }}">{{ item.status|upper }}</span>
+                        </div>
+                        <div class="detail-body">
+                            {{ item.info }}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Sidebar / Analytics - WHITE CARDS -->
+        <div class="analytics-section">
+            <div class="clean-card mb-4">
+                <div class="card-header-clean">
+                    <i class="ri-shield-check-line"></i>
+                    Leyenda
+                </div>
+                <div class="legend-list">
+                    <div class="legend-unit">
+                        <div class="unit-marker approved"></div>
+                        <div class="unit-info">
+                            <div class="name">Operativo</div>
+                        </div>
+                    </div>
+                    <div class="legend-unit">
+                        <div class="unit-marker failed"></div>
+                        <div class="unit-info">
+                            <div class="name">Alerta / Detenido</div>
+                        </div>
+                    </div>
+                    <div class="legend-unit">
+                        <div class="unit-marker neutral"></div>
+                        <div class="unit-info">
+                            <div class="name">Sin Datos</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="clean-card list-container">
+                <div class="card-header-clean">
+                    <i class="ri-list-settings-line"></i>
+                    Unidades
+                </div>
+                <div class="unit-scroll custom-scrollbar">
+                    {% for item in maquina_status %}
+                    <div class="unit-item" onclick="focusMachine({{ item.id }})">
+                        <div class="unit-status-dot {{ item.status }}"></div>
+                        <div class="unit-meta">
+                            <div class="unit-title">{{ item.nombre }}</div>
+                            <div class="unit-subtitle">{{ item.info|truncatechars:30 }}</div>
+                        </div>
+                        <i class="ri-arrow-right-s-line unit-chevron"></i>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* CLEAN MODERN THEME */
+    .geo-panel-root {
+        /* No fixed position, let it flow or be absolute if needed, but keeping it full screen relative to content block */
+        height: calc(100vh - 80px); /* Adjust based on navbar height */
+        padding: 20px;
+        color: var(--text-primary);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .dashboard-title {
+        font-weight: 700;
+        font-size: 1.5rem;
+        color: #fff; /* Title on dark body is white */
+        margin-bottom: 5px;
+    }
+
+    .status-ticker {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ticker-dot {
+        width: 8px; height: 8px;
+        background: var(--success);
+        border-radius: 50%;
+    }
+
+    /* ACTIONS */
+    .btn-clean-action {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .btn-clean-action:hover {
+        background: var(--primary-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn-clean-icon {
+        background: #1e293b;
+        color: #fff;
+        border: 1px solid #334155;
+        width: 40px; height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        margin-left: 10px;
+        transition: all 0.2s;
+    }
+
+    .btn-clean-icon:hover {
+        background: #334155;
+    }
+
+    /* GRID */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+        height: calc(100% - 80px);
+        margin-top: 20px;
+    }
+
+    /* MAP SECTION */
+    .map-section {
+        background: #0f172a; /* Slate 900 for Map Background */
+        border-radius: 16px;
+        border: 1px solid #1e293b;
+        position: relative;
+        overflow: hidden;
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    .simple-grid {
+        position: absolute;
+        width: 100%; height: 100%;
+        background-image: radial-gradient(#334155 1px, transparent 1px);
+        background-size: 30px 30px;
+        opacity: 0.3;
+        pointer-events: none;
+    }
+
+    /* CLEAN NODES */
+    .machine-node {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        transition: transform 0.2s;
+    }
+
+    .node-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .node-icon {
+        width: 48px; height: 48px;
+        background: #1e293b; /* Dark Slate Node */
+        border: 2px solid white;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        transition: all 0.2s;
+    }
+
+    .node-name {
+        background: white;
+        color: #0f172a;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        white-space: nowrap;
+    }
+
+    /* Status Colors */
+    .status-approved .node-icon { background: var(--success); border-color: white; }
+    .status-failed .node-icon { background: var(--danger); border-color: white; }
+    .status-neutral .node-icon { background: var(--text-muted); }
+
+    /* Hover Effect */
+    .machine-node:hover .node-icon {
+        transform: scale(1.1);
+    }
+
+    /* Clean Tooltip */
+    .node-details {
+        position: absolute;
+        bottom: 120%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: white;
+        color: #1e293b;
+        padding: 12px;
+        border-radius: 8px;
+        width: 200px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s;
+        pointer-events: none;
+        z-index: 20;
+    }
+
+    .machine-node:hover .node-details {
+        opacity: 1;
+        visibility: visible;
+        bottom: 130%;
+    }
+
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #e2e8f0;
+        padding-bottom: 8px;
+    }
+
+    .badge {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: white;
+    }
+    .badge.approved { background: var(--success); }
+    .badge.failed { background: var(--danger); }
+    .badge.neutral { background: var(--text-muted); }
+
+    .detail-body { font-size: 0.8rem; color: #64748b; }
+
+    /* SIDEBAR - WHITE CARDS */
+    .clean-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Soft shadow */
+    }
+
+    .card-header-clean {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #1e293b;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .card-header-clean i { color: var(--text-muted); font-size: 1.1rem; }
+
+    .legend-unit {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .unit-marker { width: 10px; height: 10px; border-radius: 50%; }
+    .unit-marker.approved { background: var(--success); }
+    .unit-marker.failed { background: var(--danger); }
+    .unit-marker.neutral { background: #cbd5e1; }
+
+    .unit-info .name { font-size: 0.85rem; color: #334155; font-weight: 500; }
+
+    /* LIST */
+    .unit-item {
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.1s;
+        border: 1px solid transparent;
+        margin-bottom: 4px;
+    }
+
+    .unit-item:hover {
+        background: #f8fafc;
+        border-color: #e2e8f0;
+    }
+
+    .unit-status-dot {
+        width: 8px; height: 8px; border-radius: 50%; margin-right: 12px;
+    }
+    .unit-status-dot.approved { background: var(--success); }
+    .unit-status-dot.failed { background: var(--danger); }
+    .unit-status-dot.neutral { background: #cbd5e1; }
+
+    .unit-title { font-size: 0.85rem; font-weight: 600; color: #1e293b; }
+    .unit-subtitle { font-size: 0.75rem; color: #94a3b8; }
+    .unit-chevron { margin-left: auto; color: #cbd5e1; }
+
+    /* EDIT MODE */
+    .is-editing .machine-node { cursor: move; }
+    .is-editing .node-icon { border-style: dashed; border-color: var(--warning); animation: pulseEdit 2s infinite; }
+
+    @keyframes pulseEdit { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); } 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); } }
+
+    /* Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+</style>
+
+<script>
+    let isEditing = false;
+    const btnEdit = document.getElementById('btnEditMode');
+    const container = document.getElementById('mapContainer');
+
+    btnEdit.onclick = function() {
+        isEditing = !isEditing;
+        if (isEditing) {
+            container.classList.add('is-editing');
+            btnEdit.innerHTML = '<i class="ri-save-line"></i> <span>Guardar</span>';
+            btnEdit.style.background = 'var(--success)';
+            enableDrag();
+        } else {
+            container.classList.remove('is-editing');
+            btnEdit.innerHTML = '<i class="ri-edit-2-line"></i> <span>Editar Distribución</span>';
+            btnEdit.style.background = '';
+            disableDrag();
+        }
+    };
+
+    function enableDrag() {
+        const nodes = document.querySelectorAll('.machine-node');
+        nodes.forEach(node => {
+            node.onmousedown = function(e) {
+                if (!isEditing) return;
+                e.preventDefault();
+                let rect = node.getBoundingClientRect();
+                let shiftX = e.clientX - rect.left;
+                let shiftY = e.clientY - rect.top;
+                node.style.zIndex = 1000;
+
+                function moveAt(pageX, pageY) {
+                    let containerRect = container.getBoundingClientRect();
+                    let xOffset = pageX - containerRect.left - shiftX + (node.offsetWidth / 2);
+                    let yOffset = pageY - containerRect.top - shiftY + (node.offsetHeight / 2);
+                    let xPct = (xOffset / containerRect.width) * 100;
+                    let yPct = (yOffset / containerRect.height) * 100;
+                    xPct = Math.max(0, Math.min(100, xPct));
+                    yPct = Math.max(0, Math.min(100, yPct));
+                    node.style.left = xPct + '%';
+                    node.style.top = yPct + '%';
+                    node.dataset.x = xPct;
+                    node.dataset.y = yPct;
+                }
+                function onMouseMove(e) { moveAt(e.clientX, e.clientY); }
+                document.addEventListener('mousemove', onMouseMove);
+                document.onmouseup = function() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.onmouseup = null;
+                    node.style.zIndex = 100;
+                    saveNodePosition(node.dataset.id, node.dataset.x, node.dataset.y);
+                };
+            };
+            node.ondragstart = function() { return false; };
+        });
+    }
+
+    function disableDrag() {
+        const nodes = document.querySelectorAll('.machine-node');
+        nodes.forEach(node => { node.onmousedown = null; });
+    }
+
+    function saveNodePosition(id, x, y) {
+        fetch('{% url "api_update_maquina_pos" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify({ id: id, x: x, y: y })
+        });
+    }
+
+    function focusMachine(id) {
+        const node = document.getElementById('machine-' + id);
+        if (node) {
+            node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            node.querySelector('.node-icon').style.transform = 'scale(1.5)';
+            setTimeout(() => { node.querySelector('.node-icon').style.transform = ''; }, 1000);
+        }
+    }
+</script>
+{% endblock %}

@@ -21,22 +21,22 @@
                                 <i class="ri-arrow-left-line"></i>
                             </a>
                             <div style="line-height: 1.2;">
-                                <h1 class="side-title-main m-0" style="font-size: 1.3rem; color: #0f172a; font-weight: 800;">{{ titulo }}</h1>
-                                <p class="side-subtitle-main m-0" style="font-size: 0.75rem; color: #64748b;">Configure procesos y controles.</p>
+                                <h1 class="side-title-main m-0" style="font-size: 1.3rem; color: var(--text-primary); font-weight: 800;">{{ titulo }}</h1>
+                                <p class="side-subtitle-main m-0" style="font-size: 0.75rem; color: var(--text-muted);">Configure procesos y controles.</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Datos Generales -->
-                    <div class="config-card mb-4" style="border-top: 3px solid var(--primary-blue);">
+                    <div class="config-card mb-4" style="border-top: 3px solid var(--primary);">
                         <div class="config-card-header text-primary py-2 px-3">
                             <i class="ri-settings-3-line"></i>
-                            <span>DATOS GENERALES</span>
+                            <span style="color: var(--primary);">DATOS GENERALES</span>
                         </div>
                         <div class="config-card-body p-4 pt-3">
                             <!-- Cliente -->
                             <div class="mb-4">
-                                <label class="text-xxs fw-bold mb-2 d-block text-primary" style="letter-spacing: 0.05em; font-size: 0.65rem;">CLIENTE</label>
+                                <label class="text-xxs fw-bold mb-2 d-block text-primary" style="letter-spacing: 0.05em; font-size: 0.65rem; color: var(--primary) !important;">CLIENTE</label>
                                 <div class="d-flex gap-2">
                                     <select id="header_cliente" class="form-select input-clean form-select-sm" required>
                                         <option value="">Seleccione Cliente...</option>
@@ -50,7 +50,7 @@
 
                             <!-- Artículo -->
                             <div class="mb-4">
-                                <label class="text-xxs fw-bold mb-2 d-block text-primary" style="letter-spacing: 0.05em; font-size: 0.65rem;">ARTÍCULO</label>
+                                <label class="text-xxs fw-bold mb-2 d-block text-primary" style="letter-spacing: 0.05em; font-size: 0.65rem; color: var(--primary) !important;">ARTÍCULO</label>
                                 <div class="d-flex gap-2">
                                     <select id="header_articulo" class="form-select input-clean form-select-sm">
                                         <option value="">Seleccione Artículo...</option>
@@ -65,12 +65,12 @@
                             <!-- Proyecto y OP -->
                             <div class="d-flex gap-4" style="margin-top: 2rem;">
                                 <div style="flex: 1;">
-                                    <label class="text-xxs fw-bold mb-2 d-block text-primary" style="letter-spacing: 0.05em; font-size: 0.65rem;">PROYECTO</label>
+                                    <label class="text-xxs fw-bold mb-2 d-block text-primary" style="letter-spacing: 0.05em; font-size: 0.65rem; color: var(--primary) !important;">PROYECTO</label>
                                     <input type="text" id="header_proyecto" class="form-control input-clean" placeholder="25-092" required 
                                            value="{{ existing_data.proyecto|default:'' }}">
                                 </div>
                                 <div style="flex: 1;">
-                                    <label class="text-xxs fw-bold mb-2 d-block text-primary" style="letter-spacing: 0.05em; font-size: 0.65rem;">NÚMERO OP</label>
+                                    <label class="text-xxs fw-bold mb-2 d-block text-primary" style="letter-spacing: 0.05em; font-size: 0.65rem; color: var(--primary) !important;">NÚMERO OP</label>
                                     <input type="number" id="header_num_op" class="form-control input-clean" placeholder="4526" required
                                            value="{{ existing_data.num_op|default:'' }}">
                                 </div>
@@ -82,11 +82,11 @@
                     <div class="config-card mb-4 border-success-soft">
                         <div class="config-card-header text-success py-2 px-3">
                             <i class="ri-add-box-line"></i>
-                            <span>CONFIGURAR PROCESO</span>
+                            <span style="color: var(--success);">CONFIGURAR PROCESO</span>
                         </div>
                         <div class="config-card-body p-4 pt-3">
                             <div class="mb-3">
-                                <label class="text-xxs fw-bold mb-2 d-block text-success" style="letter-spacing: 0.05em; font-size: 0.65rem;">PROCESO</label>
+                                <label class="text-xxs fw-bold mb-2 d-block text-success" style="letter-spacing: 0.05em; font-size: 0.65rem; color: var(--success) !important;">PROCESO</label>
                                 <div class="d-flex gap-2">
                                     <select id="sidebar_process_select" class="form-select input-clean form-select-sm">
                                         <option value="">Seleccione Proceso...</option>
@@ -99,7 +99,7 @@
                             </div>
 
                             <div class="mb-4">
-                                <label class="text-xxs fw-bold mb-2 d-block text-success" style="letter-spacing: 0.05em; font-size: 0.65rem;">ELEMENTO</label>
+                                <label class="text-xxs fw-bold mb-2 d-block text-success" style="letter-spacing: 0.05em; font-size: 0.65rem; color: var(--success) !important;">ELEMENTO</label>
                                 <div class="d-flex gap-2">
                                     <select id="sidebar_element_select" class="form-select input-clean form-select-sm">
                                         <option value="">Seleccione Elemento...</option>
@@ -111,15 +111,15 @@
                                 </div>
                             </div>
 
-                            <button type="button" class="btn btn-success w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-weight: 800; border-radius: 12px; font-size: 0.9rem;" onclick="addProcessFromSidebar()">
+                            <button type="button" class="btn btn-success w-100 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2" style="font-weight: 800; border-radius: 12px; font-size: 0.9rem; background: var(--success); border: none;" onclick="addProcessFromSidebar()">
                                 <i class="ri-add-circle-fill" style="font-size: 1.2rem;"></i> AGREGAR A LISTA
                             </button>
                         </div>
                     </div>
 
                     <!-- Save Action -->
-                    <div class="action-panel-dark" style="padding: 1rem;">
-                        <button type="submit" class="btn-guardar-estructura w-100" style="margin-top: 0 !important;">
+                    <div class="action-panel-dark" style="padding: 1rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 16px;">
+                        <button type="submit" class="btn-guardar-estructura w-100" style="margin-top: 0 !important; background: var(--primary); color: white;">
                             <i class="ri-check-line"></i> Guardar Estructura
                         </button>
                     </div>
@@ -132,7 +132,7 @@
                 <div class="main-canvas-premium">
                     <div class="canvas-header">
                         <div class="d-flex align-items-center gap-2">
-                            <div class="blue-line-indicator"></div>
+                            <div class="blue-line-indicator" style="background: var(--primary);"></div>
                             <h3 class="canvas-title">JERARQUÍA DE CONTROLES</h3>
                         </div>
                     </div>
@@ -152,88 +152,105 @@
 
 <style>
     :root {
-        --primary-blue: #2563eb;
+        --primary-blue: #3b82f6;
         --success-green: #10b981;
-        --dark-bg: #0f172a;
-        --border-color: #e2e8f0;
-        --text-muted: #64748b;
+        --dark-bg: #0b0f1a;
+        --border-color: rgba(255, 255, 255, 0.08);
+        --text-muted: #94a3b8;
+        --primary: var(--primary-blue);
+        --success: var(--success-green);
+        --bg-card: #161e2e;
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --danger: #ef4444;
+        --card-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
     /* Force global container to fill screen and hide its scrollbar */
-    .content-wrapper { height: 100vh !important; overflow: hidden !important; padding: 1.5rem !important; }
+    .content-wrapper { height: 100vh !important; overflow: hidden !important; padding: 1.5rem !important; background-color: var(--dark-bg); }
     .premium-page-container { padding: 0; width: 100%; max-width: 100%; margin: 0; }
 
     /* Left Sidebar Styling */
     .premium-panel-side { position: sticky; top: 0; display: flex; flex-direction: column; gap: 1rem; padding-right: 5px; }
     .premium-panel-side::-webkit-scrollbar { display: none; }
     
-    .btn-back-simple { color: #64748b; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; background: #f1f5f9; border-radius: 8px; transition: 0.2s; border: 1px solid #e2e8f0; width: fit-content; }
-    .btn-back-simple:hover { background: #e2e8f0; color: #1e293b; }
+    .btn-back-simple { color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; background: rgba(255, 255, 255, 0.03); border-radius: 8px; transition: 0.2s; border: 1px solid var(--border-color); width: fit-content; }
+    .btn-back-simple:hover { background: rgba(255, 255, 255, 0.08); color: var(--text-primary); }
 
-    .side-title-main { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-top: 0.5rem; letter-spacing: -0.02em; }
-    .side-subtitle-main { color: #64748b; font-size: 0.8rem; margin-bottom: 1rem; }
+    .side-title-main { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-top: 0.5rem; letter-spacing: -0.02em; }
+    .side-subtitle-main { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem; }
 
-    .config-card { background: white; border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .config-card { background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: var(--card-shadow); }
     .config-card-header { padding: 1.25rem 1.5rem 0.75rem; display: flex; align-items: center; gap: 0.75rem; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.05em; border-bottom: none; }
     .config-card-body { padding: 1.5rem !important; }
     
-    .border-success-soft { border: 2px solid #10b981 !important; }
+    .border-success-soft { border: 1px solid rgba(16, 185, 129, 0.2) !important; border-top: 3px solid var(--success) !important; }
 
-    .input-clean { border-radius: 8px !important; border: 1px solid #d1d5db !important; padding: 0.35rem 0.6rem !important; font-size: 0.85rem !important; font-weight: 600 !important; color: #334155 !important; height: auto !important; }
-    .input-clean:focus { border-color: var(--primary-blue) !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important; }
+    .input-clean { background-color: rgba(255, 255, 255, 0.03) !important; border-radius: 10px !important; border: 1px solid var(--border-color) !important; padding: 0.4rem 0.75rem !important; font-size: 0.85rem !important; font-weight: 600 !important; color: var(--text-primary) !important; height: auto !important; }
+    .input-clean:focus { background-color: rgba(255, 255, 255, 0.05) !important; border-color: var(--primary) !important; box-shadow: 0 0 0 4px rgba(59,130,246,0.1) !important; outline: none; }
 
-    .btn-add-mini { background: #eff6ff; border: 1px solid #dbeafe; border-radius: 8px; width: 40px; height: 40px; flex-shrink: 0; position: relative; }
-    .btn-add-mini::after { content: ''; width: 22px; height: 22px; background: #2563eb; mask: url('https://api.iconify.design/ri:add-line.svg') no-repeat center; -webkit-mask: url('https://api.iconify.design/ri:add-line.svg') no-repeat center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-    .btn-add-mini:hover { background: #2563eb; }
+    .btn-add-mini { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; width: 40px; height: 40px; flex-shrink: 0; position: relative; transition: all 0.2s; }
+    .btn-add-mini::after { content: ''; width: 22px; height: 22px; background: var(--primary); mask: url('https://api.iconify.design/ri:add-line.svg') no-repeat center; -webkit-mask: url('https://api.iconify.design/ri:add-line.svg') no-repeat center; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+    .btn-add-mini:hover { background: var(--primary); }
     .btn-add-mini:hover::after { background: white; }
 
     .btn-configurar-proceso { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; border-radius: 10px; padding: 0.75rem; font-weight: 800; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: 0.2s; }
     .btn-configurar-proceso:hover { background: #4338ca; color: white; transform: translateY(-1px); }
 
     .action-panel-dark { background: #161e2e; border-radius: 12px; padding: 1.5rem; color: white; margin-top: 1rem; }
-    .btn-guardar-estructura { background: white; color: #161e2e; border: none; border-radius: 10px; padding: 0.85rem; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; transition: 0.2s; }
-    .btn-guardar-estructura:hover { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .btn-guardar-estructura { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 1rem; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; transition: 0.3s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+    .btn-guardar-estructura:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3); }
 
     /* Right Canvas Styling */
-    .main-canvas-premium { background: white; border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; height: calc(100vh - 3rem); overflow-y: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); position: relative; }
+    .main-canvas-premium { background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-color); padding: 2rem; height: calc(100vh - 3rem); overflow-y: auto; box-shadow: var(--card-shadow); position: relative; }
     .main-canvas-premium::-webkit-scrollbar { width: 6px; }
-    .main-canvas-premium::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-    .main-canvas-premium::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
-    .canvas-header { margin-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.75rem; }
+    .main-canvas-premium::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+    .main-canvas-premium::-webkit-scrollbar-track { background: transparent; }
+    .canvas-header { margin-bottom: 2rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; }
     .blue-line-indicator { width: 4px; height: 20px; background: var(--primary-blue); border-radius: 4px; }
-    .canvas-title { font-size: 1rem; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: 0.02em; }
+    .canvas-title { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: 0.02em; }
 
     /* Dynamic Process Block */
-    .process-card-item { background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; padding: 1rem; margin-bottom: 1.5rem; }
-    .process-badge-modern { background: #e0e7ff; color: #3730a3; padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 800; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; text-transform: uppercase; }
+    .process-card-item { background: rgba(255, 255, 255, 0.02); border-radius: 18px; border: 1px solid var(--border-color); padding: 1.5rem; margin-bottom: 2rem; }
+    .process-badge-modern { background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 0.5rem 1rem; border-radius: 10px; font-weight: 800; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0; text-transform: uppercase; border: 1px solid rgba(59, 130, 246, 0.2); }
     
     /* Control Row Grid (Shrinked columns) */
     .control-row-compact { 
         display: grid; 
         grid-template-columns: 2fr auto 100px 100px 100px auto; 
-        gap: 0.75rem; 
-        background: white; 
-        border: 1px solid #f1f5f9; 
-        padding: 0.7rem; 
-        border-radius: 10px; 
-        margin-bottom: 0.5rem; 
+        gap: 1rem; 
+        background: rgba(255, 255, 255, 0.02); 
+        border: 1px solid var(--border-color); 
+        padding: 1rem; 
+        border-radius: 12px; 
+        margin-bottom: 0.75rem; 
         align-items: flex-end;
     }
     
-    .control-label-mini { font-size: 0.6rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 0.4rem; display: block; letter-spacing: 0.05em; }
-    .input-compact { padding: 0.5rem !important; font-size: 0.85rem !important; border-radius: 6px !important; text-align: center; }
+    .control-label-mini { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; display: block; letter-spacing: 0.1em; }
+    .input-compact { background: rgba(255, 255, 255, 0.03) !important; border: 1px solid var(--border-color) !important; color: var(--text-primary) !important; padding: 0.5rem !important; font-size: 0.85rem !important; border-radius: 8px !important; text-align: center; }
+    .input-compact:focus { background: rgba(255, 255, 255, 0.05) !important; border-color: var(--primary) !important; outline: none; }
 
-    .btn-add-ctrl-soft { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; color: #64748b; margin-top: 0.5rem; transition: 0.2s; }
-    .btn-add-ctrl-soft:hover { border-color: var(--primary-blue); color: var(--primary-blue); background: #eff6ff; }
+    .btn-add-ctrl-soft { background: transparent; border: 1px dashed var(--border-color); border-radius: 10px; padding: 0.75rem 1.5rem; font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); margin-top: 1rem; transition: 0.2s; width: 100%; }
+    .btn-add-ctrl-soft:hover { border-color: var(--primary); color: var(--primary); background: rgba(59, 130, 246, 0.05); }
 
-    .btn-remove-soft { color: #fca5a5; background: none; border: none; padding: 0.4rem; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
-    .btn-remove-soft:hover { background: #fef2f2; color: #ef4444; }
+    .btn-remove-soft { color: var(--danger); opacity: 0.6; background: none; border: none; padding: 0.5rem; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: 0.2s; }
+    .btn-remove-soft:hover { background: rgba(239, 68, 68, 0.1); opacity: 1; }
 
-    .empty-state-placeholder { text-align: center; padding: 8rem 2rem; color: #cbd5e1; }
-    .empty-state-placeholder i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
-    .empty-state-placeholder p { font-weight: 600; font-size: 0.95rem; }
+    .empty-state-placeholder { text-align: center; padding: 8rem 2rem; color: var(--text-muted); }
+    .empty-state-placeholder i { font-size: 4rem; opacity: 0.1; margin-bottom: 1.5rem; display: block; }
+    .empty-state-placeholder p { font-weight: 600; font-size: 1rem; opacity: 0.5; }
 
     .text-xxs { font-size: 0.65rem; }
+
+    /* Quick Add Modal Overrides */
+    #quickAddModal .card { background-color: var(--bg-card) !important; border: 1px solid var(--border-color) !important; }
+    #quickAddModal h4 { color: var(--text-primary) !important; }
+    #quickAddModal input { background: rgba(255,255,255,0.03) !important; border: 1px solid var(--border-color) !important; color: var(--text-primary) !important; }
+    #quickAddModal .btn-light { background: rgba(255,255,255,0.05) !important; color: var(--text-secondary) !important; border: 1px solid var(--border-color) !important; }
+    #quickAddModal .btn-light:hover { background: rgba(255,255,255,0.1) !important; }
+    #quickAddModal .btn-primary { background: var(--primary) !important; border: none !important; }
+    #quickAddModal .btn-primary:hover { background: var(--primary-blue) !important; }
 
 </style>
 
@@ -282,7 +299,7 @@
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="d-flex gap-2">
                         <div class="process-badge-modern"><i class="ri-archive-line"></i> ${pName}</div>
-                        <div class="process-badge-modern" style="background-color: #f1f5f9; color: #475569;"><i class="ri-puzzle-line"></i> ${eName}</div>
+                        <div class="process-badge-modern" style="background-color: rgba(255,255,255,0.03); color: var(--text-secondary); border: 1px solid var(--border-light);"><i class="ri-puzzle-line"></i> ${eName}</div>
                     </div>
                     <button type="button" class="btn-remove-soft" onclick="removeElement('proc-block-${processCounter}')"><i class="ri-delete-bin-line" style="font-size: 1.2rem;"></i></button>
                 </div>
@@ -295,7 +312,7 @@
             return true;
         }
 
-        function formatCompactValue(el) { if (el.value === '' || isNaN(el.value)) return; el.value = parseFloat(el.value).toFixed(2); }
+
 
         function addControlRow(pIdx) {
             const container = document.getElementById(`ctrl-list-${pIdx}`);
@@ -306,9 +323,9 @@
             row.innerHTML = `
                 <div style="position: relative;"><label class="control-label-mini">CONTROL</label><input type="text" class="form-control input-clean py-1 ctrl-search-input" list="controles-datalist" onkeydown="handleKeyNavigation(event, 'min', ${pIdx}, '${cRowId}')"></div>
                 <div><button type="button" class="btn-add-mini" style="width: 32px; height: 32px;" onclick="openQuickAdd('control', '${cRowId}')"></button></div>
-                <div><label class="control-label-mini">TOL. MÍN</label><input type="number" step="0.01" class="form-control input-compact col-min" onblur="formatCompactValue(this)" onkeydown="handleKeyNavigation(event, 'nom', ${pIdx}, '${cRowId}')"></div>
-                <div><label class="control-label-mini">REFERENCIAL</label><input type="number" step="0.01" class="form-control input-compact col-nom" onblur="formatCompactValue(this)" onkeydown="handleKeyNavigation(event, 'max', ${pIdx}, '${cRowId}')"></div>
-                <div><label class="control-label-mini">TOL. MÁX</label><input type="number" step="0.01" class="form-control input-compact col-max" onblur="formatCompactValue(this)" onkeydown="handleKeyNavigation(event, 'new', ${pIdx}, '${cRowId}')"></div>
+                <div><label class="control-label-mini">TOL. MÍN</label><input type="number" step="0.001" class="form-control input-compact col-min" onkeydown="handleKeyNavigation(event, 'nom', ${pIdx}, '${cRowId}')"></div>
+                <div><label class="control-label-mini">REFERENCIAL</label><input type="number" step="0.001" class="form-control input-compact col-nom" onkeydown="handleKeyNavigation(event, 'max', ${pIdx}, '${cRowId}')"></div>
+                <div><label class="control-label-mini">TOL. MÁX</label><input type="number" step="0.001" class="form-control input-compact col-max" onkeydown="handleKeyNavigation(event, 'new', ${pIdx}, '${cRowId}')"></div>
                 <button type="button" class="btn-remove-soft" onclick="removeElement('cr-${cRowId}')"><i class="ri-close-line" style="font-size: 1.3rem;"></i></button>
             `;
             container.appendChild(row);
@@ -320,9 +337,9 @@
                 event.preventDefault();
                 const cur = document.getElementById(`cr-${cRowId}`);
                 if (target === 'min') cur.querySelector('.col-min').focus();
-                else if (target === 'nom') { formatCompactValue(cur.querySelector('.col-min')); cur.querySelector('.col-nom').focus(); }
-                else if (target === 'max') { formatCompactValue(cur.querySelector('.col-nom')); cur.querySelector('.col-max').focus(); }
-                else if (target === 'new') { formatCompactValue(cur.querySelector('.col-max')); addControlRow(pIdx); }
+                else if (target === 'nom') { cur.querySelector('.col-nom').focus(); }
+                else if (target === 'max') { cur.querySelector('.col-max').focus(); }
+                else if (target === 'new') { addControlRow(pIdx); }
             }
         }
 
@@ -425,7 +442,7 @@
                     div.innerHTML = `
                         <div class="d-flex justify-content-between mb-3"><div class="d-flex gap-2">
                             <div class="process-badge-modern"><i class="ri-archive-line"></i> ${p.nombre || 'Sin Proceso'}</div>
-                            <div class="process-badge-modern" style="background-color: #f1f5f9; color: #475569;"><i class="ri-puzzle-line"></i> ${p.elemento_nombre || ''}</div>
+                            <div class="process-badge-modern" style="background-color: rgba(255,255,255,0.03); color: var(--text-secondary); border: 1px solid var(--border-light);"><i class="ri-puzzle-line"></i> ${p.elemento_nombre || ''}</div>
                         </div><button type="button" class="btn-remove-soft" onclick="removeElement('proc-block-${currentIdx}')"><i class="ri-delete-bin-line"></i></button></div>
                         <div id="ctrl-list-${currentIdx}"></div>
                         <button type="button" class="btn-add-ctrl-soft" onclick="addControlRow(${currentIdx})"><i class="ri-add-line"></i> Añadir Control</button>
@@ -437,9 +454,9 @@
                         row.innerHTML = `
                             <div style="position: relative;"><label class="control-label-mini">CONTROL</label><input type="text" class="form-control input-clean py-1 ctrl-search-input" list="controles-datalist" value="${c.nombre || ''}" onkeydown="handleKeyNavigation(event, 'min', ${currentIdx}, '${rowId}')"></div>
                             <div><button type="button" class="btn-add-mini" style="width: 32px; height: 32px;" onclick="openQuickAdd('control', '${rowId}')"></button></div>
-                            <div><label class="control-label-mini">TOL. MÍN</label><input type="number" step="0.01" class="form-control input-compact col-min" value="${c.min?parseFloat(c.min).toFixed(2):''}" onblur="formatCompactValue(this)" onkeydown="handleKeyNavigation(event, 'nom', ${currentIdx}, '${rowId}')"></div>
-                            <div><label class="control-label-mini">REFERENCIAL</label><input type="number" step="0.01" class="form-control input-compact col-nom" value="${c.nom?parseFloat(c.nom).toFixed(2):''}" onblur="formatCompactValue(this)" onkeydown="handleKeyNavigation(event, 'max', ${currentIdx}, '${rowId}')"></div>
-                            <div><label class="control-label-mini">TOL. MÁX</label><input type="number" step="0.01" class="form-control input-compact col-max" value="${c.max?parseFloat(c.max).toFixed(2):''}" onblur="formatCompactValue(this)" onkeydown="handleKeyNavigation(event, 'new', ${currentIdx}, '${rowId}')"></div>
+                            <div><label class="control-label-mini">TOL. MÍN</label><input type="number" step="0.001" class="form-control input-compact col-min" value="${(c.min !== null && c.min !== '') ? parseFloat(c.min).toFixed(3) : ''}" onkeydown="handleKeyNavigation(event, 'nom', ${currentIdx}, '${rowId}')"></div>
+                            <div><label class="control-label-mini">REFERENCIAL</label><input type="number" step="0.001" class="form-control input-compact col-nom" value="${(c.nom !== null && c.nom !== '') ? parseFloat(c.nom).toFixed(3) : ''}" onkeydown="handleKeyNavigation(event, 'max', ${currentIdx}, '${rowId}')"></div>
+                            <div><label class="control-label-mini">TOL. MÁX</label><input type="number" step="0.001" class="form-control input-compact col-max" value="${(c.max !== null && c.max !== '') ? parseFloat(c.max).toFixed(3) : ''}" onkeydown="handleKeyNavigation(event, 'new', ${currentIdx}, '${rowId}')"></div>
                             <button type="button" class="btn-remove-soft" onclick="removeElement('cr-${rowId}')"><i class="ri-close-line"></i></button>
                         `;
                         document.getElementById(`ctrl-list-${currentIdx}`).appendChild(row);

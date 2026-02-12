@@ -1,0 +1,269 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7 col-xl-6">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-1" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em;">
+                        <li class="breadcrumb-item"><a href="{% url 'lista_usuarios' %}" style="color: var(--text-muted); text-decoration: none;">Usuarios</a></li>
+                        <li class="breadcrumb-item active" style="color: var(--primary);">{{ titulo }}</li>
+                    </ol>
+                </nav>
+                <h1 style="font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0;">{% if is_edit %}Configuración de Perfil{% else %}Alta de Usuario{% endif %}</h1>
+            </div>
+            <div style="background: rgba(59, 130, 246, 0.1); color: var(--primary); padding: 0.75rem 1rem; border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 12px; font-weight: 700; font-size: 0.8rem;">
+                <i class="ri-shield-user-fill"></i> ID: {{ form.instance.id|default:"NUEVO" }}
+            </div>
+        </div>
+
+        <form method="post" id="premiumUserForm" novalidate>
+            {% csrf_token %}
+            
+            <div class="premium-form-container">
+                <!-- Section Identidad -->
+                <div class="premium-section">
+                    <div class="section-badge"><i class="ri-user-line"></i> Datos de Identidad</div>
+                    
+                    <div class="field-item">
+                        <label>Nombre de Usuario (@)</label>
+                        <div class="input-modern">
+                            <i class="ri-at-line"></i>
+                            {{ form.username }}
+                        </div>
+                        {% if form.username.errors %}<div class="input-error-msg">{{ form.username.errors }}</div>{% endif %}
+                    </div>
+
+                    <div class="vertical-group">
+                        <div class="field-item">
+                            <label>Nombre</label>
+                            <div class="input-modern">
+                                <i class="ri-user-3-line"></i>
+                                {{ form.first_name }}
+                            </div>
+                        </div>
+
+                        <div class="field-item">
+                            <label>Apellido</label>
+                            <div class="input-modern">
+                                <i class="ri-user-3-line"></i>
+                                {{ form.last_name }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field-item">
+                        <label>Correo Electrónico</label>
+                        <div class="input-modern">
+                            <i class="ri-mail-line"></i>
+                            {{ form.email }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Acceso -->
+                <div class="premium-section mt-5">
+                    <div class="section-badge"><i class="ri-lock-password-line"></i> Nivel de Acceso</div>
+                    
+                    <div class="field-item">
+                        <label>Rol del Sistema</label>
+                        <div class="input-modern">
+                            <i class="ri-shield-flash-line"></i>
+                            {{ form.role }}
+                        </div>
+                        <div class="field-hint">Controla qué módulos del sistema puede ver y editar este usuario.</div>
+                    </div>
+                </div>
+
+                <!-- Section Seguridad -->
+                <div class="premium-section mt-5">
+                    <div class="section-badge"><i class="ri-key-line"></i> Seguridad</div>
+                    
+                    <div class="field-item">
+                        <label>Nueva Contraseña</label>
+                        <div class="input-modern">
+                            <i class="ri-lock-line"></i>
+                            {{ form.password }}
+                        </div>
+                        <div class="field-hint">{{ form.password.help_text }}</div>
+                    </div>
+                </div>
+
+                <!-- Footer button action -->
+                <div class="premium-form-footer">
+                    <a href="{% url 'lista_usuarios' %}" class="btn-discard">
+                        <i class="ri-close-line"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn-save-modern">
+                        <i class="ri-save-line"></i> {% if is_edit %}Actualizar Perfil{% else %}Finalizar Registro{% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Premium Design System Reset */
+    .premium-form-container {
+        background-color: var(--bg-card);
+        border-radius: 30px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--card-shadow);
+        padding: 3rem;
+        position: relative;
+    }
+
+    .premium-section {
+        position: relative;
+        padding-top: 1rem;
+    }
+
+    .section-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text-secondary);
+        padding: 0.5rem 1rem;
+        border-radius: 10px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 2.5rem;
+        border: 1px solid var(--border-light);
+    }
+
+    .field-item {
+        margin-bottom: 2rem;
+        width: 100%;
+        display: block;
+        clear: both;
+    }
+
+    .field-item label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+        padding-left: 0.25rem;
+    }
+
+    .input-modern {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-modern i {
+        position: absolute;
+        left: 1.25rem;
+        font-size: 1.25rem;
+        color: var(--primary);
+        z-index: 5;
+    }
+
+    .input-modern input, 
+    .input-modern select {
+        width: 100% !important;
+        height: 56px !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 16px !important;
+        padding-left: 3.5rem !important;
+        font-weight: 600 !important;
+        color: var(--text-primary) !important;
+        transition: all 0.2s ease;
+    }
+
+    .input-modern input:focus, 
+    .input-modern select:focus {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border-color: var(--primary) !important;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15) !important;
+        outline: none !important;
+        transform: translateY(-1px);
+    }
+
+    .vertical-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .field-hint {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+        padding-left: 0.25rem;
+    }
+
+    .input-error-msg {
+        color: #ef4444;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+        padding-left: 0.25rem;
+    }
+
+    .premium-form-footer {
+        margin-top: 4rem;
+        padding-top: 2.5rem;
+        border-top: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .btn-discard {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+    }
+
+    .btn-discard:hover {
+        color: #ef4444;
+    }
+
+    .btn-save-modern {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 16px;
+        font-weight: 800;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-save-modern:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Media queries for responsiveness */
+    @media (min-width: 768px) {
+        .vertical-group {
+            flex-direction: row; /* Solo habilitar row en pantallas grandes si no hay solapamiento */
+            gap: 2rem;
+        }
+        .vertical-group .field-item {
+            flex: 1;
+        }
+    }
+</style>
+{% endblock %}

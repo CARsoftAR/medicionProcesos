@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
     path('', views.index, name='index'),
     path('mediciones/nueva/', views.asignar_op, name='asignar_op'),
     path('mediciones/nueva-op/', views.nueva_medicion_op, name='nueva_medicion_op'),
@@ -28,10 +30,28 @@ urlpatterns = [
     path('maestros/clientes/<int:pk>/editar/', views.editar_cliente, name='editar_cliente'),
     path('maestros/clientes/<int:pk>/eliminar/', views.eliminar_cliente, name='eliminar_cliente'),
     
+    path('perfil/', views.perfil_usuario, name='perfil_usuario'),
+    path('usuarios/', views.lista_usuarios, name='lista_usuarios'),
+    path('usuarios/nuevo/', views.crear_usuario, name='crear_usuario'),
+    path('usuarios/<int:user_id>/editar/', views.editar_usuario, name='editar_usuario'),
+    path('usuarios/<int:user_id>/eliminar/', views.eliminar_usuario, name='eliminar_usuario'),
+    
     # API
     path('api/create/<str:model_name>/', views.api_create_master, name='api_create_master'),
     path('api/tolerancia/<int:tolerancia_id>/delete/', views.api_delete_tolerancia, name='api_delete_tolerancia'),
     path('api/medicion/guardar/', views.guardar_medicion_ajax, name='guardar_medicion_ajax'),
+    path('api/medicion/guardar-maquina/', views.guardar_maquina_ajax, name='guardar_maquina_ajax'),
+    path('api/medicion/guardar-instrumento/', views.guardar_instrumento_ajax, name='guardar_instrumento_ajax'),
     path('api/medicion/eliminar-pieza/', views.eliminar_pieza_ajax, name='eliminar_pieza_ajax'),
     path('mediciones/estadisticas/<int:tolerancia_id>/', views.estadisticas_control, name='estadisticas_control'),
+    path('panel-geografico/', views.panel_control_geografico, name='panel_control_geografico'),
+    path('modo-operario/', views.modo_operario, name='modo_operario'),
+    path('operario/', views.operario_medicion, name='operario_medicion'),
+    path('api/buscar-op/<str:op>/', views.api_buscar_op_endpoint, name='api_buscar_op_endpoint'),
+    path('mediciones/api/operario-data/', views.api_operario_data, name='api_operario_data'),
+    path('api/maquina/update-pos/', views.api_update_maquina_pos, name='api_update_maquina_pos'),
+    path('mediciones/<int:planilla_id>/exportar-pdf/', views.exportar_pdf, name='exportar_pdf'),
+    path('api/medicion/guardar-observaciones/', views.guardar_observaciones_ajax, name='guardar_observaciones_ajax'),
 ]
+
+

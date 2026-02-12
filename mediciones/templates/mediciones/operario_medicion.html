@@ -1,0 +1,1055 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ABBAMAT - Modo Operario</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #eff6ff;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --warning: #f59e0b;
+            --warning-light: #fffbeb;
+            --bg: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-input: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --text-dim: #94a3b8;
+            --radius: 20px;
+            --radius-sm: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            line-height: 1.5;
+        }
+
+        /* ===== TOP BAR ===== */
+        .op-topbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            z-index: 100;
+        }
+
+        .op-topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .op-topbar-brand .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .op-topbar-brand span {
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.03em;
+            color: var(--text);
+        }
+
+        .op-topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .op-topbar-user .user-badge {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .btn-back {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 12px;
+            padding: 0.6rem 1.25rem;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.53rem;
+            text-decoration: none;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-back:hover { 
+            background: var(--bg-input);
+            transform: translateY(-1px);
+        }
+
+        /* ===== MAIN CONTAINER ===== */
+        .op-main {
+            padding-top: 70px;
+            min-height: 100vh;
+        }
+
+        /* ===== SCREEN SWITCHING ===== */
+        .screen { 
+            display: none !important;
+        }
+        .screen.active { 
+            display: block !important;
+            width: 100%;
+            min-height: calc(100vh - 70px);
+        }
+        .search-screen.active {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 70px);
+            padding: 2rem;
+            width: 100%;
+        }
+
+        .search-screen .search-hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .search-hero-icon {
+            width: 90px;
+            height: 90px;
+            background: var(--primary-light);
+            border: 1px solid rgba(37, 99, 235, 0.1);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+            color: var(--primary);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.05);
+        }
+
+        .search-hero h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.04em;
+            color: var(--text);
+        }
+
+        .search-hero p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        .search-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .search-box label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1.5rem;
+            font-size: 3rem;
+            font-weight: 900;
+            text-align: center;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            outline: none;
+            transition: all 0.3s;
+            letter-spacing: 0.1em;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-search {
+            width: 100%;
+            padding: 1.4rem;
+            margin-top: 2rem;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1.25rem;
+            font-weight: 900;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.4);
+        }
+
+        /* ===== MEASUREMENT SCREEN ===== */
+        .measure-screen {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Info Header Panel */
+        .info-header {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .info-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .info-item .info-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-item .info-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+
+        .info-item .info-value.highlight {
+            color: var(--primary);
+        }
+
+        /* Piece Navigator */
+        .piece-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            background: white;
+            padding: 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .piece-nav-label {
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            margin-right: 0.75rem;
+            padding-left: 0.5rem;
+        }
+
+        .piece-btn {
+            min-width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: var(--bg-input);
+            border: 2px solid transparent;
+            color: var(--text-muted);
+            font-weight: 900;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .piece-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .piece-btn:hover:not(.active):not(.disabled) {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        .piece-btn.add {
+            background: var(--success-light);
+            color: var(--success);
+            border: 2px dashed rgba(16, 185, 129, 0.3);
+        }
+
+        /* Control Cards */
+        .control-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .control-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.75rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        .control-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .control-card::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 6px;
+            background: var(--border);
+            border-radius: 6px 0 0 6px;
+            transition: background 0.3s;
+        }
+
+        .control-card.status-ok::before { background: var(--success); }
+        .control-card.status-nok::before { background: var(--danger); }
+
+        .control-name {
+            font-weight: 900;
+            font-size: 1.35rem;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .control-ref {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .tol-badge {
+            background: var(--bg-input);
+            border-radius: 10px;
+            padding: 0.5rem 0.85rem;
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .tol-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .measurement-input-op {
+            flex: 1;
+            padding: 1.25rem;
+            font-size: 2rem;
+            font-weight: 900;
+            text-align: center;
+            background: var(--bg-input);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            transition: all 0.3s;
+        }
+
+        .measurement-input-op:focus {
+            background: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            outline: none;
+        }
+
+        .status-dot {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .status-dot.ok { background: var(--success); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        .status-dot.nok { background: var(--danger); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+        .status-dot.pending { background: var(--bg-input); border: 2px solid var(--border); }
+
+        .btn-new-op {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            border-radius: 20px;
+            padding: 1.25rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 900;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        /* Instrument Select */
+        .instrument-select-op {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            outline: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .instrument-select-op:focus {
+            border-color: var(--primary);
+        }
+
+        .process-section-title {
+            font-size: 0.9rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--primary);
+            padding: 2rem 0 1rem;
+            border-bottom: 2px solid var(--primary-light);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+            .op-topbar { padding: 0 1rem; }
+            .measure-screen { padding: 1rem; }
+            .info-header { padding: 1.25rem; gap: 1rem; }
+            .info-value { font-size: 1.25rem !important; }
+            .control-card { padding: 1.25rem; }
+        }
+
+        /* SweetAlert Light Overrides */
+        .swal2-popup {
+            background: #ffffff !important;
+            border-radius: 28px !important;
+            padding: 2rem !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+        }
+        .swal2-title { color: #0f172a !important; font-weight: 900 !important; font-size: 1.75rem !important; }
+        .swal2-html-container { color: #64748b !important; font-size: 1.1rem !important; font-weight: 500 !important; }
+        .swal2-input {
+            border: 2px solid #e2e8f0 !important;
+            border-radius: 16px !important;
+            font-size: 1.5rem !important;
+            height: 4rem !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+            color: #0f172a !important;
+            background: #f8fafc !important;
+            box-shadow: none !important;
+        }
+        .swal2-confirm { background: var(--primary) !important; border-radius: 16px !important; padding: 0.85rem 2.5rem !important; font-weight: 800 !important; }
+        .swal2-cancel { border-radius: 16px !important; padding: 0.85rem 2.5rem !important; font-weight: 800 !important; }
+    </style>
+</head>
+<body>
+    <!-- TOP BAR -->
+    <div class="op-topbar">
+        <div class="op-topbar-brand">
+            <div class="brand-icon">A</div>
+            <span>MODO OPERARIO</span>
+        </div>
+        <div class="op-topbar-user">
+            <div class="user-badge">
+                <i class="ri-user-3-fill"></i>
+                {{ user.username }}
+            </div>
+            <a href="{% url 'index' %}" class="btn-back">
+                <i class="ri-arrow-left-line"></i> Salir
+            </a>
+        </div>
+    </div>
+
+    <div class="op-main">
+        <!-- ===== SCREEN 1: SEARCH ===== -->
+        <div id="screen-search" class="screen active search-screen">
+            <div class="search-hero">
+                <div class="search-hero-icon">
+                    <i class="ri-search-eye-line"></i>
+                </div>
+                <h1>Buscar Orden de Producción</h1>
+                <p>Ingrese el número de OP para cargar los controles</p>
+            </div>
+
+            <div class="search-box">
+                <label>NÚMERO DE OP</label>
+                <input type="number" id="op-input" class="search-input" placeholder="Ej: 5000" autofocus>
+                <button type="button" id="btn-buscar" class="btn-search" onclick="buscarOP()">
+                    <i class="ri-search-line"></i> BUSCAR OP
+                </button>
+                <p id="search-error" class="search-error"></p>
+            </div>
+        </div>
+
+        <!-- ===== SCREEN 2: MEASUREMENT ===== -->
+        <div id="screen-measure" class="screen measure-screen">
+            <!-- Info Header -->
+            <div class="info-header animate__animated animate__fadeIn" id="info-header">
+                <div class="info-item">
+                    <div class="info-label">PROYECTO</div>
+                    <div class="info-value highlight" id="info-proyecto">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">OP</div>
+                    <div class="info-value highlight" id="info-op">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">CLIENTE</div>
+                    <div class="info-value" id="info-cliente">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">PROCESO</div>
+                    <div class="info-value" id="info-proceso">-</div>
+                </div>
+            </div>
+
+            <!-- Process Tabs (if multiple) -->
+            <div id="process-tabs-container" class="process-tabs" style="display:none;"></div>
+
+            <!-- Piece Navigation -->
+            <div class="piece-nav" id="piece-nav"></div>
+
+            <!-- Control Cards -->
+            <div class="control-cards" id="control-cards"></div>
+
+            <!-- Back to Search -->
+            <button class="btn-new-op" onclick="resetToSearch()">
+                <i class="ri-refresh-line"></i> NUEVA OP
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ===== GLOBAL STATE =====
+        let currentOP = null;
+        let currentProyecto = null;
+        let currentProcId = null;
+        let currentPieza = 1;
+        let opResults = [];
+        let piezasConDatos = []; // Added to track existing pieces
+        let csrfToken = '{{ csrf_token }}';
+
+        // Enter key on search
+        document.getElementById('op-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') buscarOP();
+        });
+
+        // ===== SEARCH =====
+        function buscarOP() {
+            const opVal = document.getElementById('op-input').value.trim();
+            const errEl = document.getElementById('search-error');
+            
+            if (errEl) errEl.style.display = 'none';
+
+            if (!opVal) {
+                if (errEl) {
+                    errEl.innerText = 'Por favor ingrese un número de OP.';
+                    errEl.style.display = 'block';
+                } else {
+                    Swal.fire('Atención', 'Por favor ingrese un número de OP.', 'warning');
+                }
+                return;
+            }
+
+            const btn = document.getElementById('btn-buscar');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="ri-loader-4-line ri-spin"></i> BUSCANDO...';
+            btn.disabled = true;
+
+            fetch(`/api/buscar-op/${opVal}/`)
+                .then(r => {
+                    if (r.redirected && r.url.includes('/login')) {
+                        throw new Error('Sesión expirada');
+                    }
+                    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                    return r.json();
+                })
+                .then(data => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+
+                    if (data.status === 'success' && data.count > 0) {
+                        currentOP = opVal;
+                        opResults = data.results;
+
+                        if (data.count === 1) {
+                            currentProyecto = data.proyecto;
+                            currentProcId = data.proceso_id;
+                            loadMeasurementScreen();
+                        } else {
+                            let options = {};
+                            data.results.forEach(r => {
+                                options[r.proceso_id] = `${r.proceso_nombre} (${r.proyecto})`;
+                            });
+                            Swal.fire({
+                                title: 'Seleccione Proceso',
+                                text: `Se encontraron ${data.count} procesos para la OP #${opVal}.`,
+                                input: 'select',
+                                inputOptions: options,
+                                inputPlaceholder: 'Seleccione...',
+                                showCancelButton: true,
+                                confirmButtonText: 'Confirmar',
+                                cancelButtonText: 'Cancelar',
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    const sel = data.results.find(r => r.proceso_id == result.value);
+                                    currentProyecto = sel.proyecto;
+                                    currentProcId = sel.proceso_id;
+                                    loadMeasurementScreen();
+                                }
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'OP no encontrada',
+                            text: `No se encontraron planillas activas para la OP #${opVal}.`,
+                        });
+                    }
+                })
+                .catch(err => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    Swal.fire('Error', 'Error de conexión: ' + err.message, 'error');
+                });
+        }
+
+        // ===== LOAD MEASUREMENT DATA =====
+        function loadMeasurementScreen() {
+            document.getElementById('screen-search').classList.remove('active');
+            document.getElementById('screen-measure').classList.add('active');
+            fetchMeasurementData();
+        }
+
+        function fetchMeasurementData() {
+            const url = `/mediciones/api/operario-data/?proy=${encodeURIComponent(currentProyecto)}&op=${encodeURIComponent(currentOP)}&proc=${currentProcId}&pieza=${currentPieza}`;
+            
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status !== 'success') {
+                        Swal.fire('Error', data.message || 'Error al cargar datos.', 'error');
+                        return;
+                    }
+
+                    // Update header info
+                    document.getElementById('info-proyecto').textContent = data.proyecto || '-';
+                    document.getElementById('info-op').textContent = data.op || '-';
+                    document.getElementById('info-cliente').textContent = data.cliente || '-';
+                    document.getElementById('info-proceso').textContent = data.proceso || '-';
+
+                    // Update piece state
+                    piezasConDatos = data.piezas_con_datos || [];
+                    
+                    // Build piece navigation
+                    buildPieceNav(data.piezas, data.pieza_actual);
+
+                    // Build control cards
+                    buildControlCards(data.rows, data.instrumentos);
+                })
+                .catch(err => {
+                    console.error(err);
+                    Swal.fire('Error', 'Error de conexión al cargar datos.', 'error');
+                });
+        }
+
+        // ===== PIECE NAVIGATION =====
+        function buildPieceNav(piezas, piezaActual) {
+            const nav = document.getElementById('piece-nav');
+            nav.innerHTML = '<span class="piece-nav-label"><i class="ri-stack-line"></i> PIEZA:</span>';
+
+            // Piece buttons
+            piezas.forEach(p => {
+                const btn = document.createElement('button');
+                const hasData = piezasConDatos.includes(p);
+                btn.className = 'piece-btn' + (p === piezaActual ? ' active' : '');
+                
+                // Add dot if has data
+                let label = p;
+                if (hasData && p !== piezaActual) {
+                    label = `${p}<span style="font-size: 8px; vertical-align: super; margin-left: 2px;">●</span>`;
+                }
+                
+                btn.innerHTML = label;
+                btn.onclick = () => goToPiece(p);
+                nav.appendChild(btn);
+            });
+
+            // Add new piece
+            const addBtn = document.createElement('button');
+            addBtn.className = 'piece-btn add';
+            addBtn.innerHTML = '<i class="ri-add-line"></i>';
+            addBtn.title = 'Nueva Pieza';
+            addBtn.onclick = () => promptNewPiece();
+            nav.appendChild(addBtn);
+        }
+
+        function goToPiece(pieza) {
+            currentPieza = pieza;
+            fetchMeasurementData();
+        }
+
+        function promptNewPiece() {
+            // Suggest next available number
+            const maxP = piezasConDatos.length > 0 ? Math.max(...piezasConDatos) + 1 : 1;
+            
+            Swal.fire({
+                title: 'Seleccionar Pieza',
+                text: 'Ingrese el número de la pieza que desea procesar:',
+                input: 'number',
+                inputValue: maxP,
+                inputAttributes: { min: 1, step: 1 },
+                showCancelButton: true,
+                confirmButtonText: 'Continuar',
+                cancelButtonText: 'Cancelar',
+            }).then(result => {
+                if (result.isConfirmed && result.value >= 1) {
+                    const selectedPieza = parseInt(result.value);
+                    
+                    // Logic requested: if exists, load; if not, ask to add.
+                    if (piezasConDatos.includes(selectedPieza)) {
+                        goToPiece(selectedPieza);
+                    } else {
+                        Swal.fire({
+                            title: 'Nueva Pieza',
+                            text: `La pieza N° ${selectedPieza} no tiene mediciones registradas todavía. ¿Desea comenzar a medir esta pieza?`,
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonText: 'Sí, comenzar',
+                            cancelButtonText: 'No, cancelar'
+                        }).then((choice) => {
+                            if (choice.isConfirmed) {
+                                goToPiece(selectedPieza);
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // ===== BUILD CONTROL CARDS =====
+        function buildControlCards(rows, instrumentos) {
+            const container = document.getElementById('control-cards');
+            container.innerHTML = '';
+
+            let currentElemento = null;
+
+            rows.forEach((row, idx) => {
+                if (row.elemento_nombre && row.elemento_nombre !== currentElemento) {
+                    currentElemento = row.elemento_nombre;
+                    const divider = document.createElement('div');
+                    divider.className = 'process-section-title animate__animated animate__fadeIn';
+                    divider.innerHTML = `<i class="ri-tools-line"></i> ${currentElemento}`;
+                    container.appendChild(divider);
+                }
+
+                const card = document.createElement('div');
+                card.className = `control-card status-${row.status} animate__animated animate__fadeInUp`;
+                card.style.animationDelay = `${idx * 0.05}s`;
+
+                const isPnp = row.is_pnp;
+
+                let tolHtml = '';
+                if (!isPnp) {
+                    const minDisplay = row.tol_min !== null ? row.tol_min : '-';
+                    const maxDisplay = row.tol_max !== null ? row.tol_max : '-';
+                    tolHtml = `
+                        <div style="display: flex; gap: 0.5rem;">
+                            <div class="tol-badge"><span class="tol-label">MÍN</span>${minDisplay}</div>
+                            <div class="tol-badge"><span class="tol-label">MÁX</span>${maxDisplay}</div>
+                        </div>
+                    `;
+                }
+
+                let inputHtml = '';
+                if (isPnp) {
+                    inputHtml = `
+                        <select class="pnp-select-op measurement-input-op"
+                                data-tol-id="${row.tolerancia_id}"
+                                onchange="onPnpChange(this)"
+                                style="font-size: 1.25rem;">
+                            <option value="">- Seleccione -</option>
+                            <option value="OK" ${row.valor === 'OK' ? 'selected' : ''}>✅ PASA</option>
+                            <option value="NOK" ${row.valor === 'NOK' ? 'selected' : ''}>❌ NO PASA</option>
+                        </select>
+                    `;
+                } else {
+                    const displayVal = row.valor !== null ? parseFloat(row.valor).toFixed(3) : '';
+                    inputHtml = `
+                        <input type="text" inputmode="decimal" autocomplete="off"
+                               class="measurement-input-op"
+                               data-tol-id="${row.tolerancia_id}"
+                               data-nominal="${row.nominal || ''}"
+                               data-min="${row.tol_min || ''}"
+                               data-max="${row.tol_max || ''}"
+                               value="${displayVal}"
+                               placeholder="0.000"
+                               oninput="onValueInput(this)"
+                               onblur="onValueBlur(this)">
+                    `;
+                }
+
+                let instrOptions = '<option value="">-- Seleccionar Instrumento --</option>';
+                instrumentos.forEach(inst => {
+                    instrOptions += `<option value="${inst.id}" ${row.instrumento_id === inst.id ? 'selected' : ''}>${inst.nombre}</option>`;
+                });
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;">
+                        <div>
+                            <div class="control-name">${row.control_nombre}</div>
+                            <div class="control-ref">REF (Nominal): ${row.nominal || '-'}</div>
+                        </div>
+                        ${tolHtml}
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem;">
+                        ${inputHtml}
+                        <div class="status-dot ${row.status}" id="status-${row.tolerancia_id}">
+                            ${row.status === 'ok' ? '<i class="ri-check-line"></i>' : (row.status === 'nok' ? '<i class="ri-close-line"></i>' : '')}
+                        </div>
+                    </div>
+                    <div>
+                        <select class="instrument-select-op" data-tol-id="${row.tolerancia_id}" onchange="onInstrumentChange(this)">
+                            ${instrOptions}
+                        </select>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+
+            attachInputNavigation();
+        }
+
+        // ===== INPUT HANDLERS =====
+        function parseLocalFloat(val) {
+            if (val === '' || val === null || val === undefined) return NaN;
+            return parseFloat(val.toString().replace(',', '.'));
+        }
+
+        function calculateStatus(val, nominal, minVal, maxVal) {
+            if (isNaN(val)) return 'pending';
+            const nom = parseLocalFloat(nominal);
+            const mn = parseLocalFloat(minVal);
+            const mx = parseLocalFloat(maxVal);
+
+            let minLimit = -Infinity;
+            let maxLimit = Infinity;
+
+            if (!isNaN(nom)) {
+                if (!isNaN(mn)) minLimit = Math.abs(mn) < (Math.abs(nom) / 2.0) ? nom - Math.abs(mn) : mn;
+                if (!isNaN(mx)) maxLimit = Math.abs(mx) < (Math.abs(nom) / 2.0) ? nom + Math.abs(mx) : mx;
+            } else {
+                if (!isNaN(mn)) minLimit = mn;
+                if (!isNaN(mx)) maxLimit = mx;
+            }
+            return (val < minLimit || val > maxLimit) ? 'nok' : 'ok';
+        }
+
+        function updateStatusDot(tolId, status) {
+            const dot = document.getElementById(`status-${tolId}`);
+            if (!dot) return;
+            dot.className = `status-dot ${status}`;
+            dot.innerHTML = status === 'ok' ? '<i class="ri-check-line"></i>' : (status === 'nok' ? '<i class="ri-close-line"></i>' : '');
+
+            const card = dot.closest('.control-card');
+            if (card) {
+                card.classList.remove('status-ok', 'status-nok', 'status-pending');
+                card.classList.add(`status-${status}`);
+            }
+        }
+
+        function onValueInput(el) {
+            const val = parseLocalFloat(el.value);
+            const status = calculateStatus(val, el.dataset.nominal, el.dataset.min, el.dataset.max);
+            updateStatusDot(el.dataset.tolId, status);
+        }
+
+        function onValueBlur(el) {
+            if (el.value.trim()) {
+                const val = parseLocalFloat(el.value);
+                if (!isNaN(val)) el.value = val.toFixed(3);
+            }
+            saveMeasurementAjax(el);
+        }
+
+        function onPnpChange(el) {
+            const val = el.value;
+            let status = val === 'OK' ? 'ok' : (val === 'NOK' ? 'nok' : 'pending');
+            updateStatusDot(el.dataset.tolId, status);
+            saveMeasurementAjax(el);
+        }
+
+        function onInstrumentChange(el) {
+            fetch('/api/medicion/guardar-instrumento/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ tolerancia_id: el.dataset.tolId, instrumento_id: el.value })
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'success') {
+                    el.style.borderColor = 'var(--success)';
+                    setTimeout(() => { el.style.borderColor = ''; }, 1000);
+                }
+            });
+        }
+
+        async function saveMeasurementAjax(el) {
+            const tolId = el.dataset.tolId;
+            const val = el.value;
+            try {
+                const response = await fetch('/api/medicion/guardar/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                    body: JSON.stringify({ tolerancia_id: tolId, pieza: currentPieza, valor: val })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    el.style.backgroundColor = 'var(--success-light)';
+                    setTimeout(() => { el.style.backgroundColor = ''; }, 500);
+                    // Add piece to existing list if not there
+                    if (!piezasConDatos.includes(currentPieza)) {
+                        piezasConDatos.push(currentPieza);
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        function attachInputNavigation() {
+            const inputs = document.querySelectorAll('.measurement-input-op');
+            inputs.forEach((input, idx) => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const next = inputs[idx + 1];
+                        if (next) {
+                            next.focus();
+                            if (next.select) next.select();
+                        }
+                    }
+                });
+            });
+        }
+
+        function resetToSearch() {
+            document.getElementById('screen-measure').classList.remove('active');
+            document.getElementById('screen-search').classList.add('active');
+            document.getElementById('op-input').value = '';
+            document.getElementById('op-input').focus();
+            currentOP = null; currentProyecto = null; currentProcId = null; currentPieza = 1; opResults = [];
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const opParam = params.get('op');
+            if (opParam) {
+                document.getElementById('op-input').value = opParam;
+                buscarOP();
+            }
+        });
+    </script>
+</body>
+</html>

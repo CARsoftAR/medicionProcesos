@@ -46,17 +46,17 @@
                         </td>
                     {% else %}
                         <td>
-                            <input type="number" step="0.001" name="nominal_{{t.id}}" value="{{ t.nominal|default:'' }}" 
+                            <input type="number" step="0.001" name="nominal_{{t.id}}" value="{{ t.nominal|floatformat:3|default:'' }}" 
                                    class="form-control" style="text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--border-color); border-radius: 0;"
                                    placeholder="-">
                         </td>
                         <td>
-                            <input type="number" step="0.001" name="min_{{t.id}}" value="{{ t.minimo|default:'' }}" 
+                            <input type="number" step="0.001" name="min_{{t.id}}" value="{{ t.minimo|floatformat:3|default:'' }}" 
                                    class="form-control" style="text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--border-color); border-radius: 0;"
                                    placeholder="-">
                         </td>
                         <td>
-                            <input type="number" step="0.001" name="max_{{t.id}}" value="{{ t.maximo|default:'' }}" 
+                            <input type="number" step="0.001" name="max_{{t.id}}" value="{{ t.maximo|floatformat:3|default:'' }}" 
                                    class="form-control" style="text-align: center; background: transparent; border: none; border-bottom: 1px solid var(--border-color); border-radius: 0;"
                                    placeholder="-">
                         </td>

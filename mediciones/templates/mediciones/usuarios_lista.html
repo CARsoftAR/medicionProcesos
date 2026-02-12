@@ -1,0 +1,107 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex align-items-center gap-4">
+        <div class="brand-icon" style="background: var(--bg-card); color: var(--primary); border: 1px solid var(--border-color); width: 54px; height: 54px; border-radius: 16px;">
+            <i class="ri-group-line"></i>
+        </div>
+        <div>
+            <h3 style="margin:0; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em;">Directorio de Usuarios</h3>
+            <p class="text-muted" style="margin:0; font-size: 0.95rem; opacity: 0.8;">Controle el acceso y roles del personal del sistema QM.</p>
+        </div>
+    </div>
+    <a href="{% url 'crear_usuario' %}" class="btn btn-primary">
+        <i class="ri-user-add-line"></i> Nuevo Usuario
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="padding-left: 2rem;">USUARIO</th>
+                        <th>NOMBRE COMPLETO</th>
+                        <th>CORREO</th>
+                        <th>ROL</th>
+                        <th class="text-end" style="padding-right: 2rem;">ACCIONES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr>
+                        <td style="padding-left: 2rem;">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="user-avatar" style="width: 35px; height: 35px; font-size: 1rem; background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-light);">
+                                    <i class="ri-user-3-line"></i>
+                                </div>
+                                <span style="font-weight: 700; color: var(--text-primary);">@{{ u.username }}</span>
+                            </div>
+                        </td>
+                        <td>{{ u.get_full_name|default:"-" }}</td>
+                        <td>{{ u.email|default:"-" }}</td>
+                        <td>
+                            <span class="badge" 
+                                  style="padding: 0.4rem 0.8rem; border-radius: 8px; {% if u.profile.role == 'CALIDAD' or u.is_superuser %}background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);{% else %}background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.2);{% endif %}">
+                                {{ u.profile.get_role_display|default:"Sin Rol" }}
+                            </span>
+                        </td>
+                        <td class="text-end" style="padding-right: 2rem;">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{% url 'editar_usuario' u.id %}" class="btn-action-edit" title="Editar Usuario"
+                                   style="background: rgba(255,255,255,0.05); color: var(--text-secondary); width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid var(--border-light);">
+                                    <i class="ri-edit-line"></i>
+                                </a>
+                                {% if u != user %}
+                                <a href="javascript:void(0)" onclick="confirmDelete('{{ u.id }}', '{{ u.username }}')" class="btn-action-delete" title="Eliminar Usuario"
+                                   style="background: rgba(239, 68, 68, 0.1); color: #ef4444; width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid rgba(239, 68, 68, 0.2);">
+                                    <i class="ri-delete-bin-line"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(id, username) {
+        Swal.fire({
+            html: `
+                <div class="swal-icon-circle danger">
+                    <i class="ri-user-unfollow-line"></i>
+                </div>
+                <div class="premium-swal-title">¿Eliminar Usuario?</div>
+                <div class="premium-swal-html">Está por eliminar a <b>@${username}</b> del sistema.<br>Esta acción revocará su acceso de inmediato.</div>
+            `,
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: '<i class="ri-delete-bin-line"></i> Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            customClass: {
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-swal-confirm',
+                cancelButton: 'premium-swal-cancel'
+            },
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = `/usuarios/${id}/eliminar/`;
+            }
+        });
+    }
+</script>
+
+<style>
+    .btn-action-edit:hover { background: #e2e8f0 !important; color: #1e293b !important; transform: scale(1.05); }
+    .btn-action-delete:hover { background: #fecaca !important; color: #dc2626 !important; transform: scale(1.05); }
+</style>
+{% endblock %}

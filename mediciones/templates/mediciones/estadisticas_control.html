@@ -4,21 +4,29 @@
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block content %}
-<div class="premium-page-container" style="padding: 1rem 2rem; background: #f8fafc; height: 100vh; overflow: hidden; display: flex; flex-direction: column;">
+<div class="premium-page-container" style="padding: 1rem 2rem; background: var(--bg-body, #0b0f1a); height: 100vh; overflow: hidden; display: flex; flex-direction: column;">
     <!-- Header Section -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center gap-3">
             <div>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: -0.025em;">
+                <h1 id="controlTitleHeader" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary, #fff); margin: 0; letter-spacing: -0.025em;">
                     SEGUIMIENTO DE PARÁMETROS: {{ tolerancia.control.nombre }}
                 </h1>
-                <p style="color: #64748b; font-size: 0.9rem; margin: 0;">
-                    Proyecto: {{ tolerancia.planilla.proyecto }} | OP: {{ tolerancia.planilla.num_op }} | Cliente: {{ tolerancia.planilla.cliente.nombre }}
+                <p id="controlSubHeader" style="color: var(--text-secondary, #94a3b8); font-size: 0.95rem; margin: 0; font-weight: 500;">
+                    Proyecto: {{ tolerancia.planilla.proyecto }} | OP: {{ tolerancia.planilla.num_op }} | Proceso: {{ tolerancia.planilla.proceso.nombre }} | Cliente: {{ tolerancia.planilla.cliente.nombre }}
                 </p>
             </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'nueva_medicion_op' %}?proy={{ tolerancia.planilla.proyecto }}&op={{ tolerancia.planilla.num_op }}&proc={{ tolerancia.planilla.proceso.id }}" class="btn" style="background-color: #ef4444; color: white; padding: 0.6rem 1.5rem; border-radius: 12px; font-size: 0.9rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);">
+        <div class="d-flex gap-2 align-items-center">
+            <button id="topReportBtn" onclick="showDiagnosticReport()" class="btn btn-danger animate__animated animate__pulse animate__infinite d-flex align-items-center gap-2 px-3 shadow-danger" style="{% if not stats.alerts %}display: none !important;{% endif %} border-radius: 12px; font-weight: 800; font-size: 0.8rem; height: 42px; border: none; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); letter-spacing: 0.02em;">
+                <i class="ri-pulse-line"></i> DIAGNÓSTICO SPC
+            </button>
+            
+            <button onclick="toggleFullScreen()" class="btn shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: var(--bg-card, #161c2d);" title="Pantalla Completa">
+                <i class="ri-fullscreen-line" id="fsIcon" style="font-size: 1.2rem; color: var(--text-secondary, #94a3b8);"></i>
+            </button>
+
+            <a id="btnVolver" href="{% url 'nueva_medicion_op' %}?proy={{ tolerancia.planilla.proyecto }}&op={{ tolerancia.planilla.num_op }}&proc={{ tolerancia.planilla.proceso.id }}" class="btn" style="background-color: #ef4444; color: white; padding: 0.6rem 1.5rem; border-radius: 12px; font-size: 0.9rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);">
                 <i class="ri-arrow-left-line"></i> Volver
             </a>
         </div>
@@ -28,29 +36,29 @@
     <div class="d-flex gap-4 mb-4 flex-column flex-md-row" style="flex: 1; min-height: 0;">
         
         <!-- Left Column: Stats & Controls -->
-        <div style="flex: 0 0 320px; min-width: 320px; display: flex; flex-direction: column; gap: 1rem; height: 100%;">
+        <div style="flex: 0 0 320px; min-width: 320px; display: flex; flex-direction: column; gap: 0.75rem; height: 100%; overflow-y: auto; padding-right: 4px;" class="custom-scrollbar">
             
             <!-- Stats Table (Top) -->
-            <div class="config-card" style="flex-shrink: 0;">
-                <div class="config-card-header" style="background: #e0f2fe; color: #0369a1; padding: 0.85rem 1rem; border-bottom: 1px solid #bae6fd;">
+            <div class="config-card" style="flex-shrink: 0; background: var(--bg-card, #161c2d); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; overflow: hidden;">
+                <div class="config-card-header" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 0.85rem 1rem; border-bottom: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: center; gap: 0.5rem;">
                     <i class="ri-settings-5-line" style="font-size: 1.1rem;"></i>
                     <span style="font-weight: 800; letter-spacing: 0.05em;">ESTADÍSTICOS X-R</span>
                 </div>
                 <div class="config-card-body p-0">
-                    <table class="table table-sm mb-0 stats-table-compact">
-                        <tr><td>Media (X̄)</td><td class="text-end fw-bold">{{ stats.mean|floatformat:2 }}</td></tr>
-                        <tr><td>L.I.C.</td><td class="text-end fw-bold">{{ stats.lic|floatformat:2 }}</td></tr>
-                        <tr><td>L.S.C.</td><td class="text-end fw-bold">{{ stats.lsc|floatformat:2 }}</td></tr>
-                        <tr><td>Rango (R)</td><td class="text-end fw-bold">{{ stats.range|floatformat:2 }}</td></tr>
-                        <tr><td>Lote (n)</td><td class="text-end fw-bold">{{ stats.n }}</td></tr>
-                        <tr><td>Desv. Est. (σ)</td><td class="text-end fw-bold">{{ stats.stdev|floatformat:2 }}</td></tr>
-                        <tr class="table-info"><td>L.S.E. (TOL+)</td><td class="text-end fw-bold text-danger">{{ stats.usl|floatformat:2|default:"N/A" }}</td></tr>
-                        <tr class="table-info"><td>L.I.E. (TOL-)</td><td class="text-end fw-bold text-danger">{{ stats.lsl|floatformat:2|default:"N/A" }}</td></tr>
+                    <table class="table table-sm mb-0 stats-table-dark">
+                        <tr><td>Media (X̄)</td><td class="text-end fw-bold" id="stat-mean">{{ stats.mean|floatformat:3 }}</td></tr>
+                        <tr><td>L.I.C.</td><td class="text-end fw-bold" id="stat-lic">{{ stats.lic|floatformat:3 }}</td></tr>
+                        <tr><td>L.S.C.</td><td class="text-end fw-bold" id="stat-lsc">{{ stats.lsc|floatformat:3 }}</td></tr>
+                        <tr><td>Rango (R)</td><td class="text-end fw-bold" id="stat-range">{{ stats.range|floatformat:3 }}</td></tr>
+                        <tr><td>Lote (n)</td><td class="text-end fw-bold" id="stat-n">{{ stats.n }}</td></tr>
+                        <tr><td>Desv. Est. (σ)</td><td class="text-end fw-bold" id="stat-stdev">{{ stats.stdev|floatformat:3 }}</td></tr>
+                        <tr class="table-highlight"><td>L.S.E. (TOL+)</td><td class="text-end fw-bold text-danger" id="stat-usl">{{ stats.usl|floatformat:3|default:"N/A" }}</td></tr>
+                        <tr class="table-highlight"><td>L.I.E. (TOL-)</td><td class="text-end fw-bold text-danger" id="stat-lsl">{{ stats.lsl|floatformat:3|default:"N/A" }}</td></tr>
                         <tr>
-                            <td>Indice CP</td>
+                            <td>Índice CP</td>
                             <td class="text-end">
-                                <div class="d-flex justify-content-end align-items-center gap-2">
-                                    <span class="fw-bold">{{ stats.cp|default:"N/D" }}</span>
+                                <div class="d-flex justify-content-end align-items-center gap-2" id="stat-cp-container">
+                                    <span class="fw-bold" id="stat-cp">{{ stats.cp|default:"N/D" }}</span>
                                     {% if stats.cp_info and stats.cp %}
                                     <span class="badge {{ stats.cp_info.class }}" style="font-size: 0.7rem;">{{ stats.cp_info.text }}</span>
                                     {% endif %}
@@ -58,10 +66,10 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Indice CPK</td>
+                            <td>Índice CPK</td>
                             <td class="text-end">
-                                <div class="d-flex justify-content-end align-items-center gap-2">
-                                    <span class="fw-bold">{{ stats.cpk|default:"N/D" }}</span>
+                                <div class="d-flex justify-content-end align-items-center gap-2" id="stat-cpk-container">
+                                    <span class="fw-bold" id="stat-cpk">{{ stats.cpk|default:"N/D" }}</span>
                                     {% if stats.cpk_info and stats.cpk %}
                                     <span class="badge {{ stats.cpk_info.class }}" style="font-size: 0.7rem;">{{ stats.cpk_info.text }}</span>
                                     {% endif %}
@@ -73,8 +81,8 @@
             </div>
 
             <!-- Controls List (Bottom - Scrollable) -->
-            <div class="config-card" style="flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border-top: 3px solid #6366f1;">
-                 <div class="config-card-header text-primary" style="background: white; color: #1e293b; border-bottom: 1px solid #f1f5f9; padding: 0.75rem 1rem;">
+            <div class="config-card" style="flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; border-top: 3px solid #6366f1; background: var(--bg-card, #161c2d); border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                 <div class="config-card-header" style="background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border-bottom: 1px solid rgba(99, 102, 241, 0.2); padding: 0.75rem 1rem;">
                      <div class="d-flex align-items-center gap-2">
                         <i class="ri-list-check"></i>
                         <span style="font-weight: 800; font-size: 0.8rem; letter-spacing: 0.05em;">CONTROLES</span>
@@ -84,26 +92,29 @@
                     <div class="list-group list-group-flush">
                         {% regroup controles_hermanos by planilla.elemento.nombre as element_list %}
                         {% for element in element_list %}
-                            {% if element.grouper %}
-                            <div class="bg-light border-bottom px-3 py-1 text-muted fw-bold" style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; position: sticky; top: 0; z-index: 10;">
-                                {{ element.grouper }}
-                            </div>
-                            {% endif %}
-                            
                             {% for sibling in element.list %}
-                            <a href="{% url 'estadisticas_control' sibling.id %}" 
-                               class="list-group-item list-group-item-action d-flex align-items-center justify-content-between px-3 py-2 border-bottom-0"
-                               style="font-size: 0.85rem; transition: all 0.2s; border-left: 3px solid transparent; {% if sibling.id == tolerancia.id %}background-color: #eff6ff; color: #2563eb; font-weight: 600; border-left-color: #2563eb !important;{% elif sibling.control.pnp %}color: #94a3b8; background-color: #fcfcfd;{% else %}color: #475569;{% endif %}">
+                            {% if sibling.control.pnp %}
+                            <div class="list-group-item d-flex align-items-center justify-content-between px-3 py-2"
+                                 style="font-size: 0.85rem; background: transparent; color: #4b5563; opacity: 0.6; cursor: not-allowed; border: none;">
                                 <span class="text-truncate d-flex align-items-center gap-2" style="flex: 1;">
                                     {{ sibling.control.nombre }}
-                                    {% if sibling.control.pnp %}
-                                    <span class="badge rounded-pill bg-light text-muted border" style="font-size: 0.6rem; font-weight: 500;">PnP</span>
-                                    {% endif %}
+                                    <span class="badge rounded-pill" style="font-size: 0.6rem; font-weight: 500; background: rgba(255,255,255,0.05); color: #4b5563;">PnP</span>
+                                </span>
+                            </div>
+                            {% else %}
+                            <a href="{% url 'estadisticas_control' sibling.id %}" 
+                               onclick="loadControlData(event, {{ sibling.id }}, this)"
+                               data-id="{{ sibling.id }}"
+                               class="list-group-item list-group-item-action d-flex align-items-center justify-content-between px-3 py-2 control-list-item"
+                               style="font-size: 0.85rem; transition: all 0.2s; border: none; border-left: 3px solid transparent; background: transparent; {% if sibling.id == tolerancia.id %}background-color: rgba(59, 130, 246, 0.15) !important; color: #60a5fa !important; font-weight: 600; border-left-color: #3b82f6 !important;{% else %}color: var(--text-secondary, #94a3b8);{% endif %}">
+                                <span class="text-truncate d-flex align-items-center gap-2" style="flex: 1;">
+                                    {{ sibling.control.nombre }}
                                 </span>
                                 {% if sibling.id == tolerancia.id %}
                                 <i class="ri-arrow-right-s-line"></i>
                                 {% endif %}
                             </a>
+                            {% endif %}
                             {% endfor %}
                         {% endfor %}
                     </div>
@@ -124,21 +135,11 @@
                     </div>
                     
                     <div style="position: relative; height: 42vh; width: 100%;" id="chartContainer">
-                        {% if tolerancia.control.pnp %}
-                        <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-4" style="background: #f8fafc; border-radius: 12px; border: 2px dashed #e2e8f0;">
-                            <i class="ri-information-line" style="font-size: 3rem; color: #94a3b8; margin-bottom: 1rem;"></i>
-                            <h6 class="fw-bold text-dark mb-1">CONTROL PASA / NO PASA</h6>
-                            <p class="text-muted small mb-0">Este control es dicotómico y no genera gráficos de tendencia o histogramas numéricos. Consulte el gráfico de <b>Estatus</b> para ver el resumen del lote.</p>
-                        </div>
-                        <canvas id="mainChartCanvas" style="display: none;"></canvas>
-                        {% else %}
                         <canvas id="mainChartCanvas"></canvas>
-                        {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- Thumbnails Selector -->
             <!-- Thumbnails Selector (Flex Fit) -->
             <div class="d-flex gap-2 w-100">
                 <div style="flex: 1; min-width: 0;">
@@ -182,6 +183,54 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Smart Alerts Panel (REUBICADO AL FONDO) -->
+            <div id="alertsPanel" class="config-card mt-3 animate__animated animate__fadeInUp" style="border-top: 3px solid {% if stats.alerts %}#ef4444{% else %}#10b981{% endif %}; background: var(--bg-card, #161c2d); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px;">
+                <div class="config-card-header" style="background: rgba(255,255,255,0.03); color: var(--text-primary, #fff); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0.6rem 1rem;">
+                    <div class="d-flex align-items-center justify-content-between w-100">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="ri-radar-line {% if stats.alerts %}text-danger animate__animated animate__pulse animate__infinite{% else %}text-success{% endif %}" style="font-size: 1.1rem;"></i>
+                            <span style="font-weight: 800; font-size: 0.85rem; letter-spacing: 0.05em; color: var(--text-primary, #fff);">ALERTAS INTELIGENTES DEL PROCESO</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            {% if stats.alerts %}
+                            <button onclick="showDiagnosticReport()" class="btn btn-sm btn-danger d-flex align-items-center gap-1 shadow-danger" style="font-weight: 700; border-radius: 8px; font-size: 0.7rem; padding: 0.4rem 0.8rem;">
+                                <i class="ri-article-line"></i> GENERAR INFORME DETALLADO
+                            </button>
+                            <span class="badge" style="font-size: 0.7rem; font-weight: 700; background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">{{ stats.alerts|length }} ANOMALÍAS DETECTADAS</span>
+                            {% else %}
+                            <i class="ri-checkbox-circle-fill text-success"></i>
+                            <span class="badge" style="font-size: 0.7rem; font-weight: 700; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">PROCESO ESTABLE</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="config-card-body p-2" style="background: {% if stats.alerts %}rgba(239, 68, 68, 0.05){% else %}rgba(16, 185, 129, 0.03){% endif %};">
+                    {% if stats.alerts %}
+                        <div class="row g-2">
+                            {% for alert in stats.alerts %}
+                            <div class="col-md-4">
+                                <div class="d-flex gap-2 p-2 rounded border-start border-3 border-{{ alert.type }}" style="background: var(--bg-card, #161c2d); box-shadow: 0 1px 3px rgba(0,0,0,0.2); height: 100%;">
+                                    <i class="{{ alert.icon }} text-{{ alert.type }}" style="font-size: 1.2rem; margin-top: 2px;"></i>
+                                    <div>
+                                        <div class="fw-bold" style="font-size: 0.75rem; color: var(--text-primary, #fff);">{{ alert.title }}</div>
+                                        <div style="font-size: 0.7rem; line-height: 1.2; color: var(--text-secondary, #94a3b8);">{{ alert.desc }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center gap-3 py-1">
+                            <i class="ri-shield-check-line text-success" style="font-size: 1.5rem;"></i>
+                            <p class="mb-0" style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary, #94a3b8);">
+                                El análisis estadístico no detecta tendencias, rachas o puntos fuera de control. 
+                                <span class="text-success fw-bold">El proceso se mantiene estable.</span>
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -191,16 +240,74 @@
     /* Hide Vertical Scroll globally for this view */
     body { overflow: hidden !important; }
 
-    .stats-table-compact td { 
-        padding: 0.6rem 0.5rem; 
-        font-size: 0.8rem; 
-        border-bottom: 1px solid #f1f5f9;
-        color: #475569;
+    .shadow-danger {
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4) !important;
     }
-    .stats-table-compact tr:last-child td { border: none; }
+    .shadow-danger:hover {
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6) !important;
+        transform: translateY(-1px);
+    }
+
+    /* Custom Scrollbar for side panel - Dark Theme */
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+    /* Dark Theme Stats Table */
+    .stats-table-dark { 
+        background: transparent;
+    }
+    .stats-table-dark td { 
+        padding: 0.55rem 0.75rem; 
+        font-size: 0.85rem; 
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        color: var(--text-secondary, #94a3b8);
+    }
+    .stats-table-dark td:first-child {
+        color: var(--text-muted, #64748b);
+        font-weight: 500;
+    }
+    .stats-table-dark td:last-child {
+        color: var(--text-primary, #fff);
+    }
+    .stats-table-dark tr:last-child td { border: none; }
+    .stats-table-dark tr.table-highlight td {
+        background: rgba(239, 68, 68, 0.1);
+    }
+    .stats-table-dark .text-danger {
+        color: #f87171 !important;
+    }
+
+    /* Control list item styles */
+    .control-list-item {
+        text-decoration: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.03) !important;
+    }
+    .control-list-item:hover {
+        background: rgba(255,255,255,0.05) !important;
+        color: var(--text-primary, #fff) !important;
+        text-decoration: none !important;
+    }
+    .control-list-item:focus,
+    .control-list-item:active {
+        text-decoration: none !important;
+        outline: none;
+    }
+    
+    /* Override Bootstrap list-group-item styles */
+    .list-group-item.control-list-item {
+        background-color: transparent !important;
+        border: none !important;
+        border-left: 3px solid transparent !important;
+        border-bottom: 1px solid rgba(255,255,255,0.03) !important;
+    }
+    .list-group-item.control-list-item:last-child {
+        border-bottom: none !important;
+    }
     
     .btn-back-simple {
-        color: #64748b;
+        color: #94a3b8;
         font-size: 0.85rem;
         font-weight: 600;
         text-decoration: none;
@@ -208,43 +315,86 @@
         align-items: center;
         gap: 0.4rem;
         padding: 0.4rem 0.8rem;
-        background: white;
+        background: var(--bg-card, #161c2d);
         border-radius: 8px;
         transition: 0.2s;
-        border: 1px solid #e2e8f0;
+        border: 1px solid rgba(255,255,255,0.1);
     }
-    .btn-back-simple:hover { background: #f8fafc; color: #1e293b; }
+    .btn-back-simple:hover { background: rgba(255,255,255,0.05); color: #fff; }
 
     .chart-thumb:hover {
         transform: translateY(-3px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
         border: 1px solid #3b82f6 !important;
     }
     .chart-thumb.active {
         border: 2px solid #3b82f6 !important;
-        background: #eff6ff;
+        background: rgba(59, 130, 246, 0.1);
     }
 
     /* Soft Badges for CP/CPK */
     .badge-soft-danger {
-        background-color: #fee2e2 !important; /* Soft Red */
-        color: #991b1b !important;
-        border: 1px solid #fecaca;
+        background-color: rgba(239, 68, 68, 0.2) !important;
+        color: #f87171 !important;
+        border: 1px solid rgba(239, 68, 68, 0.3);
     }
     .badge-soft-warning {
-        background-color: #fef3c7 !important; /* Soft Amber */
-        color: #92400e !important;
-        border: 1px solid #fde68a;
+        background-color: rgba(245, 158, 11, 0.2) !important;
+        color: #fbbf24 !important;
+        border: 1px solid rgba(245, 158, 11, 0.3);
     }
     .badge-soft-success {
-        background-color: #dcfce7 !important; /* Soft Green */
-        color: #166534 !important;
-        border: 1px solid #bbf7d0;
+        background-color: rgba(16, 185, 129, 0.2) !important;
+        color: #34d399 !important;
+        border: 1px solid rgba(16, 185, 129, 0.3);
     }
     .badge-soft-excellent {
-        background-color: #ccfbf1 !important; /* Soft Teal/Emerald (distinctive green) */
-        color: #115e59 !important;
-        border: 1px solid #99f6e4;
+        background-color: rgba(6, 182, 212, 0.2) !important;
+        color: #22d3ee !important;
+        border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    /* Cards in dark mode */
+    .card {
+        background: var(--bg-card, #161c2d) !important;
+        border: 1px solid rgba(255,255,255,0.05) !important;
+    }
+    .card-body h5, .card-body h6 {
+        color: var(--text-primary, #fff) !important;
+    }
+    .text-xxs {
+        font-size: 0.65rem;
+        color: var(--text-muted, #64748b);
+    }
+
+    /* Premium Swal Design */
+    .premium-swal-popup {
+        border-radius: 45px !important;
+        padding: 3.5rem 3rem !important;
+        box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.3) !important;
+        background: #ffffff !important;
+    }
+    .premium-confirm-btn {
+        background-color: #2563eb !important;
+        color: white !important;
+        border-radius: 22px !important;
+        padding: 18px 60px !important;
+        font-weight: 800 !important;
+        font-size: 1.2rem !important;
+        border: none !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 12px !important;
+        box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.4) !important;
+        width: auto !important;
+        min-width: 200px !important;
+    }
+    .premium-confirm-btn:hover {
+        background-color: #1d4ed8 !important;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.5) !important;
     }
 </style>
 
@@ -272,10 +422,12 @@
                     {
                         label: 'Mediciones',
                         data: DATA.points,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                        borderWidth: isThumb ? 1 : 2,
-                        pointRadius: isThumb ? 0 : 4,
+                        borderColor: '#00d4ff', // Cyan neón
+                        backgroundColor: 'rgba(0, 212, 255, 0.15)',
+                        borderWidth: isThumb ? 2 : 3,
+                        pointRadius: isThumb ? 0 : 5,
+                        pointBackgroundColor: '#00d4ff',
+                        pointBorderColor: '#fff',
                         tension: 0,
                         order: 1
                     },
@@ -283,7 +435,7 @@
                     (!isThumb && typeof DATA.stats.mean === 'number') ? {
                         label: 'Media (X̄)',
                         data: DATA.labels.map(() => DATA.stats.mean),
-                        borderColor: '#10b981', // Emerald 500
+                        borderColor: '#00ff88', // Verde neón
                         borderWidth: 2,
                         borderDash: [5, 5],
                         pointRadius: 0,
@@ -292,34 +444,34 @@
                     (!isThumb && typeof DATA.stats.lsc === 'number') ? {
                         label: 'Límites Control (LSC)',
                         data: DATA.labels.map(() => DATA.stats.lsc),
-                        borderColor: '#ef4444', // Red 500
-                        borderWidth: 1,
-                        borderDash: [2, 2],
+                        borderColor: '#ff4d6a', // Rosa neón
+                        borderWidth: 2,
+                        borderDash: [4, 4],
                         pointRadius: 0,
                         order: 3
                     } : null,
                     (!isThumb && typeof DATA.stats.lic === 'number') ? {
                         label: 'Límites Control (LIC)',
                         data: DATA.labels.map(() => DATA.stats.lic),
-                        borderColor: '#ef4444',
-                        borderWidth: 1,
-                        borderDash: [2, 2],
+                        borderColor: '#ff4d6a', // Rosa neón
+                        borderWidth: 2,
+                        borderDash: [4, 4],
                         pointRadius: 0,
                         order: 3
                     } : null,
                     (!isThumb && typeof DATA.stats.usl === 'number') ? {
                         label: 'Límites Tol. (LSE)',
                         data: DATA.labels.map(() => DATA.stats.usl),
-                        borderColor: '#0f172a', // Slate 900
-                        borderWidth: 1.5,
+                        borderColor: '#ffcc00', // Amarillo neón
+                        borderWidth: 2,
                         pointRadius: 0,
                         order: 4
                     } : null,
                     (!isThumb && typeof DATA.stats.lsl === 'number') ? {
                         label: 'Límites Tol. (LIE)',
                         data: DATA.labels.map(() => DATA.stats.lsl),
-                        borderColor: '#0f172a',
-                        borderWidth: 1.5,
+                        borderColor: '#ffcc00', // Amarillo neón
+                        borderWidth: 2,
                         pointRadius: 0,
                         order: 4
                     } : null
@@ -338,14 +490,23 @@
                         position: 'top',
                         labels: {
                             usePointStyle: true,
-                            boxWidth: 8
+                            boxWidth: 8,
+                            color: '#fff'
                         }
                     }, 
                     tooltip: { enabled: !isThumb } 
                 },
                 scales: {
-                    x: { display: !isThumb, grid: { display: false } },
-                    y: { display: !isThumb }
+                    x: { 
+                        display: !isThumb, 
+                        grid: { display: false },
+                        ticks: { color: '#e2e8f0' }
+                    },
+                    y: { 
+                        display: !isThumb,
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#e2e8f0' }
+                    }
                 }
             }
         };
@@ -361,9 +522,12 @@
                     {
                         label: 'Rango Móvil',
                         data: ranges,
-                        borderColor: '#6366f1',
-                        borderWidth: isThumb ? 1 : 2,
-                        pointRadius: isThumb ? 0 : 3,
+                        borderColor: '#a855f7', // Violeta neón
+                        backgroundColor: 'rgba(168, 85, 247, 0.15)',
+                        borderWidth: isThumb ? 2 : 3,
+                        pointRadius: isThumb ? 0 : 4,
+                        pointBackgroundColor: '#a855f7',
+                        pointBorderColor: '#fff',
                         tension: 0,
                         order: 1
                     },
@@ -371,7 +535,7 @@
                     (!isThumb && typeof DATA.stats.r_mean === 'number') ? {
                         label: 'Rango Medio (R̄)',
                         data: DATA.labels.map(() => DATA.stats.r_mean),
-                        borderColor: '#10b981', // Emerald 500
+                        borderColor: '#00ff88', // Verde neón
                         borderWidth: 2,
                         borderDash: [5, 5],
                         pointRadius: 0,
@@ -380,18 +544,18 @@
                     (!isThumb && typeof DATA.stats.r_lsc === 'number') ? {
                         label: 'Límites Control (LSC)',
                         data: DATA.labels.map(() => DATA.stats.r_lsc),
-                        borderColor: '#ef4444', // Red 500
-                        borderWidth: 1,
-                        borderDash: [2, 2],
+                        borderColor: '#ff4d6a', // Rosa neón
+                        borderWidth: 2,
+                        borderDash: [4, 4],
                         pointRadius: 0,
                         order: 3
                     } : null,
                     (!isThumb && typeof DATA.stats.r_lic === 'number') ? { // Check undefined/null specifically as it might be 0
                         label: 'Límites Control (LIC)',
                         data: DATA.labels.map(() => DATA.stats.r_lic),
-                        borderColor: '#ef4444',
-                        borderWidth: 1,
-                        borderDash: [2, 2],
+                        borderColor: '#ff4d6a', // Rosa neón
+                        borderWidth: 2,
+                        borderDash: [4, 4],
                         pointRadius: 0,
                         order: 3
                     } : null
@@ -410,14 +574,24 @@
                         position: 'top',
                         labels: {
                             usePointStyle: true,
-                            boxWidth: 8
+                            boxWidth: 8,
+                            color: '#fff'
                         }
                     },
                     tooltip: { enabled: !isThumb } 
                 },
                 scales: {
-                    x: { display: !isThumb, grid: { display: false } },
-                    y: { display: !isThumb, beginAtZero: true }
+                    x: { 
+                        display: !isThumb, 
+                        grid: { display: false },
+                        ticks: { color: '#e2e8f0' }
+                    },
+                    y: { 
+                        display: !isThumb, 
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#e2e8f0' }
+                    }
                 }
             }
         };
@@ -440,7 +614,7 @@
             freqData[b]++;
         });
         
-        const labels = freqData.map((_, i) => (min + i * binWidth + binWidth/2).toFixed(2)); // Midpoint labels
+        const labels = freqData.map((_, i) => (min + i * binWidth + binWidth/2).toFixed(3)); // Midpoint labels
         
         return {
             type: 'bar',
@@ -478,12 +652,25 @@
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
                 plugins: { 
-                    legend: { display: !isThumb, position: 'top' }, 
+                    legend: { 
+                        display: !isThumb, 
+                        position: 'top',
+                        labels: { color: '#fff' }
+                    }, 
                     tooltip: { enabled: !isThumb } 
                 },
                 scales: {
-                    x: { display: !isThumb, grid: { display: false } },
-                    y: { display: !isThumb, beginAtZero: true }
+                    x: { 
+                        display: !isThumb, 
+                        grid: { display: false },
+                        ticks: { color: '#e2e8f0' }
+                    },
+                    y: { 
+                        display: !isThumb, 
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#e2e8f0' }
+                    }
                 }
             }
         };
@@ -568,22 +755,27 @@
                         tension: 0.4,
                         order: 2
                     },
-                    // Specified Target
+                    // Curve Legend Update
                     (!isThumb) ? {
-                        label: 'Especificado',
+                        label: 'Curva Ideal (Teórica)',
                         data: gaussDataEspecificado,
-                        borderColor: '#ef4444', // Red 500
+                        borderColor: '#ef4444',
                         borderWidth: 2,
                         borderDash: [4, 4],
                         pointRadius: 0,
-                        fill: false, // Usually specification is just outline
+                        fill: false,
                         tension: 0.4,
                         order: 1
                     } : null,
                     
                     !isThumb ? createVerticalLine(DATA.stats.mean, '#0284c7', 'Media (X̄)') : null,
-                    !isThumb ? createVerticalLine(DATA.stats.lsl, '#ef4444', 'Límite Inf. (LIE)') : null,
-                    !isThumb ? createVerticalLine(DATA.stats.usl, '#ef4444', 'Límite Sup. (LSE)') : null
+                    !isThumb ? createVerticalLine(DATA.stats.nominal, '#ef4444', 'Nominal (Objetivo)') : null,
+                    // Engineering Limits (Tolerances)
+                    !isThumb ? createVerticalLine(DATA.stats.lsl, '#ef4444', 'Tolerancia Mín. (LIE)') : null,
+                    !isThumb ? createVerticalLine(DATA.stats.usl, '#ef4444', 'Tolerancia Máx. (LSE)') : null,
+                    // Natural Process Limits (Real Capacity)
+                    !isThumb ? createVerticalLine(DATA.stats.lic, '#f59e0b', 'Capacidad Real Mín. (LIC)') : null,
+                    !isThumb ? createVerticalLine(DATA.stats.lsc, '#f59e0b', 'Capacidad Real Máx. (LSC)') : null
                 ].filter(Boolean)
             },
             options: {
@@ -591,7 +783,11 @@
                 maintainAspectRatio: false,
                 interaction: { mode: 'nearest', axis: 'x', intersect: false },
                 plugins: { 
-                    legend: { display: !isThumb, position: 'top' }, 
+                    legend: { 
+                        display: !isThumb, 
+                        position: 'top',
+                        labels: { color: '#fff' }
+                    }, 
                     tooltip: { enabled: !isThumb, callbacks: { title: (ctx) => 'Valor: ' + ctx[0].parsed.x.toFixed(4) } } 
                 },
                 scales: { 
@@ -600,9 +796,15 @@
                         display: !isThumb,
                         min: start,
                         max: end,
-                        grid: { display: true, color: '#f1f5f9' }
+                        grid: { display: true, color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: '#e2e8f0' }
                     }, 
-                    y: { display: !isThumb, beginAtZero: true, grid: { display: false } } 
+                    y: { 
+                        display: !isThumb, 
+                        beginAtZero: true, 
+                        grid: { display: false },
+                        ticks: { color: '#e2e8f0' }
+                    } 
                 },
                 elements: { point: { radius: 0 } }
             }
@@ -634,7 +836,11 @@
                 maintainAspectRatio: false,
                 cutout: '60%',
                 plugins: {
-                    legend: { display: !isThumb, position: 'right' },
+                    legend: { 
+                        display: !isThumb, 
+                        position: 'right',
+                        labels: { color: '#fff' }
+                    },
                     tooltip: { 
                         enabled: true,
                         callbacks: {
@@ -653,7 +859,8 @@
                         display: !isThumb,
                         text: `Índice de Aprobación: ${approvedPct}% (${approved}/${total} piezas)`,
                         position: 'bottom',
-                        font: { size: 16 }
+                        font: { size: 16 },
+                        color: '#fff'
                     }
                 }
             }
@@ -705,7 +912,10 @@
         try {
             const safeInit = (id, config) => {
                 const el = document.getElementById(id);
-                if (el && config) new Chart(el, config);
+                if (el && config) {
+                    if (thumbInstances[id]) thumbInstances[id].destroy();
+                    thumbInstances[id] = new Chart(el, config);
+                }
             };
             // Init Thumbnails
             safeInit('thumbTrend', getTrendConfig(true));
@@ -719,6 +929,298 @@
             console.warn("Init error:", err);
         }
     });
+    async function loadControlData(event, controlId, element) {
+        event.preventDefault();
+        
+        // Update Sidebar UI immediately for better feedback
+        document.querySelectorAll('.control-list-item').forEach(el => {
+            el.style.setProperty('background-color', 'transparent', 'important');
+            el.style.setProperty('color', 'var(--text-secondary, #94a3b8)', 'important');
+            el.style.fontWeight = 'normal';
+            el.style.borderLeftColor = 'transparent';
+        });
+        element.style.setProperty('background-color', 'rgba(59, 130, 246, 0.15)', 'important');
+        element.style.setProperty('color', '#60a5fa', 'important');
+        element.style.fontWeight = '600';
+        element.style.borderLeftColor = '#3b82f6';
 
+        try {
+            const response = await fetch(`/mediciones/estadisticas/${controlId}/`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await response.json();
+
+            // 1. Update Global Data Object
+            DATA.stats = data.stats;
+            DATA.points = data.data_points;
+            DATA.labels = data.labels;
+
+            // 2. Update Headers
+            document.getElementById('controlTitleHeader').innerText = `SEGUIMIENTO DE PARÁMETROS: ${data.control_nombre}`;
+            document.getElementById('controlSubHeader').innerText = `Proyecto: ${data.proyecto} | OP: ${data.num_op} | Proceso: ${data.proceso_nombre} | Cliente: ${data.cliente}`;
+            document.getElementById('btnVolver').href = `/mediciones/nueva/?proy=${data.proyecto}&op=${data.num_op}&proc=${data.proceso_id}`;
+            
+            // Top Report Button Visibility
+            const topReportBtn = document.getElementById('topReportBtn');
+            if (data.stats.alerts.length > 0) {
+                topReportBtn.style.setProperty('display', 'flex', 'important');
+            } else {
+                topReportBtn.style.setProperty('display', 'none', 'important');
+            }
+
+            // 3. Update Stats Table
+            document.getElementById('stat-mean').innerText = parseFloat(data.stats.mean).toFixed(2);
+            document.getElementById('stat-lic').innerText = parseFloat(data.stats.lic).toFixed(2);
+            document.getElementById('stat-lsc').innerText = parseFloat(data.stats.lsc).toFixed(2);
+            document.getElementById('stat-range').innerText = parseFloat(data.stats.range).toFixed(2);
+            document.getElementById('stat-n').innerText = data.stats.n;
+            document.getElementById('stat-stdev').innerText = parseFloat(data.stats.stdev).toFixed(2);
+            document.getElementById('stat-usl').innerText = data.stats.usl ? parseFloat(data.stats.usl).toFixed(2) : "N/A";
+            document.getElementById('stat-lsl').innerText = data.stats.lsl ? parseFloat(data.stats.lsl).toFixed(2) : "N/A";
+            
+            // CP/CPK Badges
+            const cpContainer = document.getElementById('stat-cp-container');
+            cpContainer.innerHTML = `<span class="fw-bold">${data.stats.cp || 'N/D'}</span>`;
+            if (data.stats.cp && data.stats.cp_info) {
+                cpContainer.innerHTML += `<span class="badge ${data.stats.cp_info.class}" style="font-size: 0.7rem;">${data.stats.cp_info.text}</span>`;
+            }
+
+            const cpkContainer = document.getElementById('stat-cpk-container');
+            cpkContainer.innerHTML = `<span class="fw-bold">${data.stats.cpk || 'N/D'}</span>`;
+            if (data.stats.cpk && data.stats.cpk_info) {
+                cpkContainer.innerHTML += `<span class="badge ${data.stats.cpk_info.class}" style="font-size: 0.7rem;">${data.stats.cpk_info.text}</span>`;
+            }
+
+            // 4. Update Alerts Panel
+            const alertsPanel = document.getElementById('alertsPanel');
+            alertsPanel.style.borderTopColor = data.stats.alerts.length > 0 ? '#ef4444' : '#10b981';
+            
+            let alertsHtml = `
+                <div class="config-card-header" style="background: rgba(255,255,255,0.03); color: var(--text-primary, #fff); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0.6rem 1rem;">
+                    <div class="d-flex align-items-center justify-content-between w-100">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="ri-radar-line ${data.stats.alerts.length > 0 ? 'text-danger animate__animated animate__pulse animate__infinite' : 'text-success'}" style="font-size: 1.1rem;"></i>
+                            <span style="font-weight: 800; font-size: 0.85rem; letter-spacing: 0.05em; color: var(--text-primary, #fff);">ALERTAS INTELIGENTES DEL PROCESO</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            ${data.stats.alerts.length > 0 ? `
+                                <button onclick="showDiagnosticReport()" class="btn btn-sm btn-danger d-flex align-items-center gap-1 shadow-danger" style="font-weight: 700; border-radius: 8px; font-size: 0.7rem; padding: 0.4rem 0.8rem;">
+                                    <i class="ri-article-line"></i> GENERAR INFORME DETALLADO
+                                </button>
+                                <span class="badge" style="font-size: 0.7rem; font-weight: 700; background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">${data.stats.alerts.length} ANOMALÍAS DETECTADAS</span>
+                            ` : `
+                                <i class="ri-checkbox-circle-fill text-success"></i>
+                                <span class="badge" style="font-size: 0.7rem; font-weight: 700; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">PROCESO ESTABLE</span>
+                            `}
+                        </div>
+                    </div>
+                </div>
+                <div class="config-card-body p-2" style="background: ${data.stats.alerts.length > 0 ? 'rgba(239, 68, 68, 0.05)' : 'rgba(16, 185, 129, 0.03)'};">`;
+
+            if (data.stats.alerts.length > 0) {
+                alertsHtml += '<div class="row g-2">';
+                data.stats.alerts.forEach(alert => {
+                    alertsHtml += `
+                        <div class="col-md-4">
+                            <div class="d-flex gap-2 p-2 rounded border-start border-3 border-${alert.type}" style="background: var(--bg-card, #161c2d); box-shadow: 0 1px 3px rgba(0,0,0,0.2); height: 100%;">
+                                <i class="${alert.icon} text-${alert.type}" style="font-size: 1.2rem; margin-top: 2px;"></i>
+                                <div>
+                                    <div class="fw-bold" style="font-size: 0.75rem; color: var(--text-primary, #fff);">${alert.title}</div>
+                                    <div style="font-size: 0.7rem; line-height: 1.2; color: var(--text-secondary, #94a3b8);">${alert.desc}</div>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                alertsHtml += '</div>';
+            } else {
+                alertsHtml += `
+                    <div class="d-flex align-items-center justify-content-center gap-3 py-1">
+                        <i class="ri-shield-check-line text-success" style="font-size: 1.5rem;"></i>
+                        <p class="mb-0" style="font-size: 0.8rem; font-weight: 500; color: var(--text-secondary, #94a3b8);">
+                            El análisis estadístico no detecta tendencias, rachas o puntos fuera de control. 
+                            <span class="text-success fw-bold">El proceso se mantiene estable.</span>
+                        </p>
+                    </div>`;
+            }
+            alertsHtml += '</div>';
+            alertsPanel.innerHTML = alertsHtml;
+
+            // 5. Re-render Charts (With small delay to ensure canvas is visible and has dimensions)
+            setTimeout(() => {
+                const activeThumb = document.querySelector('.chart-thumb.active');
+                const chartType = activeThumb ? activeThumb.getAttribute('onclick').match(/'([^']+)'/)[1] : 'trend';
+                const chartTitle = activeThumb ? activeThumb.querySelector('h6').innerText : 'Gráfico de Medidas';
+                switchChart(chartType, chartTitle, activeThumb);
+                
+                const safeInit = (id, config) => {
+                    const el = document.getElementById(id);
+                    if (el && config) {
+                        if (thumbInstances[id]) thumbInstances[id].destroy();
+                        thumbInstances[id] = new Chart(el, config);
+                    }
+                };
+                safeInit('thumbTrend', getTrendConfig(true));
+                safeInit('thumbRange', getRangeConfig(true));
+                safeInit('thumbFreq', getFreqConfig(true));
+                safeInit('thumbGauss', getGaussConfig(true));
+                safeInit('thumbPie', getPieConfig(true));
+            }, 50);
+
+            // 6. Update URL (Cleanly)
+            window.history.pushState({}, '', `/mediciones/estadisticas/${controlId}/`);
+
+        } catch (err) {
+            console.error("Error loading control data:", err);
+            // Fallback: Reload page if AJAX fails
+            window.location.href = `/mediciones/estadisticas/${controlId}/`;
+        }
+    }
+
+    // --- Full Screen Logic ---
+    function toggleFullScreen() {
+        const icon = document.getElementById('fsIcon');
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Error al intentar modo pantalla completa: ${err.message}`);
+            });
+            if (icon) {
+                icon.classList.remove('ri-fullscreen-line');
+                icon.classList.add('ri-fullscreen-exit-line');
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                if (icon) {
+                    icon.classList.remove('ri-fullscreen-exit-line');
+                    icon.classList.add('ri-fullscreen-line');
+                }
+            }
+        }
+    }
+
+    // Listener for ESC key or exit system button
+    document.addEventListener('fullscreenchange', () => {
+        const icon = document.getElementById('fsIcon');
+        if (!document.fullscreenElement && icon) {
+            icon.classList.remove('ri-fullscreen-exit-line');
+            icon.classList.add('ri-fullscreen-line');
+        }
+    });
+
+    // --- Intelligent Diagnostic Report ---
+    function showDiagnosticReport() {
+        if (typeof Swal === 'undefined') return;
+
+        const stats = DATA.stats;
+        const alerts = stats.alerts || [];
+        
+        if (alerts.length === 0) {
+            Swal.fire({
+                icon: 'success',
+                title: '<span style="color: #111827 !important; font-weight: 900;">Proceso Estable</span>',
+                html: '<p style="color: #334155 !important; font-weight: 600;">No se detectaron anomalías relevantes en el análisis.</p>',
+                confirmButtonText: 'Entendido',
+                customClass: { 
+                    popup: 'premium-swal-popup',
+                    confirmButton: 'premium-confirm-btn'
+                },
+                buttonsStyling: false
+            });
+            return;
+        }
+
+        let contentHtml = `
+            <div class="text-center" style="font-family: 'Inter', sans-serif;">
+                <h2 class="fw-black mb-4" style="color: #111827 !important; font-size: 2.2rem; letter-spacing: -0.04em;">Diagnóstico del Proceso</h2>
+                
+                <div class="text-start custom-diagnostic-list mb-4" style="max-height: 450px; overflow-y: auto; padding-right: 15px;">
+        `;
+
+        alerts.forEach(alert => {
+            let causes = "";
+            let actions = "";
+            
+            if (alert.title.includes('Fuera de Control')) {
+                causes = "Cambio brusco en el proceso o ajuste incorrecto de la máquina.";
+                actions = "Parar producción de inmediato y recalibrar.";
+            } else if (alert.title.includes('Racha')) {
+                causes = "Variación en materia prima o desgaste térmico progresivo.";
+                actions = "Observar próximos 5 puntos e inspeccionar refrigeración.";
+            } else if (alert.title.includes('Tendencia')) {
+                causes = "Desgaste progresivo de herramientas o acumulación de viruta.";
+                actions = "Programar cambio de herramienta y revisar compensación.";
+            } else if (alert.title.includes('Capacidad')) {
+                causes = "La máquina no es capaz de mantener la precisión requerida para esta tolerancia.";
+                actions = "Revisar holguras, herramental de alta precisión o reajustar parámetros de corte.";
+            } else {
+                causes = "Falta de estandarización o variabilidad del método.";
+                actions = "Auditar el método de trabajo y verificar sujeción.";
+            }
+
+            contentHtml += `
+                <div class="mb-4 p-4 rounded-4" style="background: #ffffff !important; border: 2px solid #f1f5f9; box-shadow: 0 10px 30px rgba(0,0,0,0.05);">
+                    <!-- Sub-título Anomalia -->
+                    <div class="d-flex align-items-center gap-3 mb-4">
+                        <div style="padding: 12px; background: ${alert.type === 'danger' ? '#fee2e2' : '#fef3c7'}; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="${alert.icon}" style="font-size: 1.5rem; color: ${alert.type === 'danger' ? '#ef4444' : '#f59e0b'};"></i>
+                        </div>
+                        <div style="color: #111827 !important; font-size: 1.4rem; font-weight: 900 !important; letter-spacing: -0.02em;">${alert.title}</div>
+                    </div>
+                    
+                    <div class="text-center mb-4" style="color: #334155 !important; font-size: 1.15rem; line-height: 1.6; font-weight: 600 !important;">
+                        ${alert.desc}
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-top text-center" style="border-color: #f1f5f9 !important;">
+                        <!-- Titulo: Causa Probable -->
+                        <div class="mb-4">
+                            <span style="font-size: 1.15rem; font-weight: 900 !important; color: #111827 !important; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 10px;">Causa Probable</span>
+                            <div style="color: #475569 !important; font-size: 1.05rem; font-weight: 700 !important;">${causes}</div>
+                        </div>
+                        <!-- Titulo: Accion Recomendada -->
+                        <div class="mt-4">
+                            <span style="font-size: 1.15rem; font-weight: 900 !important; color: #059669 !important; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 10px;">Acción Recomendada</span>
+                            <div style="color: #059669 !important; font-size: 1.15rem; font-weight: 800 !important;">${actions}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        contentHtml += `
+                </div>
+                <div class="mt-4 pt-2">
+                    <p style="color: #94a3b8 !important; font-size: 0.85rem; font-style: italic; font-weight: 600;">
+                        Análisis basado en reglas de control estadístico Western Electric.
+                    </p>
+                </div>
+            </div>
+            
+            <style>
+                .fw-black { font-weight: 900 !important; }
+                .custom-diagnostic-list::-webkit-scrollbar { width: 6px; }
+                .custom-diagnostic-list::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
+                .custom-diagnostic-list::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+            </style>
+        `;
+
+        Swal.fire({
+            html: contentHtml,
+            width: '700px',
+            showCancelButton: false,
+            confirmButtonText: '<i class="ri-check-line" style="font-size: 1.5rem;"></i> Entendido',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-confirm-btn',
+                actions: 'justify-content-center mt-4 w-100'
+            }
+        });
+    }
+
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', () => {
+        window.location.reload();
+    });
 </script>
 {% endblock %}

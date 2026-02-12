@@ -8,14 +8,14 @@
     <div class="card" style="width: 100%; max-width: 600px; padding: 0; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
         
         <!-- Header -->
-        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 40px; height: 40px; background-color: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); border: 1px solid var(--border-color);">
-                    <i class="ri-user-line" style="font-size: 1.25rem;"></i>
+                <div style="width: 40px; height: 40px; background: rgba(59, 130, 246, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.2);">
+                    <i class="ri-user-add-line" style="font-size: 1.25rem;"></i>
                 </div>
-                <h2 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">{{ titulo|default:"Nuevo Cliente" }}</h2>
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">{{ titulo|default:"Nuevo Cliente" }}</h2>
             </div>
-            <a href="{% url 'lista_clientes' %}" style="color: var(--text-muted); font-size: 1.5rem; text-decoration: none;">
+            <a href="{% url 'lista_clientes' %}" style="color: var(--text-muted); font-size: 1.5rem; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">
                 <i class="ri-close-line"></i>
             </a>
         </div>
@@ -23,22 +23,24 @@
         <form method="post" id="clienteForm">
             {% csrf_token %}
             <!-- Body -->
-            <div style="padding: 2rem;">
+            <div style="padding: 2.5rem 2rem;">
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label class="form-label" style="text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.05em; color: #64748b;">Nombre del Cliente</label>
+                    <label class="form-label" style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.75rem; display: block;">Nombre del Cliente</label>
                     {{ form.nombre }}
                     {% if form.nombre.errors %}
-                        <div class="text-danger small mt-1">{{ form.nombre.errors.0 }}</div>
+                        <div class="text-danger small mt-2" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="ri-error-warning-line"></i> {{ form.nombre.errors.0 }}
+                        </div>
                     {% endif %}
                 </div>
             </div>
 
             <!-- Footer -->
-            <div style="padding: 1.5rem; background-color: #f8fafc; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 1rem;">
-                <a href="{% url 'lista_clientes' %}" class="btn btn-secondary" style="background-color: white; padding-left: 1.5rem; padding-right: 1.5rem;">
+            <div style="padding: 1.5rem; background: rgba(0,0,0,0.2); border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 1rem;">
+                <a href="{% url 'lista_clientes' %}" class="btn btn-secondary" style="padding-left: 1.5rem; padding-right: 1.5rem; font-weight: 600;">
                     Cancelar
                 </a>
-                <button type="submit" class="btn btn-primary" style="padding-left: 1.5rem; padding-right: 1.5rem;">
+                <button type="submit" class="btn btn-primary" style="padding-left: 2rem; padding-right: 2rem; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
                     <i class="ri-check-line"></i> Guardar
                 </button>
             </div>
