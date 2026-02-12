@@ -510,10 +510,15 @@
                                     <td class="text-center">
                                         <div class="d-flex gap-1 align-items-center">
                                             <select id="instr_{{ row.tolerancia.id }}" name="instrumento_{{ row.tolerancia.id }}" class="form-select input-clean text-center instrument-select" 
-                                                    onchange="saveInstrumentSelection(this, '{{ row.tolerancia.id }}')" style="font-size: 0.75rem; padding: 0.4rem !important; flex: 1;">
+                                                    onchange="saveInstrumentSelection(this, '{{ row.tolerancia.id }}')" style="font-size: 0.75rem; padding: 0.4rem !important; flex: 1; {% if row.tolerancia.instrumento.is_calibracion_vencida or not row.tolerancia.instrumento.en_servicio %}background-color: #fef2f2 !important; border-color: #ef4444 !important;{% endif %}">
                                                 <option value="">- Herramienta -</option>
                                                 {% for inst in instrumentos %}
-                                                <option value="{{ inst.id }}" {% if row.tolerancia.instrumento_id == inst.id %}selected{% endif %}>{{ inst.nombre }}</option>
+                                                <option value="{{ inst.id }}" 
+                                                        {% if row.tolerancia.instrumento_id == inst.id %}selected{% endif %}
+                                                        {% if inst.is_calibracion_vencida or not inst.en_servicio %}disabled style="color: #ef4444;"{% endif %}>
+                                                    {{ inst.nombre }} 
+                                                    {% if not inst.en_servicio %}[FUERA DE SERV.]{% elif inst.is_calibracion_vencida %}[VENCIDO]{% elif inst.is_en_alerta %}[ALERTA]{% endif %}
+                                                </option>
                                                 {% endfor %}
                                             </select>
                                             {% if user.is_superuser or user.profile.role == 'CALIDAD' %}

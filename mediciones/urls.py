@@ -29,6 +29,13 @@ urlpatterns = [
     path('maestros/clientes/nuevo/', views.crear_cliente, name='crear_cliente'),
     path('maestros/clientes/<int:pk>/editar/', views.editar_cliente, name='editar_cliente'),
     path('maestros/clientes/<int:pk>/eliminar/', views.eliminar_cliente, name='eliminar_cliente'),
+
+    path('maestros/instrumentos/', views.lista_instrumentos, name='lista_instrumentos'),
+    path('maestros/instrumentos/dashboard/', views.dashboard_calibracion, name='dashboard_calibracion'),
+    path('maestros/instrumentos/nuevo/', views.crear_instrumento, name='crear_instrumento'),
+    path('maestros/instrumentos/<int:pk>/editar/', views.editar_instrumento, name='editar_instrumento'),
+    path('maestros/instrumentos/<int:pk>/eliminar/', views.eliminar_instrumento, name='eliminar_instrumento'),
+    path('api/instrumentos/registrar-calibracion/', views.registrar_calibracion_ajax, name='registrar_calibracion_ajax'),
     
     path('perfil/', views.perfil_usuario, name='perfil_usuario'),
     path('usuarios/', views.lista_usuarios, name='lista_usuarios'),

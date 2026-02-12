@@ -1,0 +1,128 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}Maestro de Instrumentos{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="card-title" style="font-size: 1.25rem;">Inventario de Instrumentos</h2>
+            <div class="text-muted" style="font-size: 0.95rem;">
+                Administra todos los equipos de medición y sus parámetros de calibración.
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'dashboard_calibracion' %}" class="btn btn-secondary">
+                <i class="ri-dashboard-line"></i> Dashboard
+            </a>
+            <a href="{% url 'crear_instrumento' %}" class="btn btn-primary">
+                <i class="ri-add-line"></i> Nuevo Instrumento
+            </a>
+        </div>
+    </div>
+
+    <!-- Search bar -->
+    <div class="mb-4">
+        <form method="get" class="search-bar">
+            <i class="ri-search-line"></i>
+            <input type="text" name="search" class="form-control" placeholder="Buscar por nombre o código..." value="{{ search|default:'' }}">
+        </form>
+    </div>
+
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Código/Inv.</th>
+                <th>Tipo</th>
+                <th>Marca</th>
+                <th>Próxima Cal.</th>
+                <th>En Servicio</th>
+                <th style="text-align: right;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inst in instrumentos %}
+            <tr>
+                <td class="fw-bold">{{ inst.nombre }}</td>
+                <td><span class="badge" style="background: rgba(var(--primary-rgb), 0.1); color: var(--primary);">{{ inst.codigo|default:"-" }}</span></td>
+                <td>{{ inst.get_tipo_display }}</td>
+                <td class="text-muted">{{ inst.marca|default:"-" }}</td>
+                <td>
+                    <span class="{% if inst.is_calibracion_vencida %}text-danger fw-bold{% elif inst.is_en_alerta %}text-warning fw-bold{% endif %}">
+                        {{ inst.proxima_calibracion|date:"d/m/Y"|default:"-" }}
+                    </span>
+                </td>
+                <td>
+                    {% if inst.en_servicio %}
+                        <span class="text-success"><i class="ri-checkbox-circle-fill"></i> SI</span>
+                    {% else %}
+                        <span class="text-danger"><i class="ri-close-circle-fill"></i> NO</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <a href="{% url 'editar_instrumento' inst.pk %}" class="btn-soft-primary">
+                        <i class="ri-edit-line"></i> Editar
+                    </a>
+                    <form action="{% url 'eliminar_instrumento' inst.pk %}" method="post" style="display: inline;" id="delete-form-inst-{{ inst.pk }}">
+                        {% csrf_token %}
+                        <button type="button" class="btn-soft-danger" onclick="confirmDelete('{{ inst.nombre }}', 'delete-form-inst-{{ inst.pk }}')">
+                            <i class="ri-delete-bin-line"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="empty-state">
+                    <div class="empty-state-icon"><i class="ri-tools-line"></i></div>
+                    <div class="empty-state-title">No hay instrumentos</div>
+                    <div>Comienza registrando tu primer micrómetro o calibre.</div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination-container">
+        <div class="per-page-selector">
+            <span>Registros por página:</span>
+            <input type="number" class="per-page-input" value="{{ per_page }}" min="1" max="100" onchange="changePerPage(this.value)">
+        </div>
+
+        <div class="pagination-controls">
+            {% if instrumentos.has_previous %}
+                <a href="?page={{ instrumentos.previous_page_number }}&per_page={{ per_page }}&search={{ search|default:'' }}" class="page-link-premium"><i class="ri-arrow-left-s-line"></i></a>
+            {% endif %}
+            <div class="page-link-premium active">{{ instrumentos.number }} / {{ instrumentos.paginator.num_pages }}</div>
+            {% if instrumentos.has_next %}
+                <a href="?page={{ instrumentos.next_page_number }}&per_page={{ per_page }}&search={{ search|default:'' }}" class="page-link-premium"><i class="ri-arrow-right-s-line"></i></a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function changePerPage(value) {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('per_page', value);
+    window.location.search = urlParams.toString();
+}
+function confirmDelete(name, formId) {
+    Swal.fire({
+        title: '¿Eliminar Instrumento?',
+        text: `Eliminarás "${name}". Se perderá su historial de calibración.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        customClass: {
+            popup: 'premium-swal',
+            confirmButton: 'premium-confirm-btn premium-confirm-btn-danger',
+            cancelButton: 'premium-cancel-btn'
+        }
+    }).then((result) => { if (result.isConfirmed) document.getElementById(formId).submit(); });
+}
+</script>
+{% endblock %}

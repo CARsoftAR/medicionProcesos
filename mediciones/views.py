@@ -3,8 +3,8 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import PlanillaMedicion, Cliente, Articulo, Proceso, Elemento, Control, Tolerancia, ValorMedicion, Maquina, Instrumento, Profile
-from .forms import PlanillaForm, ClienteForm, ArticuloForm, ProcesoForm, ElementoForm, ControlForm, UserForm
+from .models import PlanillaMedicion, Cliente, Articulo, Proceso, Elemento, Control, Tolerancia, ValorMedicion, Maquina, Instrumento, Profile, HistorialCalibracion
+from .forms import PlanillaForm, ClienteForm, ArticuloForm, ProcesoForm, ElementoForm, ControlForm, UserForm, InstrumentoForm, MaquinaForm
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
@@ -117,7 +117,18 @@ def eliminar_usuario(request, user_id):
 @login_required
 def index(request):
     planillas = PlanillaMedicion.objects.all().order_by('-id')[:15]
-    return render(request, 'mediciones/index.html', {'planillas': planillas})
+    
+    # Active alerts for instruments
+    instrumentos = Instrumento.objects.all()
+    inst_vencidos = [i for i in instrumentos if i.is_calibracion_vencida()]
+    inst_alerta = [i for i in instrumentos if i.is_en_alerta()]
+
+    return render(request, 'mediciones/index.html', {
+        'planillas': planillas,
+        'inst_vencidos_count': len(inst_vencidos),
+        'inst_alerta_count': len(inst_alerta),
+        'total_vencidos_alerta': len(inst_vencidos) + len(inst_alerta)
+    })
 
 @login_required
 def asignar_op(request):
@@ -496,6 +507,128 @@ def eliminar_control(request, pk):
         control.delete()
         messages.success(request, 'Control eliminado.')
     return redirect('lista_controles')
+
+@login_required
+def lista_instrumentos(request):
+    per_page = request.GET.get('per_page')
+    if per_page:
+        request.session['instrumentos_per_page'] = per_page
+    else:
+        per_page = request.session.get('instrumentos_per_page', 10)
+    
+    instrumentos_list = Instrumento.objects.all().order_by('nombre')
+    
+    # Simple search
+    search = request.GET.get('search')
+    if search:
+        instrumentos_list = instrumentos_list.filter(
+            models.Q(nombre__icontains=search) | 
+            models.Q(codigo__icontains=search)
+        )
+
+    paginator = Paginator(instrumentos_list, per_page)
+    page_number = request.GET.get('page')
+    instrumentos = paginator.get_page(page_number)
+    
+    return render(request, 'mediciones/lista_instrumentos.html', {
+        'instrumentos': instrumentos,
+        'per_page': int(per_page),
+        'search': search
+    })
+
+@supervisor_required
+def crear_instrumento(request):
+    if request.method == 'POST':
+        form = InstrumentoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Instrumento creado correctamente.')
+            return redirect('lista_instrumentos')
+    else:
+        form = InstrumentoForm()
+    return render(request, 'mediciones/crear_instrumento.html', {'form': form, 'titulo': 'Nuevo Instrumento'})
+
+@supervisor_required
+def editar_instrumento(request, pk):
+    instrumento = get_object_or_404(Instrumento, pk=pk)
+    if request.method == 'POST':
+        form = InstrumentoForm(request.POST, instance=instrumento)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Instrumento actualizado correctamente.')
+            return redirect('lista_instrumentos')
+    else:
+        form = InstrumentoForm(instance=instrumento)
+    return render(request, 'mediciones/crear_instrumento.html', {'form': form, 'titulo': 'Editar Instrumento', 'is_edit': True})
+
+@supervisor_required
+def eliminar_instrumento(request, pk):
+    instrumento = get_object_or_404(Instrumento, pk=pk)
+    if request.method == 'POST':
+        instrumento.delete()
+        messages.success(request, 'Instrumento eliminado.')
+    return redirect('lista_instrumentos')
+
+@csrf_exempt
+@supervisor_required
+def registrar_calibracion_ajax(request):
+    if request.method == 'POST':
+        import json
+        from datetime import datetime
+        from dateutil.relativedelta import relativedelta
+        try:
+            data = json.loads(request.body)
+            inst_id = data.get('instrumento_id')
+            fecha_str = data.get('fecha')
+            resultado = data.get('resultado', 'APROBADO')
+            certificado = data.get('certificado', '')
+            obs = data.get('observaciones', '')
+            
+            instrumento = Instrumento.objects.get(id=inst_id)
+            fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+            
+            # Create History
+            HistorialCalibracion.objects.create(
+                instrumento=instrumento,
+                fecha_calibracion=fecha,
+                resultado=resultado,
+                certificado_nro=certificado,
+                observaciones=obs,
+                usuario=request.user
+            )
+            
+            # Update Instrument
+            if resultado == 'APROBADO':
+                instrumento.ultima_calibracion = fecha
+                instrumento.certificado_nro = certificado
+                # Reset next date to let save() logic or manual update handle it
+                instrumento.proxima_calibracion = fecha + relativedelta(months=instrumento.frecuencia_meses)
+                instrumento.en_servicio = True
+            else:
+                instrumento.en_servicio = False
+                
+            instrumento.save()
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+@supervisor_required
+def dashboard_calibracion(request):
+    instrumentos = Instrumento.objects.all()
+    
+    vencidos = [i for i in instrumentos if i.is_calibracion_vencida()]
+    alerta = [i for i in instrumentos if i.is_en_alerta()]
+    ok = [i for i in instrumentos if not i.is_calibracion_vencida() and not i.is_en_alerta()]
+    fuera_servicio = instrumentos.filter(en_servicio=False)
+    
+    context = {
+        'instrumentos': instrumentos,
+        'vencidos': vencidos,
+        'alerta': alerta,
+        'ok': ok,
+        'fuera_servicio': fuera_servicio,
+        'total': instrumentos.count()
+    }
+    return render(request, 'mediciones/dashboard_calibracion.html', context)
 
 @supervisor_required
 def lista_estructuras(request):

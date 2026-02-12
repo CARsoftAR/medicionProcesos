@@ -1,0 +1,200 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}Dashboard de Instrumentos{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center" style="border-left: 5px solid var(--primary);">
+            <div class="card-title">Instrumentos Totales</div>
+            <div class="metric-value">{{ total }}</div>
+            <div class="text-muted small">Inventario activo</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center" style="border-left: 5px solid var(--success);">
+            <div class="card-title" style="color: var(--success);">Operativos</div>
+            <div class="metric-value text-success">{{ ok|length }}</div>
+            <div class="text-muted small">Calibración vigente</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center" style="border-left: 5px solid var(--warning);">
+            <div class="card-title" style="color: var(--warning);">En Alerta</div>
+            <div class="metric-value text-warning">{{ alerta|length }}</div>
+            <div class="text-muted small">Próximo vencimiento</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center" style="border-left: 5px solid var(--danger);">
+            <div class="card-title" style="color: var(--danger);">Vencidos</div>
+            <div class="metric-value text-danger">{{ vencidos|length }}</div>
+            <div class="text-muted small">Uso prohibido</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="card-title" style="font-size: 1.25rem;">Estado Crítico de Calibración</h2>
+            <div class="text-muted" style="font-size: 0.95rem;">
+                Seguimiento de vigencia y certificados de metrología.
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'lista_instrumentos' %}" class="btn btn-secondary">
+                <i class="ri-settings-3-line"></i> Gestionar Lista
+            </a>
+            <a href="{% url 'crear_instrumento' %}" class="btn btn-primary">
+                <i class="ri-add-line"></i> Nuevo Instrumento
+            </a>
+        </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Instrumento</th>
+                    <th>Tipo / Marca</th>
+                    <th>Certificado</th>
+                    <th>Última Cal.</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                    <th style="text-align: right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inst in instrumentos %}
+                <tr>
+                    <td>
+                        <div class="fw-bold">{{ inst.nombre }}</div>
+                        <div class="text-xxs text-muted">{{ inst.codigo|default:"S/N" }}</div>
+                    </td>
+                    <td>
+                        <span class="badge" style="background: rgba(var(--primary-rgb), 0.1); color: var(--primary);">{{ inst.get_tipo_display }}</span>
+                        <div class="small text-muted">{{ inst.marca|default:"-" }}</div>
+                    </td>
+                    <td>
+                        <div class="small fw-bold">#{{ inst.certificado_nro|default:"N/A" }}</div>
+                    </td>
+                    <td>{{ inst.ultima_calibracion|date:"d/m/Y"|default:"-" }}</td>
+                    <td>
+                        <div class="fw-bold {% if inst.is_calibracion_vencida %}text-danger{% elif inst.is_en_alerta %}text-warning{% endif %}">
+                            {{ inst.proxima_calibracion|date:"d/m/Y"|default:"-" }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if not inst.en_servicio %}
+                            <span class="badge" style="background: #475569; color: white;">FUERA DE SERVICIO</span>
+                        {% elif inst.is_calibracion_vencida %}
+                            <span class="badge" style="background: var(--danger); color: white;">VENCIDO</span>
+                        {% elif inst.is_en_alerta %}
+                            <span class="badge" style="background: var(--warning); color: var(--text-inverse);">EN ALERTA</span>
+                        {% else %}
+                            <span class="badge" style="background: var(--success); color: white;">VIGENTE</span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: right;">
+                        <button onclick="openCalibrationModal('{{ inst.id }}', '{{ inst.nombre }}')" class="btn-soft-primary" title="Registrar Calibración">
+                            <i class="ri-shield-check-line"></i> Calibrar
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">No hay instrumentos registrados en el sistema.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Calibration Modal -->
+<div class="modal fade" id="calibrationModal" tabindex="-1" style="display:none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); z-index: 1050; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="modal-content" style="max-width: 500px; text-align: left; background: #ffffff; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+        <div class="d-flex justify-content-between align-items-center mb-4" style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); margin: -1.5rem -1.5rem 1.5rem -1.5rem; background: #f8fafc; border-radius: var(--card-radius) var(--card-radius) 0 0;">
+            <h3 style="margin:0; font-weight: 700; color: #1e293b; font-size: 1.1rem;">Registrar Calibración</h3>
+            <button onclick="closeCalibrationModal()" style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;"><i class="ri-close-line"></i></button>
+        </div>
+        <form id="calibrationForm">
+            <input type="hidden" id="modal_inst_id">
+            <div class="form-group mb-3">
+                <label class="form-label">Instrumento</label>
+                <input type="text" id="modal_inst_name" class="form-control" readonly style="opacity: 0.7;">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Fecha de Calibración</label>
+                <input type="date" id="modal_fecha" class="form-control" required value="{{ now|date:'Y-m-d' }}">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Certificado Nro.</label>
+                <input type="text" id="modal_certificado" class="form-control" placeholder="Ej: CERT-2024-001">
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Resultado</label>
+                <select id="modal_resultado" class="form-select">
+                    <option value="APROBADO">Aprobado / Apto</option>
+                    <option value="RECHAZADO">Rechazado / No Apto</option>
+                </select>
+            </div>
+            <div class="form-group mb-4">
+                <label class="form-label">Observaciones</label>
+                <textarea id="modal_obs" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" onclick="closeCalibrationModal()" class="btn btn-secondary flex-grow-1">Cancelar</button>
+                <button type="submit" class="btn btn-primary flex-grow-1">Guardar Registro</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openCalibrationModal(id, name) {
+    document.getElementById('modal_inst_id').value = id;
+    document.getElementById('modal_inst_name').value = name;
+    document.getElementById('calibrationModal').style.display = 'flex';
+}
+
+function closeCalibrationModal() {
+    document.getElementById('calibrationModal').style.display = 'none';
+}
+
+document.getElementById('calibrationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const data = {
+        instrumento_id: document.getElementById('modal_inst_id').value,
+        fecha: document.getElementById('modal_fecha').value,
+        certificado: document.getElementById('modal_certificado').value,
+        resultado: document.getElementById('modal_resultado').value,
+        observaciones: document.getElementById('modal_obs').value
+    };
+
+    fetch('{% url "registrar_calibracion_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(data => {
+        if(data.status === 'success') {
+            Swal.fire({
+                title: 'Excelente',
+                text: 'La calibración ha sido registrada con éxito.',
+                icon: 'success',
+                confirmButtonText: 'Genial',
+                customClass: { popup: 'premium-swal' }
+            }).then(() => location.reload());
+        } else {
+            Swal.fire('Error', data.message, 'error');
+        }
+    });
+});
+</script>
+{% endblock %}

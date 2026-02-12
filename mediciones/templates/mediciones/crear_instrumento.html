@@ -1,0 +1,90 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: flex-start; min-height: 80vh; padding-top: 2rem;">
+    <div class="card" style="width: 100%; max-width: 800px; padding: 0; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+        
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 40px; height: 40px; background-color: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid var(--border-color);">
+                    <i class="ri-tools-line" style="font-size: 1.25rem;"></i>
+                </div>
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">{{ titulo }}</h2>
+            </div>
+            <a href="{% url 'lista_instrumentos' %}" style="color: var(--text-muted); font-size: 1.5rem; text-decoration: none;">
+                <i class="ri-close-line"></i>
+            </a>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="padding: 2rem;">
+                <div class="row">
+                    <!-- General Info -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label text-xxs">Nombre del Instrumento</label>
+                            {{ form.nombre }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label text-xxs">Código / Inventario</label>
+                            {{ form.codigo }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label text-xxs">Tipo de Equipo</label>
+                            {{ form.tipo }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label text-xxs">Marca</label>
+                            {{ form.marca }}
+                        </div>
+                        <div class="form-check form-switch mb-3">
+                            {{ form.en_servicio }}
+                            <label class="form-check-label small fw-bold text-secondary" for="{{ form.en_servicio.id_for_label }}">INSTRUMENTO EN SERVICIO</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Calibration Parameters -->
+                    <div class="col-md-6" style="background: #f8fafc; border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color);">
+                         <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                             <i class="ri-shield-check-line"></i> Parámetros de Calibración
+                         </div>
+                         <div class="form-group">
+                            <label class="form-label text-xxs">Última Calibración</label>
+                            {{ form.ultima_calibracion }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label text-xxs">Frecuencia (Meses)</label>
+                            {{ form.frecuencia_meses }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label text-xxs">Próxima Calibración</label>
+                            {{ form.proxima_calibracion }}
+                            <small class="text-muted" style="font-size: 0.65rem;">Se calcula automáticamente si se deja vacío.</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label text-xxs">Alerta Anticipada (Días)</label>
+                            {{ form.alerta_dias }}
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label text-xxs">Número de Certificado</label>
+                            {{ form.certificado_nro }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="padding: 1.5rem; background-color: #ffffff; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 1rem;">
+                <a href="{% url 'lista_instrumentos' %}" class="btn btn-secondary">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="ri-check-line"></i> Guardar Instrumento
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -61,14 +61,53 @@ class Instrumento(models.Model):
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='CALIBRE')
     marca = models.CharField(max_length=50, blank=True, null=True)
     ultima_calibracion = models.DateField(blank=True, null=True, verbose_name="Última Calibración")
+    frecuencia_meses = models.IntegerField(default=12, verbose_name="Frecuencia (Meses)")
+    proxima_calibracion = models.DateField(blank=True, null=True, verbose_name="Próxima Calibración")
+    alerta_dias = models.IntegerField(default=15, verbose_name="Alerta Anticipada (Días)")
+    certificado_nro = models.CharField(max_length=100, blank=True, null=True, verbose_name="Nro. Certificado")
+    en_servicio = models.BooleanField(default=True, verbose_name="En Servicio")
 
     class Meta:
         db_table = 'INSTRUMENTOS'
         verbose_name = 'Instrumento'
         verbose_name_plural = 'Instrumentos'
 
+    def is_calibracion_vencida(self):
+        from datetime import date
+        if not self.proxima_calibracion:
+            return False
+        return date.today() > self.proxima_calibracion
+
+    def is_en_alerta(self):
+        from datetime import date, timedelta
+        if not self.proxima_calibracion:
+            return False
+        dias_restantes = (self.proxima_calibracion - date.today()).days
+        return 0 <= dias_restantes <= self.alerta_dias
+
     def __str__(self):
         return f"{self.nombre} ({self.codigo})" if self.codigo else self.nombre
+
+    def save(self, *args, **kwargs):
+        # Auto-calculate next calibration date if not manually set
+        if self.ultima_calibracion and not self.proxima_calibracion:
+            from dateutil.relativedelta import relativedelta
+            self.proxima_calibracion = self.ultima_calibracion + relativedelta(months=self.frecuencia_meses)
+        super().save(*args, **kwargs)
+
+class HistorialCalibracion(models.Model):
+    instrumento = models.ForeignKey(Instrumento, on_delete=models.CASCADE, related_name='historial')
+    fecha_calibracion = models.DateField()
+    resultado = models.CharField(max_length=20, choices=[('APROBADO', 'Aprobado'), ('RECHAZADO', 'Rechazado')], default='APROBADO')
+    certificado_nro = models.CharField(max_length=100, blank=True, null=True)
+    observaciones = models.TextField(blank=True, null=True)
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        db_table = 'INSTRUMENTO_CALIBRACIONES'
+        verbose_name = 'Historial de Calibración'
+        verbose_name_plural = 'Historial de Calibraciones'
+        ordering = ['-fecha_calibracion']
 
 class Articulo(models.Model):
     nombre = models.CharField(max_length=50)
