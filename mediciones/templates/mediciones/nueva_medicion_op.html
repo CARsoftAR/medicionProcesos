@@ -305,8 +305,8 @@
                     <div class="config-card-body">
                         <label class="text-xxs fw-bold text-muted">NUMERO DE OP</label>
                         <input type="text" id="input_op" class="form-control input-clean" value="{{ query_op|default:'' }}" placeholder="Ej: 5000" onchange="updateSelection()" style="font-size: 1rem; font-weight: 700; padding: 0.5rem 0.8rem !important;">
-                        <input type="hidden" id="input_proyecto" value="{{ query_proy|default:planilla.proyecto|default:'' }}">
-                        <input type="hidden" id="select_proceso" value="{{ query_proc|default:planilla.proceso_id|default:'' }}">
+                        <input type="hidden" id="input_proyecto" value="{% if query_proy %}{{ query_proy }}{% elif planilla %}{{ planilla.proyecto }}{% endif %}">
+                        <input type="hidden" id="select_proceso" value="{% if query_proc %}{{ query_proc }}{% elif planilla %}{{ planilla.proceso_id }}{% endif %}">
                     </div>
                 </div>
 
@@ -540,6 +540,16 @@
                                                 {% endif %}
                                             </div>
                                             
+                                            {% if row.spc_alerts %}
+                                            <div class="spc-alert-trigger" style="cursor: help; display: flex; align-items: center; margin-left: 4px;" title="{% for a in row.spc_alerts %}{{ a.message }}{% if not forloop.last %} | {% endif %}{% endfor %}">
+                                                {% if row.has_danger %}
+                                                <i class="ri-error-warning-fill" style="color: #ef4444; font-size: 1.3rem;"></i>
+                                                {% elif row.has_warning %}
+                                                <i class="ri-alert-fill" style="color: #f59e0b; font-size: 1.3rem;"></i>
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+
                                             {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                                             <a href="{% url 'estadisticas_control' row.tolerancia.id %}" class="btn-stats-mini" title="Ver Estadísticas SPC">
                                                 <i class="ri-bar-chart-box-line"></i>

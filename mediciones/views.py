@@ -1035,10 +1035,35 @@ def nueva_medicion_op(request):
             # Use (planilla_id, control_id) as key because same control might exist in different elements
             valores_dict = { (v.planilla_id, v.control_id): v for v in valores_existentes }
             
+            # --- INTELLIGENT SPC ALERTS ---
+            # Fetch history for all tolerances involved (last 15 pieces) to detect trends
+            from .utils_spc import SPCAnalyzer
+            from django.db.models import Prefetch
+            
+            history_dict = {}
+            all_history = ValorMedicion.objects.filter(
+                planilla__in=planillas
+            ).order_by('pieza') # Chronological by piece number
+            
+            for v in all_history:
+                key = (v.planilla_id, v.control_id)
+                if key not in history_dict:
+                    history_dict[key] = []
+                if v.valor_pieza is not None:
+                    history_dict[key].append(float(v.valor_pieza))
+
             for tol in tolerancias:
                 val_obj = valores_dict.get((tol.planilla_id, tol.control_id))
                 current_val = None
                 status = 'PENDIENTE'
+                
+                # Run SPC Analysis
+                spc_alerts = []
+                if not tol.control.pnp:
+                    min_limit, max_limit = tol.get_absolute_limits()
+                    h_values = history_dict.get((tol.planilla_id, tol.control_id), [])
+                    analyzer = SPCAnalyzer(h_values, nominal=tol.nominal, min_limit=min_limit, max_limit=max_limit)
+                    spc_alerts = analyzer.check_rules()
                 
                 if val_obj:
                     if tol.control.pnp:
@@ -1065,7 +1090,10 @@ def nueva_medicion_op(request):
                 rows.append({
                     'tolerancia': tol,
                     'valor': current_val,
-                    'status': status
+                    'status': status,
+                    'spc_alerts': spc_alerts,
+                    'has_warning': any(a['severity'] == 'warning' for a in spc_alerts),
+                    'has_danger': any(a['severity'] == 'danger' for a in spc_alerts)
                 })
 
             # Use the first planilla for header info (Project, OP, Proceso)
