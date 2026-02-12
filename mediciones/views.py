@@ -1071,8 +1071,8 @@ def nueva_medicion_op(request):
             # Use the first planilla for header info (Project, OP, Proceso)
             planilla = planillas.first()
 
-        # 5. Piece Navigation Info
-        piezas_medidas = ValorMedicion.objects.filter(planilla=planilla).values_list('pieza', flat=True).distinct().order_by('pieza')
+        # 5. Piece Navigation Info - Look across ALL relevant planillas for this OP/Project
+        piezas_medidas = ValorMedicion.objects.filter(planilla__in=planillas).values_list('pieza', flat=True).distinct().order_by('pieza')
         max_p = piezas_medidas.last() if piezas_medidas.exists() else 0
         
         # range_piezas is the sorted unique list of pieces with measurements + next one
@@ -1161,11 +1161,12 @@ def guardar_medicion_ajax(request):
         
         try:
             tol = Tolerancia.objects.get(id=tol_id)
+            pieza_int = int(str(pieza))
             
             val_obj, created = ValorMedicion.objects.update_or_create(
                 planilla=tol.planilla,
                 control=tol.control,
-                pieza=pieza,
+                pieza=pieza_int,
                 defaults={
                     'tolerancia': tol,
                     'posicion': tol.posicion,
@@ -1276,13 +1277,15 @@ def eliminar_pieza_ajax(request):
             
             if planillas.exists():
                 # Delete all values for this piece across relevant planillas
-                count, _ = ValorMedicion.objects.filter(planilla__in=planillas, pieza=pieza).delete()
-                return JsonResponse({'status': 'success', 'deleted': count})
+                # Ensure piece is treated as int for DB matching
+                try:
+                    pieza_int = int(str(pieza))
+                    count, _ = ValorMedicion.objects.filter(planilla__in=planillas, pieza=pieza_int).delete()
+                    return JsonResponse({'status': 'success', 'deleted': count})
+                except ValueError:
+                    return JsonResponse({'status': 'error', 'message': f'Número de pieza inválido: {pieza}'}, status=400)
             else:
-                 # If no planillas found, maybe there was nothing to delete, so success?
-                 # Or actually valid request but no config found.
-                 # Let's return success to allow UI to proceed if it was just empty.
-                 return JsonResponse({'status': 'success', 'message': 'No matching planillas found, nothing to delete.'})
+                return JsonResponse({'status': 'error', 'message': f'No se encontraron planillas configuradas para Proyecto: {proy}, OP: {op}'}, status=404)
                  
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

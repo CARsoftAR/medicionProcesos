@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABBAMAT - Paletas Dark & Premium</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/palettes.css">
+    <link rel="stylesheet" href="css/additional-palettes.css">
+    <link rel="stylesheet" href="css/dark-palettes.css">
+    <style>
+        .palette-demo {
+            background: #000;
+            min-height: 100vh;
+            padding: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Partículas de fondo animadas */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            animation: floatParticle 20s linear infinite;
+        }
+        
+        @keyframes floatParticle {
+            from { transform: translateY(100vh) translateX(0); }
+            to { transform: translateY(-100vh) translateX(100px); }
+        }
+        
+        .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f1e 100%);
+            padding: 3rem;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+        }
+        
+        h1 {
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .subtitle {
+            color: #9ca3af;
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+        
+        .theme-section {
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.8s ease-out;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 24px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .theme-section:hover {
+            transform: translateY(-5px) scale(1.01);
+            border-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .theme-header {
+            padding: 2.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .theme-emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+            display: inline-block;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .theme-name {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #ffffff;
+        }
+        
+        .theme-description {
+            color: #9ca3af;
+            font-size: 1.1rem;
+            font-weight: 500;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .color-samples {
+            display: flex;
+            height: 120px;
+            position: relative;
+        }
+        
+        .color-sample {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.9rem;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            overflow: hidden;
+        }
+        
+        .color-sample:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            filter: brightness(1.2);
+        }
+        
+        .color-sample::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: top 0.6s;
+        }
+        
+        .color-sample:hover::before {
+            top: 100%;
+        }
+        
+        .color-name {
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+        }
+        
+        .color-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+        }
+        
+        .sidebar-demo {
+            height: 350px;
+            display: flex;
+            position: relative;
+        }
+        
+        .sidebar {
+            width: 300px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sidebar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.03) 50%, transparent 70%);
+            pointer-events: none;
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .brand-logo {
+            color: white;
+            font-weight: 900;
+            font-size: 1.8rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+        }
+        
+        .nav-item {
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .nav-item:hover {
+            transform: translateX(10px) scale(1.02);
+        }
+        
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .nav-item:hover::before {
+            left: 100%;
+        }
+        
+        .main-content-demo {
+            flex: 1;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .demo-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 450px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .demo-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+        
+        .demo-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .demo-description {
+            color: #9ca3af;
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .btn-apply-theme {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+            overflow: hidden;
+            margin-right: 1rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        
+        .btn-apply-theme::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .btn-apply-theme:hover::before {
+            left: 100%;
+        }
+        
+        .btn-apply-theme:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(16, 185, 129, 0.4);
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            font-weight: 800;
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.5);
+            z-index: 10000;
+            animation: slideInNotification 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        @keyframes slideInNotification {
+            from { transform: translateX(400px); }
+            to { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="palette-demo">
+    <!-- Partículas de fondo -->
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🌙 Paletas Dark Premium</h1>
+            <div class="subtitle">6 variaciones oscuras exclusivas con estilo visual impactante</div>
+        </div>
+
+        <!-- PALETA 15: IMAGEN PREMIUM -->
+        <div class="theme-section theme-imagen">
+            <div class="theme-header">
+                <div class="theme-emoji">🖼️</div>
+                <div class="theme-name">Imagen Premium</div>
+                <div class="theme-description">Estilo referencial con gradiente púrpura-azul-negro y efectos visuales premium</div>
+            </div>
+            <div class="theme-preview">
+                <div class="color-samples">
+                    <div class="color-sample" style="background: var(--primary, #6366f1);">
+                        <div class="color-name">Primario</div>
+                        <div class="color-code">#6366f1</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--accent, #a78bfa);">
+                        <div class="color-name">Acento</div>
+                        <div class="color-code">#a78bfa</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--secondary, #3b82f6);">
+                        <div class="color-name">Secundario</div>
+                        <div class="color-code">#3b82f6</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--bg-sidebar, #0a0b1e);">
+                        <div class="color-name">Sidebar</div>
+                        <div class="color-code">#0a0b1e</div>
+                    </div>
+                </div>
+                <div class="sidebar-demo">
+                    <div class="sidebar" style="background: var(--sidebar-gradient, linear-gradient(180deg, #0a0b1e 0%, #1a1b3a 50%, #0a0b1e 100%));">
+                        <div class="brand-logo">ABBAMAT</div>
+                        <div class="nav-item" style="background: var(--primary-gradient);">
+                            <i class="ri-dashboard-3-line"></i> Dashboard
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.1);">
+                            <i class="ri-clipboard-line"></i> Operaciones
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.1);">
+                            <i class="ri-user-line"></i> Clientes
+                        </div>
+                    </div>
+                    <div class="main-content-demo" style="background: var(--bg-body, #f8fafc);">
+                        <div class="demo-card">
+                            <h3 class="demo-title">Dashboard Premium</h3>
+                            <p class="demo-description">Gradiente espectacular con transiciones suaves y efectos visuales impactantes</p>
+                            <button class="btn-apply-theme" onclick="applyTheme('theme-imagen')">Aplicar Tema</button>
+                            <button class="btn-apply-theme" style="background: var(--primary-gradient);" onclick="previewTheme('theme-imagen')">Vista Previa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PALETA 16: CARBÓN INDUSTRIAL -->
+        <div class="theme-section theme-carbon">
+            <div class="theme-header">
+                <div class="theme-emoji">⚫</div>
+                <div class="theme-name">Carbón Industrial</div>
+                <div class="theme-description">Negro absoluto con acentos grises metálicos y toques de color vibrante</div>
+            </div>
+            <div class="theme-preview">
+                <div class="color-samples">
+                    <div class="color-sample" style="background: var(--primary, #6b7280);">
+                        <div class="color-name">Primario</div>
+                        <div class="color-code">#6b7280</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--accent, #ef4444);">
+                        <div class="color-name">Acento</div>
+                        <div class="color-code">#ef4444</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--secondary, #8b5cf6);">
+                        <div class="color-name">Secundario</div>
+                        <div class="color-code">#8b5cf6</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--bg-sidebar, #000000);">
+                        <div class="color-name">Sidebar</div>
+                        <div class="color-code">#000000</div>
+                    </div>
+                </div>
+                <div class="sidebar-demo">
+                    <div class="sidebar" style="background: var(--sidebar-gradient, linear-gradient(180deg, #000000 0%, #111111 50%, #000000 100%));">
+                        <div class="brand-logo">ABBAMAT</div>
+                        <div class="nav-item" style="background: var(--primary-gradient);">
+                            <i class="ri-hammer-line"></i> Dashboard
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.08);">
+                            <i class="ri-cog-line"></i> Operaciones
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.08);">
+                            <i class="ri-building-line"></i> Clientes
+                        </div>
+                    </div>
+                    <div class="main-content-demo" style="background: var(--bg-body, #0a0a0a);">
+                        <div class="demo-card">
+                            <h3 class="demo-title">Dashboard Carbón</h3>
+                            <p class="demo-description">Poder industrial con contraste extremo y elegancia minimalista</p>
+                            <button class="btn-apply-theme" onclick="applyTheme('theme-carbon')">Aplicar Tema</button>
+                            <button class="btn-apply-theme" style="background: var(--primary-gradient);" onclick="previewTheme('theme-carbon')">Vista Previa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PALETA 17: BLANCO Y NEGRO CLÁSICO -->
+        <div class="theme-section theme-blanco-negro">
+            <div class="theme-header">
+                <div class="theme-emoji">⚪</div>
+                <div class="theme-name">Blanco y Negro</div>
+                <div class="theme-description">Minimalismo extremo con contraste absoluto y grises neutros elegantes</div>
+            </div>
+            <div class="theme-preview">
+                <div class="color-samples">
+                    <div class="color-sample" style="background: var(--primary, #000000); color: white;">
+                        <div class="color-name">Primario</div>
+                        <div class="color-code">#000000</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--accent, #6b7280); color: white;">
+                        <div class="color-name">Acento</div>
+                        <div class="color-code">#6b7280</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--secondary, #4b5563); color: white;">
+                        <div class="color-name">Secundario</div>
+                        <div class="color-code">#4b5563</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--bg-sidebar, #ffffff); color: #000;">
+                        <div class="color-name">Sidebar</div>
+                        <div class="color-code">#ffffff</div>
+                    </div>
+                </div>
+                <div class="sidebar-demo">
+                    <div class="sidebar" style="background: var(--sidebar-gradient, linear-gradient(180deg, #ffffff 0%, #f9fafb 50%, #ffffff 100%));">
+                        <div class="brand-logo" style="color: black;">ABBAMAT</div>
+                        <div class="nav-item" style="background: var(--primary-gradient); color: white;">
+                            <i class="ri-contrast-2-line"></i> Dashboard
+                        </div>
+                        <div class="nav-item" style="background: rgba(0,0,0,0.05); color: black;">
+                            <i class="ri-contrast-drop-line"></i> Operaciones
+                        </div>
+                        <div class="nav-item" style="background: rgba(0,0,0,0.05); color: black;">
+                            <i class="ri-contrast-line"></i> Clientes
+                        </div>
+                    </div>
+                    <div class="main-content-demo" style="background: var(--bg-body, #fafafa);">
+                        <div class="demo-card">
+                            <h3 class="demo-title" style="color: black;">Dashboard Minimalista</h3>
+                            <p class="demo-description" style="color: #6b7280;">Elegancia atemporal con la máxima simplicidad y contraste perfecto</p>
+                            <button class="btn-apply-theme" onclick="applyTheme('theme-blanco-negro')">Aplicar Tema</button>
+                            <button class="btn-apply-theme" style="background: var(--primary-gradient);" onclick="previewTheme('theme-blanco-negro')">Vista Previa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PALETA 18: DARK CYBER -->
+        <div class="theme-section theme-dark-cyber">
+            <div class="theme-header">
+                <div class="theme-emoji">🌐</div>
+                <div class="theme-name">Dark Cyber</div>
+                <div class="theme-description">Futurismo neón con cian eléctrico, magenta vibrante y efectos cyberpunk</div>
+            </div>
+            <div class="theme-preview">
+                <div class="color-samples">
+                    <div class="color-sample" style="background: var(--primary, #00ffff);">
+                        <div class="color-name">Primario</div>
+                        <div class="color-code">#00ffff</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--accent, #ff00ff);">
+                        <div class="color-name">Acento</div>
+                        <div class="color-code">#ff00ff</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--secondary, #00ff88);">
+                        <div class="color-name">Secundario</div>
+                        <div class="color-code">#00ff88</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--bg-sidebar, #0a0a0f);">
+                        <div class="color-name">Sidebar</div>
+                        <div class="color-code">#0a0a0f</div>
+                    </div>
+                </div>
+                <div class="sidebar-demo">
+                    <div class="sidebar" style="background: var(--sidebar-gradient, linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%));">
+                        <div class="brand-logo">ABBAMAT</div>
+                        <div class="nav-item" style="background: var(--primary-gradient); animation: neonGlow 2s ease-in-out infinite;">
+                            <i class="ri-code-s-slash-line"></i> Dashboard
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.05); animation: neonGlow 2s ease-in-out infinite 0.3s;">
+                            <i class="ri-terminal-box-line"></i> Operaciones
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.05); animation: neonGlow 2s ease-in-out infinite 0.6s;">
+                            <i class="ri-cpu-line"></i> Clientes
+                        </div>
+                    </div>
+                    <div class="main-content-demo" style="background: var(--bg-body, #0f0f1e);">
+                        <div class="demo-card">
+                            <h3 class="demo-title">Dashboard Cyber</h3>
+                            <p class="demo-description">Visión futurista con neones vibrantes y estética digital avanzada</p>
+                            <button class="btn-apply-theme" onclick="applyTheme('theme-dark-cyber')">Aplicar Tema</button>
+                            <button class="btn-apply-theme" style="background: var(--primary-gradient);" onclick="previewTheme('theme-dark-cyber')">Vista Previa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PALETA 19: MIDNIGHT PRO -->
+        <div class="theme-section theme-midnight-pro">
+            <div class="theme-header">
+                <div class="theme-emoji">🌃</div>
+                <div class="theme-name">Midnight Pro</div>
+                <div class="theme-description">Azul marino profundo con acentos dorados para máxima profesionalidad</div>
+            </div>
+            <div class="theme-preview">
+                <div class="color-samples">
+                    <div class="color-sample" style="background: var(--primary, #1e293b);">
+                        <div class="color-name">Primario</div>
+                        <div class="color-code">#1e293b</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--accent, #fbbf24);">
+                        <div class="color-name">Acento</div>
+                        <div class="color-code">#fbbf24</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--secondary, #60a5fa);">
+                        <div class="color-name">Secundario</div>
+                        <div class="color-code">#60a5fa</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--bg-sidebar, #0f172a);">
+                        <div class="color-name">Sidebar</div>
+                        <div class="color-code">#0f172a</div>
+                    </div>
+                </div>
+                <div class="sidebar-demo">
+                    <div class="sidebar" style="background: var(--sidebar-gradient, linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%));">
+                        <div class="brand-logo">ABBAMAT</div>
+                        <div class="nav-item" style="background: var(--primary-gradient);">
+                            <i class="ri-moon-line"></i> Dashboard
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.08);">
+                            <i class="ri-moon-stars-line"></i> Operaciones
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.08);">
+                            <i class="ri-moon-cloudy-line"></i> Clientes
+                        </div>
+                    </div>
+                    <div class="main-content-demo" style="background: var(--bg-body, #0f172a);">
+                        <div class="demo-card">
+                            <h3 class="demo-title">Dashboard Midnight</h3>
+                            <p class="demo-description">Elegancia nocturna con toques dorados para aplicaciones profesionales</p>
+                            <button class="btn-apply-theme" onclick="applyTheme('theme-midnight-pro')">Aplicar Tema</button>
+                            <button class="btn-apply-theme" style="background: var(--primary-gradient);" onclick="previewTheme('theme-midnight-pro')">Vista Previa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PALETA 20: PURE DARK -->
+        <div class="theme-section theme-pure-dark">
+            <div class="theme-header">
+                <div class="theme-emoji">⬛</div>
+                <div class="theme-name">Pure Dark</div>
+                <div class="theme-description">Oscuridad total con mínimos acentos sutiles para máxima concentración</div>
+            </div>
+            <div class="theme-preview">
+                <div class="color-samples">
+                    <div class="color-sample" style="background: var(--primary, #1a1a1a);">
+                        <div class="color-name">Primario</div>
+                        <div class="color-code">#1a1a1a</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--accent, #4a5568);">
+                        <div class="color-name">Acento</div>
+                        <div class="color-code">#4a5568</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--secondary, #2d3748);">
+                        <div class="color-name">Secundario</div>
+                        <div class="color-code">#2d3748</div>
+                    </div>
+                    <div class="color-sample" style="background: var(--bg-sidebar, #000000);">
+                        <div class="color-name">Sidebar</div>
+                        <div class="color-code">#000000</div>
+                    </div>
+                </div>
+                <div class="sidebar-demo">
+                    <div class="sidebar" style="background: var(--sidebar-gradient, linear-gradient(180deg, #000000 0%, #0a0a0a 50%, #000000 100%));">
+                        <div class="brand-logo">ABBAMAT</div>
+                        <div class="nav-item" style="background: var(--primary-gradient);">
+                            <i class="ri-contrast-line"></i> Dashboard
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.03);">
+                            <i class="ri-contrast-drop-2-line"></i> Operaciones
+                        </div>
+                        <div class="nav-item" style="background: rgba(255,255,255,0.03);">
+                            <i class="ri-contrast-2-line"></i> Clientes
+                        </div>
+                    </div>
+                    <div class="main-content-demo" style="background: var(--bg-body, #050505);">
+                        <div class="demo-card">
+                            <h3 class="demo-title">Pure Dark</h3>
+                            <p class="demo-description">Minimalismo extremo en negro absoluto para máxima concentración visual</p>
+                            <button class="btn-apply-theme" onclick="applyTheme('theme-pure-dark')">Aplicar Tema</button>
+                            <button class="btn-apply-theme" style="background: var(--primary-gradient);" onclick="previewTheme('theme-pure-dark')">Vista Previa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Crear partículas de fondo
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        function applyTheme(themeClass) {
+            localStorage.setItem('selected-theme', themeClass);
+            showNotification(`✨ Tema "${themeClass.replace('theme-', '').replace('-', ' ')}" aplicado correctamente!`);
+            
+            // Efecto de transición
+            document.body.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            document.body.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                document.body.className = themeClass;
+                document.body.style.opacity = '1';
+            }, 300);
+        }
+
+        function previewTheme(themeClass) {
+            showNotification(`👀 Vista previa del tema "${themeClass.replace('theme-', '').replace('-', ' ')}" activada`, 5000);
+            
+            const originalClass = document.body.className;
+            document.body.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+            document.body.style.opacity = '0.7';
+            
+            setTimeout(() => {
+                document.body.className = themeClass;
+                document.body.style.opacity = '1';
+            }, 300);
+            
+            // Restaurar después de 5 segundos
+            setTimeout(() => {
+                document.body.style.opacity = '0.7';
+                setTimeout(() => {
+                    document.body.className = originalClass;
+                    document.body.style.opacity = '1';
+                    showNotification('🔄 Vista previa finalizada', 2000);
+                }, 300);
+            }, 5000);
+        }
+
+        function showNotification(message, duration = 3000) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOutNotification 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                setTimeout(() => notification.remove(), 500);
+            }, duration);
+        }
+
+        // Animación neon especial para Dark Cyber
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes neonGlow {
+                0%, 100% { 
+                    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3), 0 0 30px rgba(0, 255, 255, 0.1);
+                }
+                50% { 
+                    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.6), 0 0 40px rgba(0, 255, 255, 0.3);
+                }
+            }
+            @keyframes slideOutNotification {
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // Animación de entrada para las secciones
+            const sections = document.querySelectorAll('.theme-section');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, index * 200);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(50px)';
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>

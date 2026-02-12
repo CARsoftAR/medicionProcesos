@@ -1,0 +1,197 @@
+/* =============================================
+   PURE DARK THEME - ESTILO COMPLETO
+   Máxima oscuridad para concentración visual óptima
+   ============================================= */
+
+/* Aplicar tema Pure Dark automáticamente */
+:root {
+    /* COLORES PRINCIPALES - PURE DARK */
+    --bg-body: #050505;
+    --bg-sidebar: #000000;
+    --bg-card: #0a0a0a;
+    --bg-glass: rgba(10, 10, 10, 0.7);
+    --bg-hover: rgba(255, 255, 255, 0.01);
+    --bg-gradient-start: #1a1a1a;
+    --bg-gradient-end: #2d2d2d;
+    
+    /* JERARQUÍA DE TEXTO - PURE DARK */
+    --text-primary: #e5e5e5;
+    --text-secondary: #b8b8b8;
+    --text-muted: #888888;
+    --text-inverse: #e5e5e5;
+    --text-accent: #1a1a1a;
+    
+    /* COLORES PRIMARIOS - PURE DARK */
+    --primary: #1a1a1a;
+    --primary-dark: #000000;
+    --primary-light: #2d2d2d;
+    --primary-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    --primary-hover: #262626;
+    
+    /* ACENTO - PURE DARK */
+    --accent: #4a5568;
+    --accent-gradient: linear-gradient(135deg, #4a5568 0%, #718096 100%);
+    
+    /* SECONDARY - PURE DARK */
+    --secondary: #2d3748;
+    --secondary-light: #4a5568;
+    --secondary-gradient: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+    
+    /* COLORES DE ESTADO */
+    --success: #10b981;
+    --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    --warning: #f59e0b;
+    --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    --danger: #ef4444;
+    --danger-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+    --info: #3b82f6;
+    --info-gradient: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    
+    /* BORDES - PURE DARK */
+    --border-color: #2d2d2d;
+    --border-light: #1a1a1a;
+    --border-glass: rgba(255, 255, 255, 0.02);
+    
+    /* SOMBRAS - PURE DARK */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.8);
+    --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.9), 0 1px 2px 0 rgba(0, 0, 0, 0.7);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.95), 0 2px 4px -1px rgba(0, 0, 0, 0.7);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 1), 0 4px 6px -2px rgba(0, 0, 0, 0.5);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 1), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 1);
+    --shadow-glow: 0 0 20px rgba(74, 85, 104, 0.3);
+    --shadow-colored: 0 10px 25px rgba(26, 26, 26, 0.8);
+}
+
+/* Forzar Pure Dark en todo el body */
+body {
+    background: linear-gradient(135deg, #000000 0%, #050505 50%, #0a0a0a 100%) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Componentes Pure Dark específicos */
+.pure-dark-body {
+    background: #000000 !important;
+    color: #e5e5e5 !important;
+}
+
+.pure-dark-card {
+    background: #0a0a0a !important;
+    border: 1px solid #2d2d2d !important;
+}
+
+.pure-dark-sidebar {
+    background: #000000 !important;
+    color: #e5e5e5 !important;
+}
+
+.pure-dark-text {
+    color: #e5e5e5 !important;
+}
+
+.pure-dark-muted {
+    color: #888888 !important;
+}
+
+/* Animaciones Pure Dark */
+@keyframes pureDarkFloat {
+    0%, 100% { 
+        opacity: 0.8;
+        transform: translateY(0px);
+    }
+    50% { 
+        opacity: 1;
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes pureDarkPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+@keyframes pureDarkShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Fondo de partículas Pure Dark */
+.pure-dark-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.pure-dark-particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+    animation: pureDarkFloatParticle 25s linear infinite;
+}
+
+@keyframes pureDarkFloatParticle {
+    from {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.3;
+    }
+    90% {
+        opacity: 0.3;
+    }
+    to {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Scrollbar Pure Dark */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #2d2d2d;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #404040;
+}
+
+/* Selection Pure Dark */
+::selection {
+    background: rgba(74, 85, 104, 0.3);
+    color: #e5e5e5;
+}
+
+/* Focus Pure Dark */
+:focus-visible {
+    outline: 2px solid #4a5568;
+    outline-offset: 2px;
+}
+
+/* Forzar tema Pure Dark */
+.theme-pure-dark {
+    /* Todas las variables Pure Dark */
+    --bg-body: #050505;
+    --bg-sidebar: #000000;
+    --bg-card: #0a0a0a;
+    --text-primary: #e5e5e5;
+    --text-secondary: #b8b8b8;
+    --text-muted: #888888;
+    --primary: #1a1a1a;
+    --primary-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    --border-color: #2d2d2d;
+    --border-light: #1a1a1a;
+    --shadow-colored: 0 10px 25px rgba(26, 26, 26, 0.8);
+}

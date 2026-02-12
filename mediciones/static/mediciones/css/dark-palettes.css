@@ -1,0 +1,161 @@
+/* =============================================
+   PALETAS ADICIONALES DARK - ABBAMAT
+   ============================================= */
+
+/* =============================================
+   PALETA 15: IMAGEN PREMIUM (Estilo Referencia)
+   Gradiente Púrpura-Azul-Negro con Efectos Premium
+   ============================================= */
+.theme-imagen {
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-dark: #4f46e5;
+    --accent: #a78bfa;
+    --accent-light: #c4b5fd;
+    --secondary: #3b82f6;
+    --secondary-light: #60a5fa;
+    --bg-sidebar: #0a0b1e;
+    --bg-sidebar-dark: #050714;
+    --bg-card: #1a1b3a;
+    --bg-body: #f8fafc;
+    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #a78bfa 50%, #3b82f6 100%);
+    --accent-gradient: linear-gradient(135deg, #a78bfa 0%, #6366f1 100%);
+    --sidebar-gradient: linear-gradient(180deg, #0a0b1e 0%, #1a1b3a 50%, #0a0b1e 100%);
+    --primary-shadow: 0 16px 40px rgba(99, 102, 241, 0.4);
+    --accent-shadow: 0 16px 40px rgba(167, 139, 250, 0.4);
+}
+
+/* =============================================
+   PALETA 16: CARBÓN INDUSTRIAL (Negro Absoluto)
+   Negro profundo con acentos grises metálicos
+   ============================================= */
+.theme-carbon {
+    --primary: #6b7280;
+    --primary-light: #9ca3af;
+    --primary-dark: #374151;
+    --accent: #ef4444;
+    --accent-light: #f87171;
+    --secondary: #8b5cf6;
+    --secondary-light: #a78bfa;
+    --bg-sidebar: #000000;
+    --bg-sidebar-dark: #000000;
+    --bg-card: #111111;
+    --bg-body: #0a0a0a;
+    --primary-gradient: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+    --accent-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    --sidebar-gradient: linear-gradient(180deg, #000000 0%, #111111 50%, #000000 100%);
+    --primary-shadow: 0 8px 32px rgba(107, 114, 128, 0.3);
+    --accent-shadow: 0 8px 32px rgba(239, 68, 68, 0.3);
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #6b7280;
+    --border-color: #374151;
+}
+
+/* =============================================
+   PALETA 17: BLANCO Y NEGRO CLÁSICO (Minimalista)
+   Contraste extremo con grises neutros
+   ============================================= */
+.theme-blanco-negro {
+    --primary: #000000;
+    --primary-light: #374151;
+    --primary-dark: #000000;
+    --accent: #6b7280;
+    --accent-light: #9ca3af;
+    --secondary: #4b5563;
+    --secondary-light: #6b7280;
+    --bg-sidebar: #ffffff;
+    --bg-sidebar-dark: #f9fafb;
+    --bg-card: #ffffff;
+    --bg-body: #fafafa;
+    --primary-gradient: linear-gradient(135deg, #000000 0%, #374151 100%);
+    --accent-gradient: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+    --sidebar-gradient: linear-gradient(180deg, #ffffff 0%, #f9fafb 50%, #ffffff 100%);
+    --primary-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    --accent-shadow: 0 4px 20px rgba(107, 114, 128, 0.2);
+    --text-primary: #000000;
+    --text-secondary: #374151;
+    --text-muted: #6b7280;
+    --border-color: #e5e7eb;
+}
+
+/* =============================================
+   PALETA 18: DARK CYBER (Futurista Neón)
+   Negro con acentos neón cian y magenta
+   ============================================= */
+.theme-dark-cyber {
+    --primary: #00ffff;
+    --primary-light: #40e0d0;
+    --primary-dark: #00cccc;
+    --accent: #ff00ff;
+    --accent-light: #ff40ff;
+    --secondary: #00ff88;
+    --secondary-light: #40ff99;
+    --bg-sidebar: #0a0a0f;
+    --bg-sidebar-dark: #050508;
+    --bg-card: #1a1a2e;
+    --bg-body: #0f0f1e;
+    --primary-gradient: linear-gradient(135deg, #00ffff 0%, #40e0d0 100%);
+    --accent-gradient: linear-gradient(135deg, #ff00ff 0%, #ff40ff 100%);
+    --sidebar-gradient: linear-gradient(180deg, #0a0a0f 0%, #1a1a2e 50%, #0a0a0f 100%);
+    --primary-shadow: 0 0 30px rgba(0, 255, 255, 0.6);
+    --accent-shadow: 0 0 30px rgba(255, 0, 255, 0.6);
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --text-muted: #808080;
+    --border-color: #333366;
+}
+
+/* =============================================
+   PALETA 19: MIDNIGHT PRO (Oscuro Profesional)
+   Azul marino profundo con acentos dorados
+   ============================================= */
+.theme-midnight-pro {
+    --primary: #1e293b;
+    --primary-light: #334155;
+    --primary-dark: #0f172a;
+    --accent: #fbbf24;
+    --accent-light: #fcd34d;
+    --secondary: #60a5fa;
+    --secondary-light: #93c5fd;
+    --bg-sidebar: #0f172a;
+    --bg-sidebar-dark: #020617;
+    --bg-card: #1e293b;
+    --bg-body: #0f172a;
+    --primary-gradient: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    --accent-gradient: linear-gradient(135deg, #fbbf24 0%, #fcd34d 100%);
+    --sidebar-gradient: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    --primary-shadow: 0 8px 32px rgba(30, 41, 59, 0.4);
+    --accent-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+}
+
+/* =============================================
+   PALETA 20: OBSCURIDAD TOTAL (Pure Dark)
+   Negro absoluto con mínimos acentos sutiles
+   ============================================= */
+.theme-pure-dark {
+    --primary: #1a1a1a;
+    --primary-light: #2d2d2d;
+    --primary-dark: #000000;
+    --accent: #4a5568;
+    --accent-light: #718096;
+    --secondary: #2d3748;
+    --secondary-light: #4a5568;
+    --bg-sidebar: #000000;
+    --bg-sidebar-dark: #000000;
+    --bg-card: #0a0a0a;
+    --bg-body: #050505;
+    --primary-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    --accent-gradient: linear-gradient(135deg, #4a5568 0%, #718096 100%);
+    --sidebar-gradient: linear-gradient(180deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+    --primary-shadow: 0 4px 20px rgba(26, 26, 26, 0.5);
+    --accent-shadow: 0 4px 20px rgba(74, 85, 104, 0.3);
+    --text-primary: #e5e5e5;
+    --text-secondary: #b8b8b8;
+    --text-muted: #888888;
+    --border-color: #2d2d2d;
+}

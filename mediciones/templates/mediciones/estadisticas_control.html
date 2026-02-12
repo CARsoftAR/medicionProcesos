@@ -491,7 +491,8 @@
                         labels: {
                             usePointStyle: true,
                             boxWidth: 8,
-                            color: '#fff'
+                            color: '#1e293b',
+                            padding: 20
                         }
                     }, 
                     tooltip: { enabled: !isThumb } 
@@ -500,12 +501,12 @@
                     x: { 
                         display: !isThumb, 
                         grid: { display: false },
-                        ticks: { color: '#e2e8f0' }
+                        ticks: { color: '#475569' }
                     },
                     y: { 
                         display: !isThumb,
-                        grid: { color: 'rgba(255,255,255,0.1)' },
-                        ticks: { color: '#e2e8f0' }
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { color: '#475569' }
                     }
                 }
             }
@@ -575,7 +576,8 @@
                         labels: {
                             usePointStyle: true,
                             boxWidth: 8,
-                            color: '#fff'
+                            color: '#1e293b',
+                            padding: 20
                         }
                     },
                     tooltip: { enabled: !isThumb } 
@@ -584,13 +586,13 @@
                     x: { 
                         display: !isThumb, 
                         grid: { display: false },
-                        ticks: { color: '#e2e8f0' }
+                        ticks: { color: '#475569' }
                     },
                     y: { 
                         display: !isThumb, 
                         beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.1)' },
-                        ticks: { color: '#e2e8f0' }
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { color: '#475569' }
                     }
                 }
             }
@@ -655,7 +657,7 @@
                     legend: { 
                         display: !isThumb, 
                         position: 'top',
-                        labels: { color: '#fff' }
+                        labels: { color: '#1e293b', padding: 20 }
                     }, 
                     tooltip: { enabled: !isThumb } 
                 },
@@ -663,13 +665,13 @@
                     x: { 
                         display: !isThumb, 
                         grid: { display: false },
-                        ticks: { color: '#e2e8f0' }
+                        ticks: { color: '#475569' }
                     },
                     y: { 
                         display: !isThumb, 
                         beginAtZero: true,
-                        grid: { color: 'rgba(255,255,255,0.1)' },
-                        ticks: { color: '#e2e8f0' }
+                        grid: { color: 'rgba(0,0,0,0.05)' },
+                        ticks: { color: '#475569' }
                     }
                 }
             }
@@ -786,7 +788,7 @@
                     legend: { 
                         display: !isThumb, 
                         position: 'top',
-                        labels: { color: '#fff' }
+                        labels: { color: '#1e293b', padding: 20 }
                     }, 
                     tooltip: { enabled: !isThumb, callbacks: { title: (ctx) => 'Valor: ' + ctx[0].parsed.x.toFixed(4) } } 
                 },
@@ -796,14 +798,14 @@
                         display: !isThumb,
                         min: start,
                         max: end,
-                        grid: { display: true, color: 'rgba(255,255,255,0.1)' },
-                        ticks: { color: '#e2e8f0' }
-                    }, 
+                        grid: { display: true, color: 'rgba(0,0,0,0.05)' },
+                        ticks: { color: '#475569' }
+                    },
                     y: { 
                         display: !isThumb, 
                         beginAtZero: true, 
                         grid: { display: false },
-                        ticks: { color: '#e2e8f0' }
+                        ticks: { color: '#475569' }
                     } 
                 },
                 elements: { point: { radius: 0 } }
@@ -839,7 +841,7 @@
                     legend: { 
                         display: !isThumb, 
                         position: 'right',
-                        labels: { color: '#fff' }
+                        labels: { color: '#1e293b', padding: 20 }
                     },
                     tooltip: { 
                         enabled: true,
@@ -859,8 +861,8 @@
                         display: !isThumb,
                         text: `Índice de Aprobación: ${approvedPct}% (${approved}/${total} piezas)`,
                         position: 'bottom',
-                        font: { size: 16 },
-                        color: '#fff'
+                        font: { size: 16, weight: 'bold' },
+                        color: '#1e293b'
                     }
                 }
             }

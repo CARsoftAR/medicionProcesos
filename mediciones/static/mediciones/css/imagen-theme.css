@@ -1,0 +1,322 @@
+/* =============================================
+   PALETA ESPECIAL IMAGEN - ESTILO REFERENCIAL
+   Inspirada en interfaces premium modernas
+   ============================================= */
+
+/* Configuración principal de la paleta IMAGEN */
+:root.theme-imagen {
+    /* COLORES PRINCIPALES - ESTILO REFERENCIA */
+    --bg-body: #f8fafc;
+    --bg-sidebar: #0f172a;
+    --bg-card: #ffffff;
+    --bg-glass: rgba(255, 255, 255, 0.7);
+    --bg-hover: rgba(99, 102, 241, 0.04);
+    
+    /* JERARQUÍA DE TEXTO */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --text-inverse: #ffffff;
+    --text-accent: #6366f1;
+    
+    /* COLORES PRIMARIOS - ESTILO PREMIUM */
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --primary-light: #818cf8;
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --primary-hover: #4f46e5;
+    
+    /* ACENTO ESPECIAL */
+    --accent: #a78bfa;
+    --accent-gradient: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+    
+    /* COLORES SECUNDARIOS */
+    --secondary: #3b82f6;
+    --secondary-light: #60a5fa;
+    --secondary-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    
+    /* COLORES DE ESTADO - COORDINADOS */
+    --success: #10b981;
+    --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    --warning: #f59e0b;
+    --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    --danger: #ef4444;
+    --danger-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+    --info: #3b82f6;
+    --info-gradient: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+    
+    /* SOMBRAS ESPECIALES */
+    --shadow-primary: 0 20px 50px rgba(99, 102, 241, 0.4);
+    --shadow-accent: 0 20px 50px rgba(167, 139, 250, 0.4);
+    --shadow-hover: 0 30px 60px rgba(99, 102, 241, 0.5);
+    
+    /* BORDES Y DIVISORES */
+    --border-color: #e2e8f0;
+    --border-light: #f1f5f9;
+    --border-glass: rgba(255, 255, 255, 0.2);
+}
+
+/* Clase rápida para aplicar tema imagen */
+.theme-imagen-complete {
+    --primary: #6366f1;
+    --primary-light: #818cf8;
+    --primary-dark: #4f46e5;
+    --accent: #a78bfa;
+    --accent-light: #c4b5fd;
+    --secondary: #3b82f6;
+    --secondary-light: #60a5fa;
+    --bg-sidebar: #0f172a;
+    --bg-sidebar-dark: #020617;
+    --primary-gradient: linear-gradient(135deg, #6366f1 0%, #764ba2 100%);
+    --accent-gradient: linear-gradient(135deg, #a78bfa 0%, #ec4899 100%);
+    --primary-shadow: 0 16px 40px rgba(99, 102, 241, 0.4);
+    --accent-shadow: 0 16px 40px rgba(167, 139, 250, 0.4);
+}
+
+/* Animaciones especiales para tema IMAGEN */
+@keyframes imagenFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+}
+
+@keyframes imagenGlow {
+    0%, 100% { 
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+    }
+    50% { 
+        box-shadow: 0 12px 36px rgba(99, 102, 241, 0.5), 0 0 30px rgba(99, 102, 241, 0.2);
+    }
+}
+
+@keyframes imagenShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Sidebar especial para tema IMAGEN */
+.sidebar-imagen {
+    background: linear-gradient(180deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    position: relative;
+}
+
+.sidebar-imagen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+    animation: imagenGlow 3s ease-in-out infinite;
+}
+
+.sidebar-imagen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 30% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 70% 80%, rgba(167, 139, 250, 0.08) 0%, transparent 40%);
+    pointer-events: none;
+}
+
+/* Cards premium para tema IMAGEN */
+.card-imagen {
+    background: var(--bg-card);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-slow);
+}
+
+.card-imagen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gradient);
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.card-imagen:hover::before {
+    opacity: 1;
+}
+
+.card-imagen:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+/* Botones premium para tema IMAGEN */
+.btn-imagen-primary {
+    background: var(--primary-gradient);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.6rem;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-slow);
+    box-shadow: var(--primary-shadow);
+}
+
+.btn-imagen-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.2) 50%, 
+        transparent 100%);
+    transition: left 0.8s var(--transition-bounce);
+}
+
+.btn-imagen-primary:hover::before {
+    left: 100%;
+}
+
+.btn-imagen-primary:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+}
+
+/* Navegación premium para tema IMAGEN */
+.nav-imagen {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(167, 139, 250, 0.05) 100%);
+    color: white;
+    padding: 0.9rem 1.3rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 0.8rem;
+    font-weight: 600;
+    transition: all var(--transition-slow);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.nav-imagen:hover {
+    background: var(--primary-gradient);
+    transform: translateX(8px) scale(1.02);
+    box-shadow: var(--primary-shadow);
+}
+
+.nav-imagen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        transparent 100%);
+    transition: left 0.6s ease;
+}
+
+.nav-imagen:hover::before {
+    left: 100%;
+}
+
+/* Alerts premium para tema IMAGEN */
+.alert-imagen {
+    background: linear-gradient(135deg, 
+        rgba(99, 102, 241, 0.1) 0%, 
+        rgba(167, 139, 250, 0.05) 100%);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--radius-lg);
+    padding: 1.3rem 1.8rem;
+    color: var(--primary);
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.alert-imagen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-gradient);
+    animation: imagenShimmer 3s linear infinite;
+}
+
+/* Forms premium para tema IMAGEN */
+.form-imagen {
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(99, 102, 241, 0.1);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.3rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    transition: all var(--transition-slow);
+    backdrop-filter: blur(10px);
+}
+
+.form-imagen:focus {
+    border-color: var(--primary);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15), var(--primary-shadow);
+    transform: translateY(-2px);
+}
+
+/* Badges premium para tema IMAGEN */
+.badge-imagen {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.4em 1em;
+    border-radius: var(--radius-full);
+    font-weight: 800;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: var(--primary-shadow);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-slow);
+}
+
+.badge-imagen:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-hover);
+}
+
+.badge-imagen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255, 255, 255, 0.3) 50%, 
+        transparent 100%);
+    transition: left 0.6s ease;
+}
+
+.badge-imagen:hover::before {
+    left: 100%;
+}

@@ -1,0 +1,117 @@
+/* =============================================
+   PALETAS ADICIONALES PREMIUM - ABBAMAT
+   ============================================= */
+
+/* =============================================
+   PALETA 9: AURORA BOREAL (Verde Azulado Polar)
+   ============================================= */
+.theme-aurora {
+    --primary: #059669;
+    --primary-light: #10b981;
+    --primary-dark: #047857;
+    --accent: #0891b2;
+    --accent-light: #06b6d4;
+    --secondary: #14b8a6;
+    --secondary-light: #5eead4;
+    --bg-sidebar: #064e3b;
+    --bg-sidebar-dark: #022c22;
+    --primary-gradient: linear-gradient(135deg, #059669 0%, #0891b2 100%);
+    --accent-gradient: linear-gradient(135deg, #14b8a6 0%, #06b6d4 100%);
+    --primary-shadow: 0 12px 32px rgba(5, 150, 105, 0.3);
+    --accent-shadow: 0 12px 32px rgba(8, 145, 178, 0.3);
+}
+
+/* =============================================
+   PALETA 10: FUEGO SAGRADO (Naranja Dorado)
+   ============================================= */
+.theme-fuego {
+    --primary: #dc2626;
+    --primary-light: #ef4444;
+    --primary-dark: #b91c1c;
+    --accent: #ea580c;
+    --accent-light: #f59e0b;
+    --secondary: #f97316;
+    --secondary-light: #fbbf24;
+    --bg-sidebar: #7c2d12;
+    --bg-sidebar-dark: #451a03;
+    --primary-gradient: linear-gradient(135deg, #dc2626 0%, #f97316 100%);
+    --accent-gradient: linear-gradient(135deg, #ea580c 0%, #fbbf24 100%);
+    --primary-shadow: 0 12px 32px rgba(220, 38, 38, 0.3);
+    --accent-shadow: 0 12px 32px rgba(234, 88, 12, 0.3);
+}
+
+/* =============================================
+   PALETA 11: CRISTAL MARINO (Azul Cristalino)
+   ============================================= */
+.theme-cristal {
+    --primary: #0284c7;
+    --primary-light: #0ea5e9;
+    --primary-dark: #0369a1;
+    --accent: #0f766e;
+    --accent-light: #14b8a6;
+    --secondary: #06b6d4;
+    --secondary-light: #22d3ee;
+    --bg-sidebar: #083344;
+    --bg-sidebar-dark: #042f2e;
+    --primary-gradient: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+    --accent-gradient: linear-gradient(135deg, #0f766e 0%, #22d3ee 100%);
+    --primary-shadow: 0 12px 32px rgba(2, 132, 199, 0.3);
+    --accent-shadow: 0 12px 32px rgba(15, 118, 110, 0.3);
+}
+
+/* =============================================
+   PALETA 12: AMATISTA REAL (Piedra Preciosa)
+   ============================================= */
+.theme-amatista {
+    --primary: #7c3aed;
+    --primary-light: #8b5cf6;
+    --primary-dark: #6d28d9;
+    --accent: #db2777;
+    --accent-light: #ec4899;
+    --secondary: #a855f7;
+    --secondary-light: #c084fc;
+    --bg-sidebar: #4c1d95;
+    --bg-sidebar-dark: #3b0764;
+    --primary-gradient: linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+    --accent-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+    --primary-shadow: 0 12px 32px rgba(124, 58, 237, 0.3);
+    --accent-shadow: 0 12px 32px rgba(219, 39, 119, 0.3);
+}
+
+/* =============================================
+   PALETA 13: TITÁN TECNOLÓGICO (Gris Metálico)
+   ============================================= */
+.theme-titan {
+    --primary: #374151;
+    --primary-light: #6b7280;
+    --primary-dark: #1f2937;
+    --accent: #3b82f6;
+    --accent-light: #60a5fa;
+    --secondary: #64748b;
+    --secondary-light: #94a3b8;
+    --bg-sidebar: #111827;
+    --bg-sidebar-dark: #030712;
+    --primary-gradient: linear-gradient(135deg, #374151 0%, #3b82f6 100%);
+    --accent-gradient: linear-gradient(135deg, #6b7280 0%, #60a5fa 100%);
+    --primary-shadow: 0 12px 32px rgba(55, 65, 81, 0.3);
+    --accent-shadow: 0 12px 32px rgba(59, 130, 246, 0.3);
+}
+
+/* =============================================
+   PALETA 14: NEÓN DIGITAL (Cyan Eléctrico)
+   ============================================= */
+.theme-neon {
+    --primary: #06b6d4;
+    --primary-light: #22d3ee;
+    --primary-dark: #0891b2;
+    --accent: #a855f7;
+    --accent-light: #c084fc;
+    --secondary: #14b8a6;
+    --secondary-light: #34d399;
+    --bg-sidebar: #083344;
+    --bg-sidebar-dark: #021e26;
+    --primary-gradient: linear-gradient(135deg, #06b6d4 0%, #a855f7 100%);
+    --accent-gradient: linear-gradient(135deg, #22d3ee 0%, #c084fc 100%);
+    --primary-shadow: 0 12px 32px rgba(6, 182, 212, 0.4);
+    --accent-shadow: 0 12px 32px rgba(168, 85, 247, 0.4);
+}

@@ -261,6 +261,15 @@ body {
     transform: translateY(-2px) scale(1.02);
 }
 
+/* Red Group (Override) */
+.nav-link.active-red:hover,
+.nav-link.active-red.active {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    box-shadow: 0 10px 20px rgba(239, 68, 68, 0.4) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) scale(1.02);
+}
+
 /* Emerald Group (Users / Personal) */
 .nav-link.active-emerald:hover,
 .nav-link.active-emerald.active {

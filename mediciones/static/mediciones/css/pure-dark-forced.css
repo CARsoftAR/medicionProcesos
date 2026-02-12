@@ -1,0 +1,264 @@
+/* PURE DARK THEME - FORZAR COMPLETO */
+
+/* FORZAR PURE DARK EN TODAS LAS PÁGINAS */
+:root {
+    --bg-body: #000000 !important;
+    --bg-sidebar: #000000 !important;
+    --bg-card: #0a0a0a !important;
+    --text-primary: #e5e5e5 !important;
+    --text-secondary: #b8b8b8 !important;
+    --text-muted: #888888 !important;
+    --primary: #1a1a1a !important;
+    --primary-light: #2d2d2d !important;
+    --primary-gradient: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    --border-color: #2d2d2d !important;
+}
+
+/* Reset de backgrounds */
+* {
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+/* Forzar Pure Dark global */
+html, body {
+    background: #000000 !important;
+    color: #e5e5e5 !important;
+}
+
+/* Sidebar */
+.sidebar {
+    background: #000000 !important;
+    color: #e5e5e5 !important;
+    border-right-color: #2d2d2d !important;
+}
+
+.brand-icon {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    color: #e5e5e5 !important;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.8) !important;
+}
+
+.brand-text {
+    color: #e5e5e5 !important;
+    background: linear-gradient(135deg, #e5e5e5 0%, #b8b8b8 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* Navegación */
+.nav-link {
+    color: #b8b8b8 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+}
+
+.nav-link:hover {
+    color: #e5e5e5 !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    color: #e5e5e5 !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Topbar */
+.topbar {
+    background: #0a0a0a !important;
+    border-bottom-color: #2d2d2d !important;
+}
+
+.breadcrumb, .current-date {
+    color: #e5e5e5 !important;
+}
+
+/* Cards */
+.card {
+    background: #0a0a0a !important;
+    border: 1px solid #2d2d2d !important;
+    color: #e5e5e5 !important;
+}
+
+.card-title {
+    color: #e5e5e5 !important;
+}
+
+/* Tablas */
+.data-table {
+    background: #0a0a0a !important;
+    border: 1px solid #2d2d2d !important;
+}
+
+.data-table th {
+    background: rgba(26, 26, 26, 0.5) !important;
+    color: #e5e5e5 !important;
+    border-color: #2d2d2d !important;
+}
+
+.data-table td {
+    background: transparent !important;
+    color: #e5e5e5 !important;
+    border-color: #2d2d2d !important;
+}
+
+.data-table tr:hover td {
+    background: rgba(255, 255, 255, 0.01) !important;
+}
+
+/* Forms */
+.form-control, .form-select {
+    background: #0a0a0a !important;
+    border: 1px solid #2d2d2d !important;
+    color: #e5e5e5 !important;
+}
+
+.form-control::placeholder, .form-select::placeholder {
+    color: #888888 !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background: #0a0a0a !important;
+    border-color: #2d2d2d !important;
+    box-shadow: 0 0 0 3px rgba(45, 45, 45, 0.3) !important;
+    color: #e5e5e5 !important;
+}
+
+/* Botones */
+.btn-primary {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    color: #e5e5e5 !important;
+    border-color: transparent !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8) !important;
+}
+
+.btn-secondary {
+    background: #0a0a0a !important;
+    color: #e5e5e5 !important;
+    border: 1px solid #2d2d2d !important;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    color: #e5e5e5 !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.8) !important;
+}
+
+.btn-soft-primary {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(45, 45, 45, 0.6) 100%) !important;
+    color: #e5e5e5 !important;
+    border: 1px solid #2d2d2d !important;
+}
+
+.btn-soft-danger {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(45, 45, 45, 0.6) 100%) !important;
+    color: #e5e5e5 !important;
+    border: 1px solid #2d2d2d !important;
+}
+
+/* Badges */
+.badge {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    color: #e5e5e5 !important;
+}
+
+/* Alerts */
+.alert {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(45, 45, 45, 0.4) 100%) !important;
+    border: 1px solid #2d2d2d !important;
+    color: #e5e5e5 !important;
+}
+
+/* Metric values */
+.metric-value {
+    color: #e5e5e5 !important;
+    background: linear-gradient(135deg, #e5e5e5 0%, #b8b8b8 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* Empty states */
+.empty-state {
+    color: #e5e5e5 !important;
+}
+
+/* User profile */
+.user-profile-wrapper {
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.8) 100%) !important;
+    border-top-color: #2d2d2d !important;
+}
+
+.user-avatar {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(45, 45, 45, 0.6) 100%) !important;
+    color: #e5e5e5 !important;
+    border-color: #2d2d2d !important;
+}
+
+/* Pagination */
+.pagination-container {
+    border-top-color: #2d2d2d !important;
+}
+
+.page-link-premium {
+    background: #0a0a0a !important;
+    color: #e5e5e5 !important;
+    border: 1px solid #2d2d2d !important;
+}
+
+.page-link-premium:hover {
+    background: rgba(255, 255, 255, 0.01) !important;
+    color: #e5e5e5 !important;
+}
+
+.page-link-premium.active {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    color: #e5e5e5 !important;
+}
+
+/* Forzar todos los textos */
+h1, h2, h3, h4, h5, h6, p, span, div, a, i {
+    color: #e5e5e5 !important;
+}
+
+/* Login específico */
+.login-card {
+    background: #0a0a0a !important;
+    border: 1px solid #2d2d2d !important;
+    box-shadow: 0 32px 64px rgba(0, 0, 0, 0.95) !important;
+}
+
+.login-logo {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+    color: #e5e5e5 !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8) !important;
+}
+
+.login-title {
+    color: #e5e5e5 !important;
+    background: linear-gradient(135deg, #e5e5e5 0%, #b8b8b8 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+.login-subtitle {
+    color: #b8b8b8 !important;
+}
+
+/* Scrollbar Pure Dark */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #000000;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #2d2d2d;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #404040;
+}

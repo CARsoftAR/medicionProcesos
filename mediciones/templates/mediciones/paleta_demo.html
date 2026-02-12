@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABBAMAT - Vista Previa de Paletas</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/palettes.css">
+    <style>
+        .palette-demo {
+            background: #fafbfc;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .theme-section {
+            margin-bottom: 3rem;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        .theme-preview {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .theme-preview:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .color-samples {
+            display: flex;
+            height: 80px;
+        }
+        .color-sample {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            position: relative;
+        }
+        .color-sample::after {
+            content: attr(data-color);
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+        .sidebar-demo {
+            height: 300px;
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+        .main-content-demo {
+            flex: 1;
+            padding: 1.5rem;
+            background: #f8fafc;
+        }
+        .nav-item {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            color: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .nav-item:hover {
+            transform: translateX(5px);
+        }
+        .demo-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .demo-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .demo-btn:hover {
+            transform: translateY(-2px);
+        }
+        .theme-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #1e293b 0%, #64748b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .theme-description {
+            color: #64748b;
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="palette-demo">
+        <div class="container">
+            <h1 style="text-align: center; font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; background: linear-gradient(135deg, #6366f1 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                🎨 Paletas Premium para ABBAMAT
+            </h1>
+            <p style="text-align: center; font-size: 1.2rem; color: #64748b; margin-bottom: 3rem;">
+                Explora las diferentes combinaciones de colores para tu sistema de calidad
+            </p>
+
+            <!-- PALETA OCEANO PROFUNDO -->
+            <div class="theme-section">
+                <div class="theme-name">🌊 Océano Profundo</div>
+                <div class="theme-description">Profesional y corporativo, ideal para entornos industriales</div>
+                <div class="theme-preview">
+                    <div class="color-samples">
+                        <div class="color-sample" style="background: #1e3a8a;" data-color="#1e3a8a">Primario</div>
+                        <div class="color-sample" style="background: #3b82f6;" data-color="#3b82f6">Claro</div>
+                        <div class="color-sample" style="background: #06b6d4;" data-color="#06b6d4">Acento</div>
+                        <div class="color-sample" style="background: #0f172a;" data-color="#0f172a">Sidebar</div>
+                    </div>
+                    <div class="sidebar-demo">
+                        <div class="sidebar" style="background: #0f172a;">
+                            <div style="color: white; font-weight: 800; font-size: 1.2rem; margin-bottom: 2rem;">ABBAMAT</div>
+                            <div class="nav-item" style="background: linear-gradient(135deg, #1e3a8a 0%, #06b6d4 100%);">Operaciones</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Clientes</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Maestros</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Usuarios</div>
+                        </div>
+                        <div class="main-content-demo">
+                            <div class="demo-card">
+                                <h3 style="color: #1e3a8a; font-weight: 700;">Dashboard Principal</h3>
+                                <p style="color: #64748b;">Interfaz profesional con tonos marinos profundos</p>
+                                <button class="demo-btn" style="background: linear-gradient(135deg, #1e3a8a 0%, #06b6d4 100%);">Primario</button>
+                                <button class="demo-btn" style="background: #3b82f6;">Secundario</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PALETA ESPACIO CÓSMICO -->
+            <div class="theme-section">
+                <div class="theme-name">🌌 Espacio Cósmico</div>
+                <div class="theme-description">Moderno y tecnológico, con toques de innovación</div>
+                <div class="theme-preview">
+                    <div class="color-samples">
+                        <div class="color-sample" style="background: #6b46c1;" data-color="#6b46c1">Primario</div>
+                        <div class="color-sample" style="background: #a78bfa;" data-color="#a78bfa">Claro</div>
+                        <div class="color-sample" style="background: #ec4899;" data-color="#ec4899">Acento</div>
+                        <div class="color-sample" style="background: #1e1b4b;" data-color="#1e1b4b">Sidebar</div>
+                    </div>
+                    <div class="sidebar-demo">
+                        <div class="sidebar" style="background: #1e1b4b;">
+                            <div style="color: white; font-weight: 800; font-size: 1.2rem; margin-bottom: 2rem;">ABBAMAT</div>
+                            <div class="nav-item" style="background: linear-gradient(135deg, #6b46c1 0%, #ec4899 100%);">Operaciones</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Clientes</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Maestros</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Usuarios</div>
+                        </div>
+                        <div class="main-content-demo">
+                            <div class="demo-card">
+                                <h3 style="color: #6b46c1; font-weight: 700;">Dashboard Cósmico</h3>
+                                <p style="color: #64748b;">Diseño futurista con acentos violetas y rosas</p>
+                                <button class="demo-btn" style="background: linear-gradient(135deg, #6b46c1 0%, #ec4899 100%);">Primario</button>
+                                <button class="demo-btn" style="background: #a78bfa;">Secundario</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PALETA FOREST VERDE -->
+            <div class="theme-section">
+                <div class="theme-name">🌲 Forest Verde</div>
+                <div class="theme-description">Natural y tecnológico, equilibrio entre calidez y profesionalismo</div>
+                <div class="theme-preview">
+                    <div class="color-samples">
+                        <div class="color-sample" style="background: #059669;" data-color="#059669">Primario</div>
+                        <div class="color-sample" style="background: #10b981;" data-color="#10b981">Claro</div>
+                        <div class="color-sample" style="background: #14b8a6;" data-color="#14b8a6">Acento</div>
+                        <div class="color-sample" style="background: #064e3b;" data-color="#064e3b">Sidebar</div>
+                    </div>
+                    <div class="sidebar-demo">
+                        <div class="sidebar" style="background: #064e3b;">
+                            <div style="color: white; font-weight: 800; font-size: 1.2rem; margin-bottom: 2rem;">ABBAMAT</div>
+                            <div class="nav-item" style="background: linear-gradient(135deg, #059669 0%, #14b8a6 100%);">Operaciones</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Clientes</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Maestros</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Usuarios</div>
+                        </div>
+                        <div class="main-content-demo">
+                            <div class="demo-card">
+                                <h3 style="color: #059669; font-weight: 700;">Dashboard Forest</h3>
+                                <p style="color: #64748b;">Tonos verdes frescos que transmiten crecimiento</p>
+                                <button class="demo-btn" style="background: linear-gradient(135deg, #059669 0%, #14b8a6 100%);">Primario</button>
+                                <button class="demo-btn" style="background: #10b981;">Secundario</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PALETA SUNSET CALIDO -->
+            <div class="theme-section">
+                <div class="theme-name">🌅 Sunset Cálido</div>
+                <div class="theme-description">Energético y cálido, ideal para equipos dinámicos</div>
+                <div class="theme-preview">
+                    <div class="color-samples">
+                        <div class="color-sample" style="background: #ea580c;" data-color="#ea580c">Primario</div>
+                        <div class="color-sample" style="background: #f59e0b;" data-color="#f59e0b">Claro</div>
+                        <div class="color-sample" style="background: #dc2626;" data-color="#dc2626">Acento</div>
+                        <div class="color-sample" style="background: #7c2d12;" data-color="#7c2d12">Sidebar</div>
+                    </div>
+                    <div class="sidebar-demo">
+                        <div class="sidebar" style="background: #7c2d12;">
+                            <div style="color: white; font-weight: 800; font-size: 1.2rem; margin-bottom: 2rem;">ABBAMAT</div>
+                            <div class="nav-item" style="background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);">Operaciones</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Clientes</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Maestros</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Usuarios</div>
+                        </div>
+                        <div class="main-content-demo">
+                            <div class="demo-card">
+                                <h3 style="color: #ea580c; font-weight: 700;">Dashboard Sunset</h3>
+                                <p style="color: #64748b;">Tonos cálidos que inspiran energía y acción</p>
+                                <button class="demo-btn" style="background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);">Primario</button>
+                                <button class="demo-btn" style="background: #f59e0b;">Secundario</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PALETA MIDNIGHT DARK -->
+            <div class="theme-section">
+                <div class="theme-name">🌙 Midnight Dark</div>
+                <div class="theme-description">Modo oscuro elegante, reduce fatiga visual en pantallas</div>
+                <div class="theme-preview">
+                    <div class="color-samples">
+                        <div class="color-sample" style="background: #818cf8;" data-color="#818cf8">Primario</div>
+                        <div class="color-sample" style="background: #1e293b;" data-color="#1e293b">Tarjeta</div>
+                        <div class="color-sample" style="background: #f472b6;" data-color="#f472b6">Acento</div>
+                        <div class="color-sample" style="background: #020617;" data-color="#020617">Sidebar</div>
+                    </div>
+                    <div class="sidebar-demo">
+                        <div class="sidebar" style="background: #020617;">
+                            <div style="color: white; font-weight: 800; font-size: 1.2rem; margin-bottom: 2rem;">ABBAMAT</div>
+                            <div class="nav-item" style="background: linear-gradient(135deg, #818cf8 0%, #f472b6 100%);">Operaciones</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Clientes</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Maestros</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Usuarios</div>
+                        </div>
+                        <div class="main-content-demo" style="background: #0f172a; color: #f1f5f9;">
+                            <div class="demo-card" style="background: #1e293b; color: #f1f5f9;">
+                                <h3 style="color: #818cf8; font-weight: 700;">Dashboard Dark</h3>
+                                <p style="color: #cbd5e1;">Modo oscuro elegante con acentos vibrantes</p>
+                                <button class="demo-btn" style="background: linear-gradient(135deg, #818cf8 0%, #f472b6 100%);">Primario</button>
+                                <button class="demo-btn" style="background: #6366f1;">Secundario</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PALETA TECH NEON -->
+            <div class="theme-section">
+                <div class="theme-name">💻 Tech Neon</div>
+                <div class="theme-description">Futurista y digital, perfecta para sistemas tecnológicos</div>
+                <div class="theme-preview">
+                    <div class="color-samples">
+                        <div class="color-sample" style="background: #10b981;" data-color="#10b981">Primario</div>
+                        <div class="color-sample" style="background: #34d399;" data-color="#34d399">Claro</div>
+                        <div class="color-sample" style="background: #fbbf24;" data-color="#fbbf24">Acento</div>
+                        <div class="color-sample" style="background: #064e3b;" data-color="#064e3b">Sidebar</div>
+                    </div>
+                    <div class="sidebar-demo">
+                        <div class="sidebar" style="background: #064e3b;">
+                            <div style="color: white; font-weight: 800; font-size: 1.2rem; margin-bottom: 2rem;">ABBAMAT</div>
+                            <div class="nav-item" style="background: linear-gradient(135deg, #10b981 0%, #fbbf24 100%);">Operaciones</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Clientes</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Maestros</div>
+                            <div class="nav-item" style="background: rgba(255,255,255,0.1);">Usuarios</div>
+                        </div>
+                        <div class="main-content-demo">
+                            <div class="demo-card">
+                                <h3 style="color: #10b981; font-weight: 700;">Dashboard Tech</h3>
+                                <p style="color: #64748b;">Combinación high-tech verde-neón y amarillo</p>
+                                <button class="demo-btn" style="background: linear-gradient(135deg, #10b981 0%, #fbbf24 100%);">Primario</button>
+                                <button class="demo-btn" style="background: #34d399;">Secundario</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Animación de aparición suave
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.theme-section');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, index * 100);
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            sections.forEach(section => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(30px)';
+                section.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>

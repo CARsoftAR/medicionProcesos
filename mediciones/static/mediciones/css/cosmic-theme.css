@@ -1,0 +1,254 @@
+/* =============================================
+   PALETA ESPACIO CÓSMICA - IMPLEMENTACIÓN COMPLETA
+   ============================================= */
+
+/* CONFIGURACIÓN PRINCIPAL DEL TEMA CÓSMICO */
+:root {
+    --cosmic-primary: #6b46c1;
+    --cosmic-secondary: #a78bfa;
+    --cosmic-accent: #ec4899;
+    --cosmic-dark: #1e1b4b;
+    --cosmic-darker: #2d1b69;
+    --cosmic-light: #c4b5fd;
+    --cosmic-lighter: #e9d5ff;
+    
+    /* Gradientes Cósmicos */
+    --cosmic-gradient: linear-gradient(135deg, var(--cosmic-primary) 0%, var(--cosmic-accent) 100%);
+    --cosmic-gradient-reverse: linear-gradient(135deg, var(--cosmic-accent) 0%, var(--cosmic-primary) 100%);
+    --cosmic-glow: linear-gradient(135deg, var(--cosmic-secondary) 0%, var(--cosmic-accent) 100%);
+    
+    /* Sombras Cósmicas */
+    --cosmic-shadow: 0 8px 32px rgba(107, 70, 193, 0.3);
+    --cosmic-shadow-hover: 0 16px 48px rgba(107, 70, 193, 0.4);
+    --cosmic-shadow-glow: 0 0 30px rgba(236, 72, 153, 0.5);
+}
+
+/* CLASES PARA APLICAR RÁPIDAMENTE EL TEMA */
+.theme-cosmic-complete {
+    --primary: var(--cosmic-primary);
+    --primary-light: var(--cosmic-secondary);
+    --primary-dark: var(--cosmic-darker);
+    --accent: var(--cosmic-accent);
+    --bg-sidebar: var(--cosmic-dark);
+    --primary-gradient: var(--cosmic-gradient);
+    --accent-gradient: var(--cosmic-glow);
+    --border-color: rgba(167, 139, 250, 0.2);
+}
+
+/* ANIMACIONES CÓSMICAS ESPECIALES */
+@keyframes cosmicPulse {
+    0%, 100% { 
+        opacity: 0.7;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes cosmicFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes cosmicGlow {
+    0%, 100% { box-shadow: var(--cosmic-shadow); }
+    50% { box-shadow: var(--cosmic-shadow-glow); }
+}
+
+/* EFECTOS ESPECIALES PARA ELEMENTOS CÓSMICOS */
+.cosmic-glow-effect {
+    box-shadow: var(--cosmic-shadow);
+    transition: all var(--transition-slow);
+}
+
+.cosmic-glow-effect:hover {
+    box-shadow: var(--cosmic-shadow-glow);
+    transform: translateY(-2px);
+}
+
+.cosmic-text-gradient {
+    background: var(--cosmic-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.cosmic-border-glow {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
+                var(--cosmic-gradient) border-box;
+}
+
+/* VARIANTES DE BOTONES CÓSMICOS */
+.btn-cosmic-primary {
+    background: var(--cosmic-gradient);
+    color: white;
+    border: none;
+    box-shadow: var(--cosmic-shadow);
+    transition: all var(--transition-slow);
+}
+
+.btn-cosmic-primary:hover {
+    background: var(--cosmic-gradient-reverse);
+    box-shadow: var(--cosmic-shadow-hover);
+    transform: translateY(-3px);
+}
+
+.btn-cosmic-secondary {
+    background: var(--cosmic-glow);
+    color: white;
+    border: none;
+    box-shadow: 0 6px 24px rgba(167, 139, 250, 0.3);
+}
+
+.btn-cosmic-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(167, 139, 250, 0.4);
+}
+
+/* CARDS CÓSMICOS */
+.card-cosmic {
+    background: var(--bg-card);
+    border: 1px solid rgba(167, 139, 250, 0.1);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.card-cosmic::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--cosmic-gradient);
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.card-cosmic:hover::before {
+    opacity: 1;
+}
+
+.card-cosmic:hover {
+    border-color: rgba(167, 139, 250, 0.3);
+    box-shadow: var(--cosmic-shadow);
+    transform: translateY(-4px);
+}
+
+/* SIDEBAR CÓSMICO MEJORADO */
+.sidebar-cosmic {
+    background: linear-gradient(180deg, var(--cosmic-dark) 0%, var(--cosmic-darker) 100%);
+    position: relative;
+}
+
+.sidebar-cosmic::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 30% 20%, rgba(236, 72, 153, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 70% 80%, rgba(167, 139, 250, 0.08) 0%, transparent 40%);
+    pointer-events: none;
+}
+
+/* ÍCONOS CON EFECTOS CÓSMICOS */
+.icon-cosmic {
+    color: var(--cosmic-secondary);
+    transition: all var(--transition);
+}
+
+.icon-cosmic:hover {
+    color: var(--cosmic-accent);
+    transform: scale(1.1);
+    filter: drop-shadow(0 4px 8px rgba(236, 72, 153, 0.4));
+}
+
+/* BADGES CÓSMICOS */
+.badge-cosmic {
+    background: var(--cosmic-glow);
+    color: white;
+    padding: 0.4em 1em;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 4px 12px rgba(167, 139, 250, 0.3);
+}
+
+/* ALERTS CÓSMICOS */
+.alert-cosmic {
+    background: linear-gradient(135deg, rgba(107, 70, 193, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
+    border: 2px solid rgba(236, 72, 153, 0.2);
+    color: var(--cosmic-primary);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem 1.5rem;
+    box-shadow: 0 8px 24px rgba(107, 70, 193, 0.15);
+}
+
+/* TABLAS CÓSMICAS */
+.table-cosmic thead {
+    background: linear-gradient(135deg, rgba(107, 70, 193, 0.05) 0%, rgba(236, 72, 153, 0.03) 100%);
+}
+
+.table-cosmic tbody tr:hover {
+    background: rgba(167, 139, 250, 0.05);
+    transform: scale(1.01);
+}
+
+/* FORMS CÓSMICOS */
+.form-control-cosmic:focus {
+    border-color: var(--cosmic-secondary);
+    box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2), var(--cosmic-shadow);
+}
+
+/* LOADING CÓSMICO */
+.loading-cosmic {
+    background: var(--cosmic-gradient);
+    animation: cosmicPulse 2s ease-in-out infinite;
+}
+
+/* PARTICULAS FLOTANTES CÓSMICAS */
+.cosmic-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.cosmic-particle {
+    position: absolute;
+    background: var(--cosmic-accent);
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: floatParticle 20s linear infinite;
+}
+
+@keyframes floatParticle {
+    from {
+        transform: translateY(100vh) rotate(0deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.3;
+    }
+    90% {
+        opacity: 0.3;
+    }
+    to {
+        transform: translateY(-100vh) rotate(360deg);
+        opacity: 0;
+    }
+}

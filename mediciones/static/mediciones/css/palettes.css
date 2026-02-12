@@ -1,0 +1,162 @@
+/* PALETAS PREMIUM PARA ABBAMAT - SISTEMA DE CALIDAD */
+
+/* =============================================
+   PALETA 1: OCEANO PROFUNDO (Azul Marino - Actual Mejorado)
+   ============================================= */
+:root {
+    --theme-ocean-primary: #1e3a8a;
+    --theme-ocean-light: #3b82f6;
+    --theme-ocean-accent: #06b6d4;
+    --theme-ocean-sidebar: #0f172a;
+    --theme-ocean-gradient: linear-gradient(135deg, #1e3a8a 0%, #06b6d4 100%);
+}
+
+/* =============================================
+   PALETA 2: ESPACIO CÓSMICO (Morado/Violeta)
+   ============================================= */
+:root {
+    --theme-cosmic-primary: #6b46c1;
+    --theme-cosmic-light: #a78bfa;
+    --theme-cosmic-accent: #ec4899;
+    --theme-cosmic-sidebar: #1e1b4b;
+    --theme-cosmic-gradient: linear-gradient(135deg, #6b46c1 0%, #ec4899 100%);
+}
+
+/* =============================================
+   PALETA 3: FOREST VERDE (Naturaleza/Tecnología)
+   ============================================= */
+:root {
+    --theme-forest-primary: #059669;
+    --theme-forest-light: #10b981;
+    --theme-forest-accent: #14b8a6;
+    --theme-forest-sidebar: #064e3b;
+    --theme-forest-gradient: linear-gradient(135deg, #059669 0%, #14b8a6 100%);
+}
+
+/* =============================================
+   PALETA 4: SUNSET CALIDO (Naranja/Dorado)
+   ============================================= */
+:root {
+    --theme-sunset-primary: #ea580c;
+    --theme-sunset-light: #f59e0b;
+    --theme-sunset-accent: #dc2626;
+    --theme-sunset-sidebar: #7c2d12;
+    --theme-sunset-gradient: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+}
+
+/* =============================================
+   PALETA 5: MIDNIGHT DARK (Modo Oscuro Premium)
+   ============================================= */
+:root {
+    --theme-midnight-bg: #0f172a;
+    --theme-midnight-card: #1e293b;
+    --theme-midnight-primary: #818cf8;
+    --theme-midnight-accent: #f472b6;
+    --theme-midnight-sidebar: #020617;
+    --theme-midnight-gradient: linear-gradient(135deg, #818cf8 0%, #f472b6 100%);
+}
+
+/* =============================================
+   PALETA 6: CORAL REEF (Vibrante Tropical)
+   ============================================= */
+:root {
+    --theme-coral-primary: #0891b2;
+    --theme-coral-light: #06b6d4;
+    --theme-coral-accent: #f97316;
+    --theme-coral-sidebar: #164e63;
+    --theme-coral-gradient: linear-gradient(135deg, #0891b2 0%, #f97316 100%);
+}
+
+/* =============================================
+   PALETA 7: GRANITE ELEGANT (Gris Piedra Premium)
+   ============================================= */
+:root {
+    --theme-granite-primary: #374151;
+    --theme-granite-light: #6b7280;
+    --theme-granite-accent: #9ca3af;
+    --theme-granite-sidebar: #111827;
+    --theme-granite-gradient: linear-gradient(135deg, #374151 0%, #9ca3af 100%);
+}
+
+/* =============================================
+   PALETA 8: TECH NEON (Futurista Digital)
+   ============================================= */
+:root {
+    --theme-tech-primary: #10b981;
+    --theme-tech-light: #34d399;
+    --theme-tech-accent: #fbbf24;
+    --theme-tech-sidebar: #064e3b;
+    --theme-tech-gradient: linear-gradient(135deg, #10b981 0%, #fbbf24 100%);
+}
+
+/* =============================================
+   CLASES RÁPIDAS PARA CAMBIO DE TEMA
+   ============================================= */
+.theme-ocean {
+    --primary: var(--theme-ocean-primary);
+    --primary-light: var(--theme-ocean-light);
+    --accent: var(--theme-ocean-accent);
+    --bg-sidebar: var(--theme-ocean-sidebar);
+    --primary-gradient: var(--theme-ocean-gradient);
+}
+
+.theme-cosmic {
+    --primary: var(--theme-cosmic-primary);
+    --primary-light: var(--theme-cosmic-light);
+    --accent: var(--theme-cosmic-accent);
+    --bg-sidebar: var(--theme-cosmic-sidebar);
+    --primary-gradient: var(--theme-cosmic-gradient);
+}
+
+.theme-forest {
+    --primary: var(--theme-forest-primary);
+    --primary-light: var(--theme-forest-light);
+    --accent: var(--theme-forest-accent);
+    --bg-sidebar: var(--theme-forest-sidebar);
+    --primary-gradient: var(--theme-forest-gradient);
+}
+
+.theme-sunset {
+    --primary: var(--theme-sunset-primary);
+    --primary-light: var(--theme-sunset-light);
+    --accent: var(--theme-sunset-accent);
+    --bg-sidebar: var(--theme-sunset-sidebar);
+    --primary-gradient: var(--theme-sunset-gradient);
+}
+
+.theme-midnight {
+    --bg-body: var(--theme-midnight-bg);
+    --bg-card: var(--theme-midnight-card);
+    --primary: var(--theme-midnight-primary);
+    --accent: var(--theme-midnight-accent);
+    --bg-sidebar: var(--theme-midnight-sidebar);
+    --primary-gradient: var(--theme-midnight-gradient);
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+}
+
+.theme-coral {
+    --primary: var(--theme-coral-primary);
+    --primary-light: var(--theme-coral-light);
+    --accent: var(--theme-coral-accent);
+    --bg-sidebar: var(--theme-coral-sidebar);
+    --primary-gradient: var(--theme-coral-gradient);
+}
+
+.theme-granite {
+    --primary: var(--theme-granite-primary);
+    --primary-light: var(--theme-granite-light);
+    --accent: var(--theme-granite-accent);
+    --bg-sidebar: var(--theme-granite-sidebar);
+    --primary-gradient: var(--theme-granite-gradient);
+}
+
+.theme-tech {
+    --primary: var(--theme-tech-primary);
+    --primary-light: var(--theme-tech-light);
+    --accent: var(--theme-tech-accent);
+    --bg-sidebar: var(--theme-tech-sidebar);
+    --primary-gradient: var(--theme-tech-gradient);
+}
