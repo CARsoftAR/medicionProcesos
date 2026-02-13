@@ -100,7 +100,7 @@
     <table style="margin-top: -0.5pt;">
         <tr>
             <td colspan="4" class="label-cell">DENOMINACION</td>
-            <td colspan="6" class="bg-purple fw-bold">{{ planilla.proceso.nombre|upper }}</td>
+            <td colspan="6" class="bg-purple fw-bold">{% if planilla.proceso %}{{ planilla.proceso.nombre|upper }}{% else %}-{% endif %}</td>
             <td colspan="3" class="label-cell">NUMERO DE REGISTRO</td>
             <td colspan="7">{{ num_registro }}</td>
         </tr>
@@ -108,7 +108,7 @@
             <td colspan="4" class="label-cell">PROYECTO N°</td>
             <td colspan="2" class="bg-blue-soft fw-bold">{{ planilla.proyecto|default:"-" }}</td>
             <td colspan="2" class="label-cell">ARTICULO</td>
-            <td colspan="4" class="bg-pink fw-bold">{{ planilla.articulo.nombre|default:"-" }}</td>
+            <td colspan="4" class="bg-pink fw-bold">{% if planilla.articulo %}{{ planilla.articulo.nombre|upper }}{% else %}-{% endif %}</td>
             <td colspan="2" class="label-cell">CANTIDAD</td>
             <td colspan="2" class="bg-orange fw-bold">{{ planilla.cantidad|default:"0"|floatformat:0 }}</td>
             <td colspan="1" class="label-cell">REV</td>

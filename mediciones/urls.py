@@ -30,6 +30,11 @@ urlpatterns = [
     path('maestros/clientes/<int:pk>/editar/', views.editar_cliente, name='editar_cliente'),
     path('maestros/clientes/<int:pk>/eliminar/', views.eliminar_cliente, name='eliminar_cliente'),
 
+    path('maestros/elementos/', views.lista_elementos, name='lista_elementos'),
+    path('maestros/elementos/nuevo/', views.crear_elemento, name='crear_elemento'),
+    path('maestros/elementos/<int:pk>/editar/', views.editar_elemento, name='editar_elemento'),
+    path('maestros/elementos/<int:pk>/eliminar/', views.eliminar_elemento, name='eliminar_elemento'),
+
     path('maestros/instrumentos/', views.lista_instrumentos, name='lista_instrumentos'),
     path('maestros/instrumentos/dashboard/', views.dashboard_calibracion, name='dashboard_calibracion'),
     path('maestros/instrumentos/nuevo/', views.crear_instrumento, name='crear_instrumento'),
@@ -62,6 +67,7 @@ urlpatterns = [
     
     # Herramientas
     path('herramientas/ocr/', views.ocr_lector_planos, name='ocr_lector_planos'),
+    path('api/herramientas/ocr/importar/', views.importar_datos_ocr, name='importar_datos_ocr'),
 ]
 
 

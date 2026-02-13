@@ -1,0 +1,57 @@
+{% extends 'mediciones/index.html' %}
+
+{% block title %}{{ titulo|default:"Nuevo Elemento" }}{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: flex-start; min-height: 60vh; padding-top: 2rem;">
+    <!-- Modal-like Card -->
+    <div class="card" style="width: 100%; max-width: 600px; padding: 0; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+        
+        <!-- Header -->
+        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 40px; height: 40px; background: rgba(139, 92, 246, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--purple-accent, #8b5cf6); border: 1px solid rgba(139, 92, 246, 0.2);">
+                    <i class="ri-stack-line" style="font-size: 1.25rem;"></i>
+                </div>
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin: 0;">{{ titulo|default:"Nuevo Elemento" }}</h2>
+            </div>
+            <a href="{% url 'lista_elementos' %}" style="color: var(--text-muted); font-size: 1.5rem; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--text-muted)'">
+                <i class="ri-close-line"></i>
+            </a>
+        </div>
+
+        <form method="post" id="elementoForm">
+            {% csrf_token %}
+            <!-- Body -->
+            <div style="padding: 2.5rem 2rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="text-transform: uppercase; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.75rem; display: block;">Nombre del Elemento</label>
+                    <input type="text" name="nombre" class="form-control" placeholder="Ej: Cruceta, Biela, etc." id="id_nombre" value="{{ form.nombre.value|default:'' }}" required>
+                    {% if form.nombre.errors %}
+                        <div class="text-danger small mt-2" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="ri-error-warning-line"></i> {{ form.nombre.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="padding: 1.5rem; background: #ffffff; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 1rem;">
+                <a href="{% url 'lista_elementos' %}" class="btn btn-secondary" style="padding-left: 1.5rem; padding-right: 1.5rem; font-weight: 600;">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" style="padding-left: 2rem; padding-right: 2rem; font-weight: 600; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                    <i class="ri-check-line"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const input = document.getElementById('id_nombre');
+        if(input) input.focus();
+    });
+</script>
+{% endblock %}

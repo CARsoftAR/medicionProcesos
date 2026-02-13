@@ -85,6 +85,12 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="{% url 'lista_elementos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_elementos' %}active{% endif %}">
+                                        <i class="ri-stack-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        Elementos
+                                    </a>
+                                </li>
+                                <li>
                                     <a href="{% url 'lista_controles' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_controles' %}active{% endif %}">
                                         <i class="ri-shield-check-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                         Controles

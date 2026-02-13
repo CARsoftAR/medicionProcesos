@@ -4,158 +4,435 @@
 {% block title %}Lector OCR de Planos{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="ri-file-search-line me-2"></i> Extracción Automática de Cotas (OCR)</h5>
+<style>
+    /* Estructura Base y Layout */
+    .content-wrapper {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        background: #f1f5f9;
+        min-height: 100vh;
+    }
+    
+    .topbar { display: none !important; }
+
+    .premium-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar Izquierdo */
+    .sidebar-ocr {
+        width: 280px;
+        background: white;
+        padding: 2rem 1.5rem;
+        border-right: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        flex-shrink: 0;
+    }
+
+    .sidebar-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: -0.02em;
+    }
+
+    .upload-box {
+        border: 2px dashed #3b82f6;
+        background: #eff6ff;
+        border-radius: 12px;
+        padding: 2rem 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .upload-box:hover { background: #dbeafe; transform: translateY(-2px); }
+    .upload-box i { font-size: 2rem; color: #3b82f6; margin-bottom: 0.5rem; }
+    .upload-box span { display: block; font-weight: 700; color: #3b82f6; font-size: 0.85rem; }
+    .upload-box small { color: #64748b; font-size: 0.7rem; }
+
+    .status-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+    }
+    .status-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .status-value-op { font-size: 1.5rem; font-weight: 800; color: #3b82f6; margin-bottom: 1rem; }
+    .status-group { margin-bottom: 1rem; }
+    .status-group:last-child { margin-bottom: 0; }
+    .status-value-small { font-size: 0.85rem; font-weight: 700; color: #334155; line-height: 1.2; }
+
+    /* Contenido Principal */
+    .main-content-ocr {
+        flex: 1;
+        padding: 2rem 3rem;
+        overflow-y: auto;
+    }
+
+    .header-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+    .panel-title { font-size: 1.5rem; font-weight: 800; color: #1e293b; margin: 0; }
+
+    .btn-descartar {
+        background: transparent;
+        border: none;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 0.5rem 1.5rem;
+        transition: color 0.2s;
+        cursor: pointer;
+    }
+    .btn-descartar:hover { color: #1e293b; }
+
+    .btn-confirmar {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 2.5rem;
+        font-weight: 700;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .btn-confirmar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(59, 130, 246, 0.4); }
+
+    /* Panel de Verificación (Selectores) */
+    .verification-bar {
+        background: #fff8e6;
+        border: 1px solid #fde68a;
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        margin-bottom: 2rem;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+    .selector-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .selector-label { font-size: 0.65rem; font-weight: 800; color: #92400e; text-transform: uppercase; letter-spacing: 0.05em; }
+    .selector-select {
+        background: white;
+        border: 1px solid #fde68a;
+        border-radius: 8px;
+        padding: 0.4rem 0.75rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    /* Matriz de Control */
+    .matrix-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+    .matrix-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .matrix-title { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin: 0; }
+    .matrix-badge {
+        background: #e0f2fe;
+        color: #0369a1;
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        text-transform: uppercase;
+    }
+
+    .table-ocr {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .table-ocr th {
+        background: #f8fafc;
+        text-align: left;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.6rem;
+        font-weight: 800;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    .table-ocr td {
+        padding: 0.6rem 0.6rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #334155;
+    }
+    .table-ocr tr:last-child td { border-bottom: none; }
+
+    .instr-badge {
+        background: #1e293b;
+        color: white;
+        font-size: 0.6rem;
+        font-weight: 700;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .val-text { font-weight: 800; color: #10b981; }
+    .val-text.nok { color: #ef4444; }
+
+    /* Paginación y Visibilidad - DESHABILITADO */
+    
+    .piece-paginator {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #f1f5f9;
+        padding: 0.2rem;
+        border-radius: 8px;
+    }
+    .btn-page {
+        border: 1px solid #cbd5e1;
+        background: white;
+        color: #1e293b;
+        font-size: 0.75rem;
+        font-weight: 800;
+        padding: 0.3rem 0.6rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-page:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
+    .btn-page:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    @media (max-width: 1200px) {
+        .verification-bar { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+
+<div class="premium-container animate__animated animate__fadeIn">
+    <!-- SIDEBAR -->
+    <aside class="sidebar-ocr">
+        <h1 class="sidebar-title">LECTOR OCR</h1>
+        
+        <form method="post" enctype="multipart/form-data" id="ocr-upload-form">
+            {% csrf_token %}
+            <input type="file" name="plano_pdf" id="plano_pdf" accept="application/pdf" style="display: none;" onchange="document.getElementById('ocr-upload-form').submit(); showLoader();">
+            <div id="upload-content" class="upload-box" onclick="document.getElementById('plano_pdf').click();">
+                <i class="ri-file-pdf-2-line"></i>
+                <span>Cargar PDF</span>
+                <small>Digitalización automática</small>
             </div>
-            <div class="card-body">
-                <p class="text-muted mb-4">
-                    Suba su archivo PDF del plano para extraer automáticamente las cotas críticas, tolerancias y especificaciones usando nuestro motor de reconocimiento óptico inteligente.
-                </p>
+            <div id="processing-loader" style="display: none;" class="text-center py-4">
+                <span class="spinner-border spinner-border-sm text-primary mb-2"></span>
+                <div class="text-primary fw-bold small">Analizando...</div>
+            </div>
+        </form>
 
-                <form method="post" enctype="multipart/form-data" class="dropzone-area" id="ocr-upload-form" style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 3rem; text-align: center; cursor: pointer; transition: all 0.3s; background: #f8fafc;">
-                    {% csrf_token %}
-                    <input type="file" name="plano_pdf" id="plano_pdf" accept="application/pdf" style="display: none;" onchange="document.getElementById('ocr-upload-form').submit(); showLoader();">
-                    
-                    <div id="upload-content">
-                        <i class="ri-upload-cloud-2-line text-primary" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
-                        <h4 class="text-primary fw-bold">Arrastre su PDF aquí</h4>
-                        <p class="text-secondary">o haga clic para seleccionar un archivo</p>
-                    </div>
+        {% if success %}
+        <div class="status-card">
+            <div class="status-group">
+                <label class="status-label">Número de OP</label>
+                <div class="status-value-op">#{{ header.op }}</div>
+            </div>
+            <div class="status-group">
+                <label class="status-label">Proyecto</label>
+                <div class="status-value-small">{{ header.proyecto }}</div>
+            </div>
+            <div class="status-group">
+                <label class="status-label">Cliente / Artículo</label>
+                <div class="status-value-small">{{ header.cliente|truncatechars:40 }}</div>
+                <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">{{ header.articulo }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </aside>
 
-                    <div id="processing-loader" style="display: none;">
-                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <h5 class="mt-3 text-primary">Procesando Documento...</h5>
-                        <p class="text-muted">Analizando geometría y extrayendo tolerancias</p>
-                    </div>
-                </form>
+    <!-- MAIN CONTENT -->
+    <main class="main-content-ocr">
+        <div class="header-actions">
+            <h2 class="panel-title">Panel de Verificación</h2>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn-descartar" onclick="location.reload();">Descartar</button>
+                {% if success %}
+                <button id="btn-importar-sistema" class="btn-confirmar">Confirmar e Importar</button>
+                {% endif %}
             </div>
         </div>
 
         {% if success %}
-        <div class="card animate__animated animate__fadeInUp">
-            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <h5 class="mb-0"><i class="ri-checkbox-circle-line me-2"></i> Resultados de Extracción (OCR)</h5>
-                <span class="badge bg-white text-success">{{ filename }}</span>
+        <!-- SELECTORES DE VINCULACIÓN -->
+        <div class="verification-bar animate__animated animate__fadeInDown">
+            <div class="selector-group">
+                <label class="selector-label">Cliente</label>
+                <select id="sel-cliente-ocr" class="selector-select">
+                    <option value="">--- Seleccionar ---</option>
+                    {% for c in clientes %}
+                    <option value="{{ c.id }}" {% if c.id == auto_matched.cliente_id %}selected{% endif %}>{{ c.nombre }}</option>
+                    {% endfor %}
+                </select>
             </div>
-            <div class="card-body">
-                <!-- Header Info -->
-                <div class="d-flex flex-wrap gap-5 mb-4 p-4 bg-light rounded border align-items-center">
-                    <div class="d-flex flex-column border-start border-primary border-4 ps-3">
-                        <span class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Proyecto</span>
-                        <span class="fs-4 fw-bold text-dark">{{ header.proyecto }}</span>
-                    </div>
-                    
-                    <div class="d-flex flex-column border-start border-success border-4 ps-3">
-                        <span class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">N° de OP</span>
-                        <span class="fs-4 fw-bold text-dark">{{ header.op }}</span>
-                    </div>
-                    
-                    <div class="d-flex flex-column border-start border-info border-4 ps-3">
-                        <span class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Rango de Piezas</span>
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-primary fs-6">#{{ header.pieza_inicio }}</span>
-                            <i class="ri-arrow-right-line text-muted"></i>
-                            <span class="badge bg-primary fs-6">#{{ header.pieza_fin }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="alert alert-info d-flex align-items-center mb-4">
-                    <i class="ri-information-line me-2 fs-4"></i>
-                    <div>
-                        <strong>Análisis Completado:</strong> Se han digitalizado {{ matrix|length }} filas de controles con sus respectivas mediciones manuscritas.
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover align-middle text-center" style="font-size: 0.9rem;">
-                        <thead class="table-dark">
-                            <tr>
-                                <th rowspan="2" class="align-middle">DETALLE (Control)</th>
-                                <th rowspan="2" class="align-middle">SOLICITADO</th>
-                                <th rowspan="2" class="align-middle">TOL.</th>
-                                <th rowspan="2" class="align-middle">INSTR.</th>
-                                <th colspan="10" class="bg-primary border-bottom">NÚMERO DE PIEZAS</th>
-                            </tr>
-                            <tr>
-                                {% for p in piezas %}
-                                <th style="width: 50px;" class="bg-secondary">{{ p }}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for row in matrix %}
-                            <tr>
-                                <td class="text-start fw-bold">{{ row.control }}</td>
-                                <td class="fw-bold text-primary">{{ row.nominal }}</td>
-                                <td class="text-muted">{{ row.tolerancia }}</td>
-                                <td><span class="badge bg-light text-dark border">{{ row.instrumento }}</span></td>
-                                
-                                <!-- Render Values -->
-                                {% for val in row.valores %}
-                                    {% if val %}
-                                        {# Simple logic to highlight out of spec based on min/max strings #}
-                                        <td class="{% if val < row.min or val > row.max %}bg-danger bg-opacity-10 text-danger fw-bold{% else %}text-success{% endif %}" title="Rango: {{ row.min }} - {{ row.max }}">
-                                            {{ val }}
-                                        </td>
-                                    {% else %}
-                                        <td class="text-muted">-</td>
-                                    {% endif %}
-                                {% endfor %}
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="d-flex justify-content-end mt-4 gap-2">
-                    <button class="btn btn-outline-secondary">Descartar</button>
-                    <button class="btn btn-primary"><i class="ri-save-line me-2"></i> Importar Datos al Sistema</button>
-                </div>
+            <div class="selector-group">
+                <label class="selector-label">Proceso</label>
+                <select id="sel-proceso-ocr" class="selector-select">
+                    <option value="">--- Seleccionar ---</option>
+                    {% for p in procesos %}
+                    <option value="{{ p.id }}" {% if p.id == auto_matched.proceso_id %}selected{% endif %}>{{ p.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="selector-group">
+                <label class="selector-label">Artículo</label>
+                <select id="sel-articulo-ocr" class="selector-select">
+                    <option value="">--- Seleccionar ---</option>
+                    {% for a in articulos %}
+                    <option value="{{ a.id }}" {% if a.id == auto_matched.articulo_id %}selected{% endif %}>{{ a.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="selector-group">
+                <label class="selector-label">Operación</label>
+                <select id="sel-elemento-ocr" class="selector-select">
+                    <option value="">--- Seleccionar ---</option>
+                    {% for e in elementos %}
+                    <option value="{{ e.id }}" {% if e.id == auto_matched.elemento_id %}selected{% endif %}>{{ e.nombre|upper }}</option>
+                    {% endfor %}
+                </select>
             </div>
         </div>
+
+        <!-- TABLA DE RESULTADOS (Estilo Profesional Audit) -->
+        <div class="matrix-card animate__animated animate__fadeInUp">
+            <div class="matrix-header">
+                <div>
+                    <h3 class="matrix-title">Panel de Resultados OCR</h3>
+                    <div style="font-size: 0.75rem; color: #64748b; font-weight: 700;">{{ matrix|length }} Controles Detectados / {{ piezas|length }} Piezas Auditadas</div>
+                </div>
+                
+            </div>
+            
+            <div class="table-responsive" style="overflow-x: auto; background: white;">
+                <table class="table-ocr" id="tabla-ocr-resultados" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+                    <thead>
+                        <tr>
+                            <th style="width: 280px; background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; left: 0; z-index: 10;" class="ps-4">Control Detectado</th>
+                            <th class="text-center" style="width: 85px; background: #f8fafc; border-bottom: 2px solid #cbd5e1;">Nominal</th>
+                            <th class="text-center" style="width: 85px; background: #f8fafc; border-bottom: 2px solid #cbd5e1;">Tol.</th>
+                            <th class="text-center" style="width: 110px; background: #f8fafc; border-bottom: 2px solid #cbd5e1;">Instr.</th>
+                            {% for p in piezas %}
+                            <th class="text-center" style="width: 85px; color: #3b82f6; font-size: 0.8rem; font-weight: 800; padding: 0.5rem 0; border-bottom: 2px solid #e2e8f0; background: #f8fafc;">
+                                P{{ p }}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in matrix %}
+                        <tr style="border-bottom: 1px solid #f1f5f9;">
+                            <td class="fw-bold ps-4" style="color: #475569; font-size: 0.8rem; border-right: 1px solid #f1f5f9; white-space: nowrap;">{{ row.control }}</td>
+                            <td class="text-center" style="color: #2563eb; font-weight: 800; font-size: 0.9rem; white-space: nowrap;">{{ row.nominal }}</td>
+                            <td class="text-center" style="font-size: 0.75rem; border-right: 1px solid #f1f5f9; white-space: nowrap;">
+                                <div style="color: #94a3b8;">±</div>
+                                <div style="color: #475569; font-weight: 700;">{{ row.tolerancia|default:"0.00"|slice:"2:" }}</div>
+                            </td>
+                            <td class="text-center" style="border-right: 2px solid #e2e8f0; white-space: nowrap;">
+                                <span style="font-size: 0.75rem; font-weight: 800; color: #1e293b; background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px;">{{ row.instrumento }}</span>
+                            </td>
+                            {% for item in row.valores %}
+                            <td class="text-center" style="padding: 0.8rem 0.5rem; border-right: 1px solid #f8fafc;">
+                                <span class="val-text {% if item.ok == False %}nok{% endif %}" style="font-size: 0.95rem; font-weight: 800;">
+                                    {% if item.val %}{{ item.val }}{% else %}{{ item }}{% endif %}
+                                </span>
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% else %}
+        <!-- ESTADO VACÍO -->
+        <div class="text-center py-5 opacity-25" style="margin-top: 5rem;">
+            <i class="ri-file-pdf-line" style="font-size: 8rem;"></i>
+            <h2 class="fw-bold mt-4">Esperando Documento...</h2>
+            <p>Suba un archivo PDF para comenzar el proceso de verificación.</p>
+        </div>
         {% endif %}
-    </div>
+    </main>
 </div>
 
 <script>
-    document.getElementById('ocr-upload-form').addEventListener('click', function() {
-        document.getElementById('plano_pdf').click();
-    });
-
-    document.getElementById('ocr-upload-form').addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.style.borderColor = '#3b82f6';
-        this.style.background = '#eff6ff';
-    });
-
-    document.getElementById('ocr-upload-form').addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        this.style.borderColor = '#cbd5e1';
-        this.style.background = '#f8fafc';
-    });
-
-    document.getElementById('ocr-upload-form').addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.style.borderColor = '#cbd5e1';
-        this.style.background = '#f8fafc';
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            document.getElementById('plano_pdf').files = files;
-            showLoader();
-            this.submit();
-        }
-    });
+    // Paginación DESHABILITADA - Mostrando todas las piezas
+    function changePiecePage(dir) {
+        // No hacer nada
+    }
 
     function showLoader() {
-        document.getElementById('upload-content').style.display = 'none';
-        document.getElementById('processing-loader').style.display = 'block';
+        if (document.getElementById('upload-content')) document.getElementById('upload-content').style.display = 'none';
+        if (document.getElementById('processing-loader')) document.getElementById('processing-loader').style.display = 'block';
     }
+
+    {% if success %}
+    document.getElementById('btn-importar-sistema').addEventListener('click', function() {
+        const header = JSON.parse('{{ header_json|escapejs }}');
+        const piezas = JSON.parse('{{ piezas_json|escapejs }}');
+        const matrix = JSON.parse('{{ matrix_json|escapejs }}');
+        
+        const payload = {
+            header: header,
+            piezas: piezas, 
+            matrix: matrix,
+            proceso_id: document.getElementById('sel-proceso-ocr').value,
+            articulo_id: document.getElementById('sel-articulo-ocr').value,
+            elemento_id: document.getElementById('sel-elemento-ocr').value,
+            cliente_id: document.getElementById('sel-cliente-ocr').value
+        };
+
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+
+        fetch("{% url 'importar_datos_ocr' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert(data.message);
+                window.location.href = "{% url 'nueva_medicion_op' %}?op=" + "{{ header.op }}";
+            } else {
+                alert('Error: ' + data.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Confirmar e Importar';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión al importar.');
+            btn.disabled = false;
+            btn.innerHTML = 'Confirmar e Importar';
+        });
+    });
+    {% endif %}
 </script>
 {% endblock %}

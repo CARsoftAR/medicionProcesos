@@ -153,7 +153,14 @@
                                 <div>
                                     <h3 class="canvas-title">CONTROLES A MEDIR - PIEZA {{ pieza_actual }}</h3>
                                     <div class="text-muted fw-bold" style="font-size: 0.8rem; text-transform: uppercase; margin-top: 2px;">
-                                        {{ planilla.elemento.nombre|default:"-" }} / {{ planilla.proceso.nombre|default:"-" }}
+                                        {% if planilla.proceso %}{{ planilla.proceso.nombre }}{% endif %}
+                                        {% if planilla.articulo or planilla.elemento %}
+                                            {% if planilla.proceso %} / {% endif %}
+                                            {% if planilla.articulo %}{{ planilla.articulo.nombre }}{% endif %}
+                                            {% if planilla.elemento %}{% if planilla.articulo %} - {% endif %}{{ planilla.elemento.nombre }}{% endif %}
+                                        {% endif %}
+                                        {% if planilla.proyecto %} - {{ planilla.proyecto }}{% endif %}
+                                        {% if not planilla.proceso and not planilla.articulo and not planilla.elemento and not planilla.proyecto %} - {% endif %}
                                     </div>
                                 </div>
                             </div>
