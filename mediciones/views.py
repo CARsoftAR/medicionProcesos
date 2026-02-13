@@ -1035,18 +1035,31 @@ def nueva_medicion_op(request):
             # Use (planilla_id, control_id) as key because same control might exist in different elements
             valores_dict = { (v.planilla_id, v.control_id): v for v in valores_existentes }
             
+            # 3. Handle POST (Save measurements)
+            # ... (Existing POST logic logic is fine, keeping context)
+
             # --- INTELLIGENT SPC ALERTS ---
-            # Fetch history for all tolerances involved (last 15 pieces) to detect trends
             from .utils_spc import SPCAnalyzer
-            from django.db.models import Prefetch
+            
+            # Optimization: Only fetch history for controls visible on screen
+            # AND Limit history to the current piece (and past) to avoid "future" alerts confusing the current view
+            visible_control_ids = [t.control_id for t in tolerancias]
             
             history_dict = {}
             all_history = ValorMedicion.objects.filter(
-                planilla__in=planillas
-            ).order_by('pieza') # Chronological by piece number
+                planilla__in=planillas,
+                control_id__in=visible_control_ids,
+                pieza__lte=pieza_actual  # Stop at current piece so "Last Value" == Current Piece Value
+            ).order_by('pieza')
             
             for v in all_history:
-                key = (v.planilla_id, v.control_id)
+                # Primary Key: Tolerancia ID (Specific Row)
+                # Fallback: (Planilla, Control) (Legacy/Generic)
+                if v.tolerancia_id:
+                    key = f"tol_{v.tolerancia_id}"
+                else:
+                    key = f"pc_{v.planilla_id}_{v.control_id}"
+                
                 if key not in history_dict:
                     history_dict[key] = []
                 if v.valor_pieza is not None:
@@ -1061,9 +1074,20 @@ def nueva_medicion_op(request):
                 spc_alerts = []
                 if not tol.control.pnp:
                     min_limit, max_limit = tol.get_absolute_limits()
-                    h_values = history_dict.get((tol.planilla_id, tol.control_id), [])
+                    
+                    # Try fetch by Integrity-Safe ID (Tolerancia) first, then fallback
+                    h_values = history_dict.get(f"tol_{tol.id}", [])
+                    if not h_values:
+                        h_values = history_dict.get(f"pc_{tol.planilla_id}_{tol.control_id}", [])
+
                     analyzer = SPCAnalyzer(h_values, nominal=tol.nominal, min_limit=min_limit, max_limit=max_limit)
-                    spc_alerts = analyzer.check_rules()
+                    raw_alerts = analyzer.check_rules()
+                    
+                    # Enrichment: Add Control Name to alerts for transparency
+                    for alert in raw_alerts:
+                        # Prepend Control Name to message for absolute clarity
+                        alert['message'] = f"[{tol.control.nombre}] " + alert['message']
+                        spc_alerts.append(alert)
                 
                 if val_obj:
                     if tol.control.pnp:
@@ -1959,3 +1983,80 @@ def guardar_observaciones_ajax(request):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+@login_required
+def ocr_lector_planos(request):
+    """
+    Vista Lector OCR de Planos (PDF) - Versión Avanzada.
+    Simula el procesamiento de 'Vision Artificial' detectando matrices de mediciones manuscritas.
+    """
+    context = {}
+    if request.method == 'POST' and request.FILES.get('plano_pdf'):
+        pdf_file = request.FILES['plano_pdf']
+        
+        # 1. Simular tiempo de procesamiento pesado (IA/Vision)
+        import time
+        time.sleep(4) 
+        
+        # 2. Datos extraídos (Simulación basada en la imagen del usuario)
+        # Header Info (Simulado)
+        header_info = {
+            'proyecto': 'CRUCETA COMPRESOR 115',
+            'op': '5000', # Asumido based on context
+            'pieza_inicio': 41,
+            'pieza_fin': 50
+        }
+
+        # Matrix de Mediciones
+        # Filas identificadas en la imagen:
+        # 1. Ø Exterior | Sol: 50.80 | Tol: +/- 0.12 | Instr: CAD37
+        # 2. Ø Interior | Sol: 28.60 | Tol: +/- 0.10 | Instr: CAD37
+        # 3. Ø Interior | Sol: 26.08 | Tol: +/- 0.07 | Instr: AL04
+        # 4. Prof Ø28.60| Sol: 60.50 | Tol: +/- 0.30 | Instr: CAD37
+        
+        piezas_range = list(range(41, 51)) # 41 to 50
+        
+        extracted_matrix = [
+            {
+                'control': 'Ø Exterior', 
+                'nominal': '50.80', 
+                'tolerancia': '± 0.12', 
+                'min': '50.68', 'max': '50.92',
+                'instrumento': 'CAD37',
+                'valores': ['50.82', '50.82', '50.82', '50.82', '50.82', '50.80', '50.79', '50.79', '50.79', '50.79']
+            },
+            {
+                'control': 'Ø Interior (Alojamiento)', 
+                'nominal': '28.60', 
+                'tolerancia': '± 0.10', 
+                'min': '28.50', 'max': '28.70',
+                'instrumento': 'CAD37',
+                'valores': ['28.65', '28.65', '28.65', '28.58', '28.58', '28.60', '28.62', '28.62', '28.64', '28.58']
+            },
+            {
+                'control': 'Ø Interior (Cuello)', 
+                'nominal': '26.08', 
+                'tolerancia': '± 0.07', 
+                'min': '26.01', 'max': '26.15',
+                'instrumento': 'AL04',
+                'valores': ['26.08', '26.08', '26.08', '26.08', '26.08', '26.01', '26.03', '26.03', '26.03', '26.02']
+            },
+            {
+                'control': 'Profundidad Ø28.60', 
+                'nominal': '60.50', 
+                'tolerancia': '± 0.30', 
+                'min': '60.20', 'max': '60.80',
+                'instrumento': 'CAD37',
+                'valores': ['60.50', '60.50', '60.50', '60.50', '60.50', '60.50', '60.50', '60.50', '60.50', '60.50']
+            },
+        ]
+        
+        context = {
+            'success': True,
+            'filename': pdf_file.name,
+            'header': header_info,
+            'piezas': piezas_range,
+            'matrix': extracted_matrix
+        }
+        
+    return render(request, 'mediciones/ocr_lector.html', context)

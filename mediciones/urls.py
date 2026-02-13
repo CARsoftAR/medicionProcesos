@@ -59,6 +59,9 @@ urlpatterns = [
     path('api/maquina/update-pos/', views.api_update_maquina_pos, name='api_update_maquina_pos'),
     path('mediciones/<int:planilla_id>/exportar-pdf/', views.exportar_pdf, name='exportar_pdf'),
     path('api/medicion/guardar-observaciones/', views.guardar_observaciones_ajax, name='guardar_observaciones_ajax'),
+    
+    # Herramientas
+    path('herramientas/ocr/', views.ocr_lector_planos, name='ocr_lector_planos'),
 ]
 
 

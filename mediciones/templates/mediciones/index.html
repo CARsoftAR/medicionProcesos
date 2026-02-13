@@ -47,6 +47,13 @@
                                          Nueva Medición (OP)
                                      </a>
                                  </li>
+                                 <li>
+                                     <a href="{% url 'ocr_lector_planos' %}" class="active-indigo {% if request.resolver_match.url_name == 'ocr_lector_planos' %}active{% endif %}">
+                                         <i class="ri-file-search-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                         Importar Plano (OCR)
+                                         <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.6em;">BETA</span>
+                                     </a>
+                                 </li>
                             </ul>
                         </li>
                         

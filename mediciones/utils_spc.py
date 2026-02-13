@@ -27,19 +27,22 @@ class SPCAnalyzer:
         if not self.values:
             return alerts
 
-        # Rule 1: Outside Limits
         last_val = self.values[-1]
+
+        # Rule 1: Outside Limits (Critical)
         if self.min_limit is not None and last_val < self.min_limit:
+            diff = round(abs(self.min_limit - last_val), 4)
             alerts.append({
                 'rule': 'LIMIT_OUT',
                 'severity': 'danger',
-                'message': f'Valor fuera de límite inferior ({last_val} < {self.min_limit})'
+                'message': f'🔴 ERROR CRÍTICO\nMEDIDA: {last_val:.4f} < LÍM. INF ({self.min_limit})\nDESVIACIÓN: -{diff}\n----------------\nACCIÓN: La pieza es CHATARRA o requiere REPROCESO.'
             })
         elif self.max_limit is not None and last_val > self.max_limit:
+            diff = round(abs(last_val - self.max_limit), 4)
             alerts.append({
                 'rule': 'LIMIT_OUT',
                 'severity': 'danger',
-                'message': f'Valor fuera de límite superior ({last_val} > {self.max_limit})'
+                'message': f'🔴 ERROR CRÍTICO\nMEDIDA: {last_val:.4f} > LÍM. SUP ({self.max_limit})\nDESVIACIÓN: +{diff}\n----------------\nACCIÓN: Verificar CORRECTOR DE HERRAMIENTA.'
             })
 
         # Trend Analysis (Requires history)
@@ -51,13 +54,13 @@ class SPCAnalyzer:
                 alerts.append({
                     'rule': 'TREND_UP',
                     'severity': 'warning',
-                    'message': 'Tendencia peligrosa: 6 puntos consecutivos subiendo'
+                    'message': '⚠️ TENDENCIA CRECIENTE\n----------------\nDETALLE: 6 piezas consecutivas aumentando de tamaño.\nCAUSA: Posible desgaste de herramienta o deriva térmica.\nACCIÓN: Ajustar corrector.'
                 })
             elif np.all(diffs < 0):
                 alerts.append({
                     'rule': 'TREND_DOWN',
                     'severity': 'warning',
-                    'message': 'Tendencia peligrosa: 6 puntos consecutivos bajando'
+                    'message': '⚠️ TENDENCIA DECRECIENTE\n----------------\nDETALLE: 6 piezas consecutivas disminuyendo de tamaño.\nACCIÓN: Verificar estabilidad del proceso.'
                 })
 
         # Bias Analysis (Requires history)
@@ -68,13 +71,13 @@ class SPCAnalyzer:
                 alerts.append({
                     'rule': 'BIAS_UP',
                     'severity': 'warning',
-                    'message': 'Desviación detectada: 7 puntos consecutivos por encima del nominal/media'
+                    'message': f'⚠️ PROCESO DESCENTRADO (ALTO)\n----------------\nDETALLE: 7 piezas consecutivas por ENCIMA del nominal ({self.mean}).\nACCIÓN: Corregir el centro del proceso.'
                 })
             elif np.all(np.array(last_7) < self.mean):
                 alerts.append({
                     'rule': 'BIAS_DOWN',
                     'severity': 'warning',
-                    'message': 'Desviación detectada: 7 puntos consecutivos por debajo del nominal/media'
+                    'message': f'⚠️ PROCESO DESCENTRADO (BAJO)\n----------------\nDETALLE: 7 piezas consecutivas por DEBAJO del nominal ({self.mean}).\nACCIÓN: Corregir el centro del proceso.'
                 })
 
         return alerts

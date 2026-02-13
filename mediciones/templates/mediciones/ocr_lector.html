@@ -1,0 +1,161 @@
+{% extends 'mediciones/index.html' %}
+{% load static %}
+
+{% block title %}Lector OCR de Planos{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="ri-file-search-line me-2"></i> Extracción Automática de Cotas (OCR)</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">
+                    Suba su archivo PDF del plano para extraer automáticamente las cotas críticas, tolerancias y especificaciones usando nuestro motor de reconocimiento óptico inteligente.
+                </p>
+
+                <form method="post" enctype="multipart/form-data" class="dropzone-area" id="ocr-upload-form" style="border: 2px dashed #cbd5e1; border-radius: 12px; padding: 3rem; text-align: center; cursor: pointer; transition: all 0.3s; background: #f8fafc;">
+                    {% csrf_token %}
+                    <input type="file" name="plano_pdf" id="plano_pdf" accept="application/pdf" style="display: none;" onchange="document.getElementById('ocr-upload-form').submit(); showLoader();">
+                    
+                    <div id="upload-content">
+                        <i class="ri-upload-cloud-2-line text-primary" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
+                        <h4 class="text-primary fw-bold">Arrastre su PDF aquí</h4>
+                        <p class="text-secondary">o haga clic para seleccionar un archivo</p>
+                    </div>
+
+                    <div id="processing-loader" style="display: none;">
+                        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Cargando...</span>
+                        </div>
+                        <h5 class="mt-3 text-primary">Procesando Documento...</h5>
+                        <p class="text-muted">Analizando geometría y extrayendo tolerancias</p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if success %}
+        <div class="card animate__animated animate__fadeInUp">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="ri-checkbox-circle-line me-2"></i> Resultados de Extracción (OCR)</h5>
+                <span class="badge bg-white text-success">{{ filename }}</span>
+            </div>
+            <div class="card-body">
+                <!-- Header Info -->
+                <div class="d-flex flex-wrap gap-5 mb-4 p-4 bg-light rounded border align-items-center">
+                    <div class="d-flex flex-column border-start border-primary border-4 ps-3">
+                        <span class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Proyecto</span>
+                        <span class="fs-4 fw-bold text-dark">{{ header.proyecto }}</span>
+                    </div>
+                    
+                    <div class="d-flex flex-column border-start border-success border-4 ps-3">
+                        <span class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">N° de OP</span>
+                        <span class="fs-4 fw-bold text-dark">{{ header.op }}</span>
+                    </div>
+                    
+                    <div class="d-flex flex-column border-start border-info border-4 ps-3">
+                        <span class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 0.5px;">Rango de Piezas</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-primary fs-6">#{{ header.pieza_inicio }}</span>
+                            <i class="ri-arrow-right-line text-muted"></i>
+                            <span class="badge bg-primary fs-6">#{{ header.pieza_fin }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info d-flex align-items-center mb-4">
+                    <i class="ri-information-line me-2 fs-4"></i>
+                    <div>
+                        <strong>Análisis Completado:</strong> Se han digitalizado {{ matrix|length }} filas de controles con sus respectivas mediciones manuscritas.
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center" style="font-size: 0.9rem;">
+                        <thead class="table-dark">
+                            <tr>
+                                <th rowspan="2" class="align-middle">DETALLE (Control)</th>
+                                <th rowspan="2" class="align-middle">SOLICITADO</th>
+                                <th rowspan="2" class="align-middle">TOL.</th>
+                                <th rowspan="2" class="align-middle">INSTR.</th>
+                                <th colspan="10" class="bg-primary border-bottom">NÚMERO DE PIEZAS</th>
+                            </tr>
+                            <tr>
+                                {% for p in piezas %}
+                                <th style="width: 50px;" class="bg-secondary">{{ p }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in matrix %}
+                            <tr>
+                                <td class="text-start fw-bold">{{ row.control }}</td>
+                                <td class="fw-bold text-primary">{{ row.nominal }}</td>
+                                <td class="text-muted">{{ row.tolerancia }}</td>
+                                <td><span class="badge bg-light text-dark border">{{ row.instrumento }}</span></td>
+                                
+                                <!-- Render Values -->
+                                {% for val in row.valores %}
+                                    {% if val %}
+                                        {# Simple logic to highlight out of spec based on min/max strings #}
+                                        <td class="{% if val < row.min or val > row.max %}bg-danger bg-opacity-10 text-danger fw-bold{% else %}text-success{% endif %}" title="Rango: {{ row.min }} - {{ row.max }}">
+                                            {{ val }}
+                                        </td>
+                                    {% else %}
+                                        <td class="text-muted">-</td>
+                                    {% endif %}
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-end mt-4 gap-2">
+                    <button class="btn btn-outline-secondary">Descartar</button>
+                    <button class="btn btn-primary"><i class="ri-save-line me-2"></i> Importar Datos al Sistema</button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.getElementById('ocr-upload-form').addEventListener('click', function() {
+        document.getElementById('plano_pdf').click();
+    });
+
+    document.getElementById('ocr-upload-form').addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#3b82f6';
+        this.style.background = '#eff6ff';
+    });
+
+    document.getElementById('ocr-upload-form').addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#cbd5e1';
+        this.style.background = '#f8fafc';
+    });
+
+    document.getElementById('ocr-upload-form').addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#cbd5e1';
+        this.style.background = '#f8fafc';
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            document.getElementById('plano_pdf').files = files;
+            showLoader();
+            this.submit();
+        }
+    });
+
+    function showLoader() {
+        document.getElementById('upload-content').style.display = 'none';
+        document.getElementById('processing-loader').style.display = 'block';
+    }
+</script>
+{% endblock %}

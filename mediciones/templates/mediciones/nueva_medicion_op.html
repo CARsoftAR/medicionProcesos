@@ -541,12 +541,16 @@
                                             </div>
                                             
                                             {% if row.spc_alerts %}
-                                            <div class="spc-alert-trigger" style="cursor: help; display: flex; align-items: center; margin-left: 4px;" title="{% for a in row.spc_alerts %}{{ a.message }}{% if not forloop.last %} | {% endif %}{% endfor %}">
+                                            <div class="spc-alert-trigger" style="cursor: help; margin-left: 4px;">
                                                 {% if row.has_danger %}
                                                 <i class="ri-error-warning-fill" style="color: #ef4444; font-size: 1.3rem;"></i>
                                                 {% elif row.has_warning %}
                                                 <i class="ri-alert-fill" style="color: #f59e0b; font-size: 1.3rem;"></i>
                                                 {% endif %}
+                                                
+                                                <div class="spc-tooltip-content">
+                                                    {% for a in row.spc_alerts %}{{ a.message }}{% if not forloop.last %}&#10;____________________&#10;{% endif %}{% endfor %}
+                                                </div>
                                             </div>
                                             {% endif %}
 
@@ -807,6 +811,51 @@
         border-radius: 50%;
         display: inline-block;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* SPC Custom Tooltip Styles */
+    .spc-alert-trigger {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .spc-tooltip-content {
+        display: none; /* Hidden by default, JS toggles display: block on the global instance */
+        background-color: #1e293b;
+        color: #ffffff !important;
+        text-align: left;
+        border-radius: 8px;
+        padding: 12px 16px;
+        position: absolute; /* Default for original instances, JS overrides to fixed for global */
+        z-index: 1000;
+        width: 340px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+        font-size: 0.8rem;
+        line-height: 1.5;
+        white-space: pre-wrap; 
+        pointer-events: none;
+        border: 1px solid #475569;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .spc-alert-trigger:hover .spc-tooltip-content {
+        /* visibility: visible; - Disabled in favor of JS positioning */
+        /* opacity: 1; */
+        /* transform: translateX(-85%) translateY(-5px); */
+    }
+    
+    /* Tooltip Arrow */
+    .spc-tooltip-content::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 85%; /* Match the shift to point to the icon */
+        margin-left: -6px;
+        border-width: 6px;
+        border-style: solid;
+        border-color: #1e293b transparent transparent transparent;
     }
     
     .status-indicator.ok { 
@@ -1359,24 +1408,71 @@
                     });
                 } else {
                     Swal.fire({
-                        html: `
-                            <div class="swal-icon-circle danger">
-                                <i class="ri-error-warning-line"></i>
-                            </div>
-                            <div class="premium-swal-title">Error</div>
-                            <div class="premium-swal-html">${result.message}</div>
-                        `,
-                        confirmButtonText: 'Cerrar',
-                        confirmButtonColor: '#ef4444',
-                        customClass: {
-                            popup: 'premium-swal-popup',
-                            confirmButton: 'premium-swal-confirm'
-                        }
+                        title: 'Error',
+                        text: result.message || 'No se pudo guardar el registro',
+                        icon: 'error'
                     });
                 }
-            } catch (e) { console.error(e); }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire('Error', 'Hubo un problema de conexión', 'error');
+            }
         }
     }
+</script>
+
+<!-- Global SPC Tooltip Container -->
+<div id="global-spc-tooltip" class="spc-tooltip-content" style="position: fixed; display: none; z-index: 9999; margin: 0; transform: none;"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('global-spc-tooltip');
+        let hideTimeout;
+
+        document.querySelectorAll('.spc-alert-trigger').forEach(trigger => {
+            trigger.addEventListener('mouseenter', function(e) {
+                clearTimeout(hideTimeout);
+                const contentDiv = this.querySelector('.spc-tooltip-content');
+                if (!contentDiv) return;
+                
+                tooltip.innerHTML = contentDiv.innerHTML;
+                tooltip.style.display = 'block';
+                tooltip.style.opacity = '1';
+                tooltip.style.visibility = 'visible';
+                
+                // Calculate position
+                const rect = this.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+                
+                // Position: Center horizontally on icon, Above icon
+                let top = rect.top - tooltipRect.height - 12; // 12px gap
+                let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+                
+                // Shift left adjustments (as requested)
+                left -= 60; // Bias towards left as requested
+
+                // Boundary checks
+                if (top < 10) top = rect.bottom + 10; // Flip to bottom if too close to top
+                if (left < 10) left = 10;
+                if (left + tooltipRect.width > window.innerWidth - 10) left = window.innerWidth - tooltipRect.width - 10;
+
+                tooltip.style.top = `${top}px`;
+                tooltip.style.left = `${left}px`;
+            });
+
+            trigger.addEventListener('mouseleave', function() {
+                hideTimeout = setTimeout(() => {
+                    tooltip.style.opacity = '0';
+                    setTimeout(() => { 
+                        if (tooltip.style.opacity === '0') tooltip.style.display = 'none'; 
+                    }, 200);
+                }, 100);
+            });
+        });
+    });
+</script>
+
+
     async function saveInstrumentSelection(el, tolId) {
         const instrId = el.value;
         console.log(`[TRACE] Saving Instrument: ${instrId} for Tolerance ${tolId}`);
