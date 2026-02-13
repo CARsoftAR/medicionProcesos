@@ -331,7 +331,7 @@
                         <tr>
                             <th style="width: 280px; background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; left: 0; z-index: 10;" class="ps-4">Control Detectado</th>
                             <th class="text-center" style="width: 85px; background: #f8fafc; border-bottom: 2px solid #cbd5e1;">Nominal</th>
-                            <th class="text-center" style="width: 85px; background: #f8fafc; border-bottom: 2px solid #cbd5e1;">Tol.</th>
+                             <th class="text-center" style="width: 100px; background: #f8fafc; border-bottom: 2px solid #cbd5e1;">Tol.</th>
                             <th class="text-center" style="width: 110px; background: #f8fafc; border-bottom: 2px solid #cbd5e1;">Instr.</th>
                             {% for p in piezas %}
                             <th class="text-center" style="width: 85px; color: #3b82f6; font-size: 0.8rem; font-weight: 800; padding: 0.5rem 0; border-bottom: 2px solid #e2e8f0; background: #f8fafc;">
@@ -345,9 +345,9 @@
                         <tr style="border-bottom: 1px solid #f1f5f9;">
                             <td class="fw-bold ps-4" style="color: #475569; font-size: 0.8rem; border-right: 1px solid #f1f5f9; white-space: nowrap;">{{ row.control }}</td>
                             <td class="text-center" style="color: #2563eb; font-weight: 800; font-size: 0.9rem; white-space: nowrap;">{{ row.nominal }}</td>
-                            <td class="text-center" style="font-size: 0.75rem; border-right: 1px solid #f1f5f9; white-space: nowrap;">
-                                <div style="color: #94a3b8;">±</div>
-                                <div style="color: #475569; font-weight: 700;">{{ row.tolerancia|default:"0.00"|slice:"2:" }}</div>
+                            <td class="text-center" style="font-size: 0.85rem; border-right: 1px solid #f1f5f9; white-space: nowrap;">
+                                <span style="color: #94a3b8; font-weight: 400;">±</span>
+                                <span style="color: #475569; font-weight: 700;">{{ row.tolerancia|default:"0.00"|slice:"2:" }}</span>
                             </td>
                             <td class="text-center" style="border-right: 2px solid #e2e8f0; white-space: nowrap;">
                                 <span style="font-size: 0.75rem; font-weight: 800; color: #1e293b; background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px;">{{ row.instrumento }}</span>
