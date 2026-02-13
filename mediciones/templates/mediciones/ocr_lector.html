@@ -418,8 +418,16 @@
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                alert(data.message);
-                window.location.href = "{% url 'nueva_medicion_op' %}?op=" + "{{ header.op }}";
+                Swal.fire({
+                    title: '¡Importación Exitosa!',
+                    text: data.message,
+                    icon: 'success',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    // Redirigir usando Proyecto y Proceso exactos para que Nueva Medición traiga TODO
+                    window.location.href = `{% url 'nueva_medicion_op' %}?op=${data.op}&proy=${encodeURIComponent(data.proy)}&proc=${data.proc_id}`;
+                });
             } else {
                 alert('Error: ' + data.message);
                 btn.disabled = false;

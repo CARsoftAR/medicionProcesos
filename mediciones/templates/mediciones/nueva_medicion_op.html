@@ -138,6 +138,24 @@
         color: #ffffff;
         border-style: solid;
     }
+    
+    .btn-delete-full-op {
+        background: transparent;
+        border: none;
+        color: #ef4444;
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        transition: all 0.2s;
+        opacity: 0.6;
+    }
+    .btn-delete-full-op:hover {
+        transform: scale(1.2);
+        opacity: 1;
+        color: #dc2626;
+    }
+    
     .piece-nav-btn:hover {
         border-color: #3b82f6;
         color: #3b82f6;
@@ -312,9 +330,16 @@
 
                 {% if planilla %}
                 <div class="config-card mb-3 animate__animated animate__fadeIn card-green">
-                    <div class="config-card-header">
-                        <i class="ri-information-line"></i>
-                        <span>DETALLES DEL PLAN</span>
+                    <div class="config-card-header d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="ri-information-line"></i>
+                            <span>DETALLES DEL PLAN</span>
+                        </div>
+                        {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                        <button onclick="eliminarTodaLaOP()" class="btn-delete-full-op" title="BORRAR TODO LO REFERENTE A ESTA OP">
+                            <i class="ri-delete-bin-5-line"></i>
+                        </button>
+                        {% endif %}
                     </div>
                     <div class="config-card-body">
                         <div class="mb-3">
@@ -1512,6 +1537,54 @@
             }
         }
     });
+    function eliminarTodaLaOP() {
+        Swal.fire({
+            title: '¿ESTÁS SEGURO?',
+            html: `Se borrarán <b>TODOS</b> los datos de esta OP (Controles, Tolerancias y Mediciones).<br><br>Esta acción no se puede deshacer.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: '<i class="ri-delete-bin-line"></i> SÍ, BORRAR TODO',
+            cancelButtonText: 'CANCELAR',
+            customClass: {
+                popup: 'premium-swal-popup',
+                title: 'premium-swal-title',
+                htmlContainer: 'premium-swal-html',
+                confirmButton: 'premium-swal-confirm btn-danger',
+                cancelButton: 'premium-swal-cancel'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Borrando...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                fetch('{% url "eliminar_planilla_completa_ajax" planilla.id %}', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                }).then(r => r.json()).then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'OP ELIMINADA',
+                            text: 'Se han borrado todos los registros de la OP con éxito.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            window.location.href = "{% url 'asignar_op' %}";
+                        });
+                    } else {
+                        Swal.fire('Error', data.message || 'No se pudo eliminar la OP', 'error');
+                    }
+                }).catch(e => {
+                    Swal.fire('Error de conexión', 'Inténtelo de nuevo', 'error');
+                });
+            }
+        });
+    }
 </script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 {% endblock %}

@@ -264,9 +264,19 @@
                                     <td>{{ p.articulo.nombre|default:"-" }}</td>
                                     <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ p.fecha_creacion|date:"d/m/y H:i" }}</td>
                                     <td style="text-align: right;">
-                                        <a href="{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 10px;">
-                                            <i class="ri-eye-line"></i> Abrir
-                                        </a>
+                                        <div class="d-flex justify-content-end gap-2">
+                                            <a href="{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 10px;" title="Medir">
+                                                <i class="ri-eye-line"></i> Abrir
+                                            </a>
+                                            {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                                            <a href="{% url 'configurar_estructura' %}?op={{ p.num_op }}&proy={{ p.proyecto }}" class="btn btn-light border" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; border-radius: 10px; color: var(--primary);" title="Editar Estructura">
+                                                <i class="ri-edit-line"></i>
+                                            </a>
+                                            <button onclick="eliminarOP('{{ p.id }}', '{{ p.num_op }}')" class="btn btn-light border" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; border-radius: 10px; color: #ef4444;" title="Eliminar OP">
+                                                <i class="ri-delete-bin-line"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                                 {% empty %}
@@ -283,5 +293,45 @@
             </div>
         </div>
     </div>
+<script>
+    function eliminarOP(id, op) {
+        Swal.fire({
+            title: '¿ELIMINAR OP ' + op + '?',
+            text: "Se borrarán todos los controles y mediciones asociadas. Esta acción no se puede deshacer.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'SÍ, ELIMINAR',
+            cancelButtonText: 'CANCELAR',
+            customClass: {
+                confirmButton: 'premium-swal-confirm btn-danger',
+                cancelButton: 'premium-swal-cancel',
+                popup: 'premium-swal-popup'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/api/planilla/' + id + '/delete-full/', {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            title: 'ELIMINADO',
+                            text: 'La OP ha sido eliminada correctamente.',
+                            icon: 'success',
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                });
+            }
+        });
+    }
+</script>
 </body>
 </html>
