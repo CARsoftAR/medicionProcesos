@@ -494,18 +494,29 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="d-flex align-items-center gap-4">
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="text-xxs fw-bold text-muted mb-0" style="white-space: nowrap;">MOSTRAR:</label>
+                                <select id="pageSizeSelector" class="form-select form-select-sm" style="width: 110px; font-size: 0.75rem; font-weight: 800; border-radius: 10px; cursor: pointer; border: 1.5px solid #e2e8f0;" onchange="changePageSize(this.value)">
+                                    <option value="7">7 FILAS</option>
+                                    <option value="12">12 FILAS</option>
+                                    <option value="24">24 FILAS</option>
+                                    <option value="all">VER TODO</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="table-responsive mt-4">
+                    <div class="table-responsive mt-2">
                         <table class="table premium-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 280px;">CONTROL</th>
-                                    <th class="text-center" style="width: 80px;">TOL. MÍN [-]</th>
-                                    <th class="text-center" style="width: 120px;">VALOR OBTENIDO</th>
-                                    <th class="text-center" style="width: 80px;">TOL. MÁX [+]</th>
-                                    <th class="text-center" style="width: 220px;">INSTRUMENTO</th>
-                                    <th class="text-center" style="width: 80px;">ESTADO</th>
+                                    <th style="width: 30%;">CONTROL</th>
+                                    <th class="text-center" style="width: 10%;">TOL. MÍN [-]</th>
+                                    <th class="text-center" style="width: 15%;">VALOR OBTENIDO</th>
+                                    <th class="text-center" style="width: 10%;">TOL. MÁX [+]</th>
+                                    <th class="text-center" style="width: 25%;">INSTRUMENTO</th>
+                                    <th class="text-center" style="width: 10%;">ESTADO</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -598,6 +609,20 @@
                             </tbody>
                         </table>
                     </div>
+                    <div class="pagination-footer d-flex justify-content-between align-items-center mt-3 pt-3 border-top" id="tablePagination" style="display: none !important;">
+                        <div class="pagination-info text-muted fw-bold" style="font-size: 0.75rem;">
+                            Mostrando <span id="pag-start" class="text-primary">0</span> - <span id="pag-end" class="text-primary">0</span> de <span id="pag-total" class="text-dark">0</span> parámetros
+                        </div>
+                        <div class="pagination-controls d-flex gap-1">
+                            <button type="button" class="btn btn-sm btn-light border" onclick="prevPage()" id="prevBtn" style="border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; transition: 0.2s;">
+                                <i class="ri-arrow-left-s-line"></i>
+                            </button>
+                            <div id="pageNumbers" class="d-flex gap-1 mx-1"></div>
+                            <button type="button" class="btn btn-sm btn-light border" onclick="nextPage()" id="nextBtn" style="border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; transition: 0.2s;">
+                                <i class="ri-arrow-right-s-line"></i>
+                            </button>
+                        </div>
+                    </div>
                 </form>
                 {% else %}
                 <div class="empty-state-placeholder" style="padding: 10rem 2rem;">
@@ -612,7 +637,7 @@
 
 <style>
     .premium-page-container { 
-        padding: 1.5rem 2rem 1.5rem 2rem; 
+        padding: 0.75rem 2rem 1.5rem 2rem; 
         max-width: 1800px; 
         margin: 0 auto;
         background: #f8fafc;
@@ -787,9 +812,9 @@
     }
 
     .canvas-header { 
-        margin-bottom: 2rem; 
+        margin-bottom: 0.75rem; 
         border-bottom: 2px solid #f1f5f9; 
-        padding-bottom: 1.5rem; 
+        padding-bottom: 0.75rem; 
     }
     
     .blue-line-indicator { 
@@ -797,6 +822,37 @@
         height: 28px; 
         background: #3b82f6;
         border-radius: 4px;
+    }
+
+    /* Paginator Styles */
+    .page-num-btn {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        font-weight: 800;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid #e2e8f0;
+        background: white;
+        color: #64748b;
+    }
+    .page-num-btn:hover {
+        background: #f1f5f9;
+        color: #1e293b;
+    }
+    .page-num-btn.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+    }
+    .page-num-btn.disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
     }
     
     .canvas-title { 
@@ -808,6 +864,7 @@
 
     .premium-table { 
         width: 100%;
+        table-layout: fixed;
         border-collapse: separate;
         border-spacing: 0;
         border-radius: 12px; 
@@ -1018,6 +1075,112 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    // --- PAGINATION LOGIC ---
+    let currentPage = 1;
+    let pageSize = localStorage.getItem('tablePageSize') || 7;
+    let allRows = [];
+
+    function initPagination() {
+        const tbody = document.querySelector('.premium-table tbody');
+        if (!tbody) return;
+        
+        allRows = Array.from(tbody.querySelectorAll('tr'));
+        const selector = document.getElementById('pageSizeSelector');
+        if (selector) selector.value = pageSize;
+        
+        updateTableDisplay();
+    }
+
+    function changePageSize(size) {
+        pageSize = size;
+        localStorage.setItem('tablePageSize', size);
+        currentPage = 1;
+        updateTableDisplay();
+    }
+
+    function prevPage() {
+        if (currentPage > 1) {
+            currentPage--;
+            updateTableDisplay();
+        }
+    }
+
+    function nextPage() {
+        const totalPages = pageSize === 'all' ? 1 : Math.ceil(allRows.length / parseInt(pageSize));
+        if (currentPage < totalPages) {
+            currentPage++;
+            updateTableDisplay();
+        }
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        updateTableDisplay();
+    }
+
+    function updateTableDisplay() {
+        if (allRows.length === 0) return;
+
+        const paginator = document.getElementById('tablePagination');
+        const count = parseInt(pageSize);
+        const totalRows = allRows.length;
+
+        if (pageSize === 'all' || totalRows <= count) {
+            allRows.forEach(row => row.style.setProperty('display', '', 'important'));
+            if (paginator) paginator.style.setProperty('display', 'none', 'important');
+            return;
+        }
+
+        if (paginator) paginator.style.setProperty('display', 'flex', 'important');
+        
+        const totalPages = Math.ceil(totalRows / count);
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const start = (currentPage - 1) * count;
+        const end = Math.min(start + count, totalRows);
+
+        allRows.forEach((row, idx) => {
+            if (idx >= start && idx < end) {
+                row.style.setProperty('display', '', 'important');
+            } else {
+                row.style.setProperty('display', 'none', 'important');
+            }
+        });
+
+        // Update Info
+        document.getElementById('pag-start').innerText = start + 1;
+        document.getElementById('pag-end').innerText = end;
+        document.getElementById('pag-total').innerText = totalRows;
+
+        // Update Controls
+        document.getElementById('prevBtn').disabled = currentPage === 1;
+        document.getElementById('prevBtn').style.opacity = currentPage === 1 ? '0.5' : '1';
+        document.getElementById('nextBtn').disabled = currentPage === totalPages;
+        document.getElementById('nextBtn').style.opacity = currentPage === totalPages ? '0.5' : '1';
+
+        // Update Page Numbers
+        const numbersDiv = document.getElementById('pageNumbers');
+        numbersDiv.innerHTML = '';
+        
+        // Show max 5 page buttons
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
+
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `page-num-btn ${i === currentPage ? 'active' : ''}`;
+            btn.innerText = i;
+            btn.onclick = () => goToPage(i);
+            numbersDiv.appendChild(btn);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initPagination();
+    });
+
     // List of existing pieces (truly measured) for validation
     const PIEZAS_EXISTENTES = JSON.parse('{{ piezas_medidas|safe|default:"[]" }}');
 
