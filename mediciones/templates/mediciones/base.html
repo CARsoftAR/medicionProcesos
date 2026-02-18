@@ -88,12 +88,12 @@
                     <ul class="nav-list">
                         {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                         <li class="nav-item-group">
-                            <a href="#" class="nav-link active-purple group-trigger {% if 'maestros' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
+                            <a href="#" class="nav-link active-purple group-trigger {% if 'maestros' in request.path or 'instrumentos' in request.path or 'dashboard' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
                                 <i class="ri-booklet-line"></i>
                                 <span>Maestros</span>
                                 <i class="ri-arrow-down-s-line chevron"></i>
                             </a>
-                            <ul class="sub-menu {% if 'maestros' in request.path %}open{% endif %}">
+                            <ul class="sub-menu {% if 'maestros' in request.path or 'instrumentos' in request.path or 'dashboard' in request.path %}open{% endif %}">
                                 <li>
                                     <a href="{% url 'lista_procesos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_procesos' %}active{% endif %}">
                                         <i class="ri-node-tree" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
@@ -120,8 +120,13 @@
                                 </li>
                                 <li>
                                     <a href="{% url 'dashboard_calibracion' %}" class="active-purple {% if request.resolver_match.url_name == 'dashboard_calibracion' %}active{% endif %}">
-                                        <i class="ri-shield-check-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        <i class="ri-calendar-check-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                         Calibraciones
+                                        {% if global_vencidos_count > 0 %}
+                                            <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 0.6em;">{{ global_vencidos_count }}</span>
+                                        {% elif global_alertas_count > 0 %}
+                                            <span class="badge bg-warning text-dark rounded-pill ms-auto" style="font-size: 0.6em;">{{ global_alertas_count }}</span>
+                                        {% endif %}
                                     </a>
                                 </li>
                             </ul>
@@ -187,17 +192,13 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <!-- Topbar -->
-            <header class="topbar">
-                <div class="breadcrumb">
-                    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.025em;">
-                        {% block header_title %}Sistema de Calidad{% endblock %}
-                    </h2>
-                </div>
-                <div class="current-date">
-                    {{ now|date:"l, d F Y" }}
-                </div>
-            </header>
+            <!-- Topbar Simplificada -->
+            <div style="padding: 1.5rem 2rem 0 2rem;">
+                <h2 style="margin: 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary); opacity: 0.8;">
+                    {% block header_title %}Sistema de Calidad{% endblock %}
+                </h2>
+                <hr style="margin-top: 1rem; border: none; border-top: 1px solid var(--border-color); opacity: 0.5;">
+            </div>
 
             <!-- Content Area -->
             <div class="content-wrapper">

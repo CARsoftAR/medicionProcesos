@@ -1,0 +1,123 @@
+<!-- Modal Calibration Reusable Component -->
+<div id="calibrationModal" class="premium-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); z-index: 10000; align-items: center; justify-content: center; padding: 1.5rem;">
+    <div class="modal-content animate__animated animate__zoomIn" style="background: white; border-radius: 28px; width: 100%; max-width: 500px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: none;">
+        
+        <!-- Header with Icon (Reference style) -->
+        <div class="text-center pt-5 pb-4 px-4">
+            <div style="width: 70px; height: 70px; background: #eff6ff; color: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.5rem;">
+                <i class="ri-shield-check-fill"></i>
+            </div>
+            <h3 style="font-weight: 800; color: #1e293b; margin: 0 0 8px 0; font-size: 1.5rem;">Registrar Calibración</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin: 0;">Actualiza el estado de vigencia y adjunta el certificado oficial del instrumento.</p>
+        </div>
+
+        <form id="calibrationForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" id="modal_inst_id" name="instrumento_id">
+            
+            <div class="form-body" style="padding: 0 2.5rem 2rem;">
+                <div class="input-group-premium mb-4">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block;">Instrumento</label>
+                    <input type="text" id="modal_inst_name" readonly style="width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.8rem 1rem; font-weight: 700; color: #1e293b; cursor: not-allowed;">
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="input-group-premium">
+                            <label style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block;">Fecha Control</label>
+                            <input type="date" id="modal_fecha" name="fecha" required style="width: 100%; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.8rem 1rem; font-weight: 700; color: #1e293b;">
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="input-group-premium">
+                            <label style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block;">Resultado</label>
+                            <select id="modal_resultado" name="resultado" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.8rem 1rem; font-weight: 700; color: #1e293b; background: white;">
+                                <option value="APROBADO">Apto / Aprobado</option>
+                                <option value="RECHAZADO">No Apto / Fuera</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group-premium mb-4">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block;">N° de Certificado</label>
+                    <input type="text" id="modal_certificado" name="certificado" placeholder="Ej: CERT-2024-XXX" style="width: 100%; border: 1px solid #e2e8f0; border-radius: 14px; padding: 0.8rem 1rem; font-weight: 700; color: #1e293b;">
+                </div>
+
+                <div class="input-group-premium mb-4">
+                    <label style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block;">Certificado Digital (PDF/JPG)</label>
+                    <div class="file-upload-wrapper" style="position: relative; border: 2px dashed #e2e8f0; border-radius: 16px; padding: 1.5rem; text-align: center; cursor: pointer; transition: 0.2s;">
+                        <input type="file" id="modal_file" name="archivo_certificado" accept="application/pdf,image/*" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+                        <div class="file-dummy">
+                            <i class="ri-upload-cloud-2-line" style="font-size: 1.5rem; color: #3b82f6; display: block; margin-bottom: 5px;"></i>
+                            <span style="font-size: 0.85rem; font-weight: 700; color: #64748b;">Haga clic para subir archivo</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Styled as the Reference -->
+            <div style="padding: 1.5rem 2.5rem 2.5rem; display: flex; align-items: center; justify-content: space-between; background: #fcfdfe; border-top: 1px solid #f1f5f9;">
+                <button type="button" onclick="closeCalibrationModal()" style="background: none; border: none; font-weight: 800; color: #475569; font-size: 1rem; cursor: pointer; padding: 0.8rem 1.5rem;">
+                    Cancelar
+                </button>
+                <button type="submit" style="background: #2563eb; color: white; border: none; padding: 0.9rem 2rem; border-radius: 16px; font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 10px; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);">
+                    <i class="ri-check-line"></i> Guardar Registro
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCalibrationModal(id, name) {
+        document.getElementById('modal_inst_id').value = id;
+        document.getElementById('modal_inst_name').value = name;
+        document.getElementById('calibrationModal').style.display = 'flex';
+        // Set today as default date
+        document.getElementById('modal_fecha').value = new Date().toISOString().split('T')[0];
+    }
+
+    function closeCalibrationModal() {
+        document.getElementById('calibrationModal').style.display = 'none';
+    }
+
+    document.getElementById('calibrationForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        Swal.fire({
+            title: 'Procesando...',
+            text: 'Registrando la calibración en el historial maestro',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+
+        fetch('{% url "registrar_calibracion_ajax" %}', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.status === 'success') {
+                Swal.fire({
+                    title: '¡Calibración Exitosa!',
+                    text: 'El instrumento ha sido reactivado y el historial actualizado.',
+                    icon: 'success',
+                    confirmButtonText: 'Genial',
+                    customClass: { popup: 'premium-swal' }
+                }).then(() => location.reload());
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        });
+    });
+
+    document.getElementById('modal_file').addEventListener('change', function() {
+        if(this.files.length > 0) {
+            document.querySelector('.file-dummy span').innerText = this.files[0].name;
+            document.querySelector('.file-dummy').style.color = '#3b82f6';
+        }
+    });
+</script>

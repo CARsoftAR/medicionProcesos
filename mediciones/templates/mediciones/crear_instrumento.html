@@ -3,88 +3,180 @@
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block content %}
-<div style="display: flex; justify-content: center; align-items: flex-start; min-height: 80vh; padding-top: 2rem;">
-    <div class="card" style="width: 100%; max-width: 800px; padding: 0; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
-        
-        <div style="padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
-            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                <div style="width: 40px; height: 40px; background-color: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--primary); border: 1px solid var(--border-color);">
-                    <i class="ri-tools-line" style="font-size: 1.25rem;"></i>
-                </div>
-                <h2 style="font-size: 1.25rem; font-weight: 700; color: #1e293b; margin: 0;">{{ titulo }}</h2>
-            </div>
-            <a href="{% url 'lista_instrumentos' %}" style="color: var(--text-muted); font-size: 1.5rem; text-decoration: none;">
-                <i class="ri-close-line"></i>
-            </a>
-        </div>
-
-        <form method="post">
-            {% csrf_token %}
-            <div style="padding: 2rem;">
-                <div class="row">
-                    <!-- General Info -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="form-label text-xxs">Nombre del Instrumento</label>
-                            {{ form.nombre }}
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label text-xxs">Código / Inventario</label>
-                            {{ form.codigo }}
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label text-xxs">Tipo de Equipo</label>
-                            {{ form.tipo }}
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label text-xxs">Marca</label>
-                            {{ form.marca }}
-                        </div>
-                        <div class="form-check form-switch mb-3">
-                            {{ form.en_servicio }}
-                            <label class="form-check-label small fw-bold text-secondary" for="{{ form.en_servicio.id_for_label }}">INSTRUMENTO EN SERVICIO</label>
-                        </div>
+<div class="premium-dashboard-container animate__animated animate__fadeIn">
+    <div style="display: flex; justify-content: center; align-items: flex-start; min-height: 80vh; padding-top: 1rem;">
+        <div class="premium-card" style="width: 100%; max-width: 900px; padding: 0; overflow: hidden;">
+            
+            <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="inst-icon-small" style="width: 48px; height: 48px; font-size: 1.5rem;">
+                        <i class="ri-tools-line"></i>
                     </div>
-                    
-                    <!-- Calibration Parameters -->
-                    <div class="col-md-6" style="background: #f8fafc; border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color);">
-                         <div style="font-size: 0.75rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                             <i class="ri-shield-check-line"></i> Parámetros de Calibración
-                         </div>
-                         <div class="form-group">
-                            <label class="form-label text-xxs">Última Calibración</label>
-                            {{ form.ultima_calibracion }}
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label text-xxs">Frecuencia (Meses)</label>
-                            {{ form.frecuencia_meses }}
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label text-xxs">Próxima Calibración</label>
-                            {{ form.proxima_calibracion }}
-                            <small class="text-muted" style="font-size: 0.65rem;">Se calcula automáticamente si se deja vacío.</small>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label text-xxs">Alerta Anticipada (Días)</label>
-                            {{ form.alerta_dias }}
-                        </div>
-                        <div class="form-group mb-0">
-                            <label class="form-label text-xxs">Número de Certificado</label>
-                            {{ form.certificado_nro }}
-                        </div>
+                    <div>
+                        <h2 class="m-0" style="font-size: 1.25rem; font-weight: 800; color: #1e293b;">{{ titulo }}</h2>
+                        <p class="text-muted m-0 small">Completa los datos técnicos del equipo de medición.</p>
                     </div>
                 </div>
-            </div>
-
-            <div style="padding: 1.5rem; background-color: #ffffff; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 1rem;">
-                <a href="{% url 'lista_instrumentos' %}" class="btn btn-secondary">
-                    Cancelar
+                <a href="{% url 'lista_instrumentos' %}" style="color: #94a3b8; font-size: 1.5rem; text-decoration: none;">
+                    <i class="ri-close-line"></i>
                 </a>
-                <button type="submit" class="btn btn-primary">
-                    <i class="ri-check-line"></i> Guardar Instrumento
-                </button>
             </div>
-        </form>
+
+            <form method="post">
+                {% csrf_token %}
+                <div style="padding: 2rem;">
+                    <div class="row g-4">
+                        <!-- Technical Data -->
+                        <div class="col-md-7">
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <div class="input-group-premium mb-2">
+                                        <label>Nombre del Instrumento / Descripción</label>
+                                        {{ form.nombre }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group-premium">
+                                        <label>Código / Inventario</label>
+                                        {{ form.codigo }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="input-group-premium">
+                                        <label>Tipo de Equipo</label>
+                                        {{ form.tipo }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group-premium">
+                                        <label>Marca</label>
+                                        {{ form.marca }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group-premium">
+                                        <label>Modelo</label>
+                                        {{ form.modelo }}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="input-group-premium">
+                                        <label>Rango de Medición</label>
+                                        {{ form.rango }}
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="input-group-premium">
+                                        <label>Número de Serie / Identificador Único</label>
+                                        {{ form.serie }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Ownership & Status -->
+                        <div class="col-md-5">
+                            <div style="background: #f8fafc; border-radius: 20px; padding: 1.5rem; border: 1px solid #e2e8f0; height: 100%;">
+                                <div style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px;">
+                                    <i class="ri-government-line"></i> Gestión y Propiedad
+                                </div>
+                                
+                                <div class="input-group-premium">
+                                    <label>Ubicación Actual</label>
+                                    {{ form.ubicacion }}
+                                </div>
+
+                                <div class="d-flex flex-column gap-3 mb-4">
+                                    <div class="form-check form-switch">
+                                        {{ form.es_propio }}
+                                        <label class="form-check-label small fw-bold text-dark ms-2">PROPIEDAD DE ABBAMAT</label>
+                                    </div>
+                                    <div id="cliente_div" class="input-group-premium mt-2" style="display: none;">
+                                        <label>Seleccionar Cliente Propietario</label>
+                                        {{ form.cliente }}
+                                    </div>
+                                </div>
+
+                                <hr style="opacity: 0.1; margin: 1.5rem 0;">
+
+                                <div style="font-size: 0.75rem; font-weight: 800; color: #10b981; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px;">
+                                    <i class="ri-shield-check-line"></i> Estado Operativo
+                                </div>
+
+                                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                                    <div class="form-check form-switch p-0 m-0" style="display: flex; align-items: center; gap: 1rem;">
+                                        {{ form.en_servicio }}
+                                        <label class="form-check-label small fw-bold text-dark m-0" style="cursor: pointer;">DISPONIBLE PARA USO</label>
+                                    </div>
+                                    <div class="form-check form-switch p-0 m-0" style="display: flex; align-items: center; gap: 1rem;">
+                                        {{ form.es_obsoleto }}
+                                        <label class="form-check-label small fw-bold text-danger m-0" style="cursor: pointer;">MARCAR COMO OBSOLETO / BAJA</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calibration Section -->
+                        <div class="col-12 mt-4">
+                            <div class="premium-card" style="background: white; border: 1px solid #e2e8f0; border-radius: 20px; padding: 1.5rem;">
+                                <div style="font-size: 0.75rem; font-weight: 800; color: #f59e0b; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 8px;">
+                                    <i class="ri-calendar-event-line"></i> Ciclo de Calibración
+                                </div>
+                                <div class="row g-3">
+                                    <div class="col-md-3">
+                                        <div class="input-group-premium">
+                                            <label>Última Fecha</label>
+                                            {{ form.ultima_calibracion }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="input-group-premium">
+                                            <label>Frecuencia (Meses)</label>
+                                            {{ form.frecuencia_meses }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="input-group-premium">
+                                            <label>Próxima Calibración</label>
+                                            {{ form.proxima_calibracion }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="input-group-premium">
+                                            <label>N° Certificado Actual</label>
+                                            {{ form.certificado_nro }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-4" style="padding: 1.5rem 2rem; background-color: #f8fafc; border-top: 1px solid #f1f5f9;">
+                    <a href="{% url 'lista_instrumentos' %}" class="btn-premium-secondary" style="box-shadow: none;">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn-premium-primary">
+                        <i class="ri-save-line"></i> Registrar Equipo Maestro
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const switchPropio = document.getElementById('{{ form.es_propio.id_for_label }}');
+        const divCliente = document.getElementById('cliente_div');
+        
+        function toggleCliente() {
+            divCliente.style.display = switchPropio.checked ? 'none' : 'block';
+        }
+        
+        switchPropio.addEventListener('change', toggleCliente);
+        toggleCliente(); // Initial state
+    });
+</script>
 {% endblock %}

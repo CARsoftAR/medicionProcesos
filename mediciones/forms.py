@@ -109,18 +109,29 @@ class MaquinaForm(forms.ModelForm):
 class InstrumentoForm(forms.ModelForm):
     class Meta:
         model = Instrumento
-        fields = ['nombre', 'codigo', 'tipo', 'marca', 'ultima_calibracion', 'frecuencia_meses', 'proxima_calibracion', 'alerta_dias', 'certificado_nro', 'en_servicio']
+        fields = [
+            'nombre', 'codigo', 'tipo', 'marca', 'rango', 'modelo', 'serie', 'ubicacion', 
+            'es_propio', 'cliente', 'ultima_calibracion', 'frecuencia_meses', 
+            'proxima_calibracion', 'alerta_dias', 'certificado_nro', 'en_servicio', 'es_obsoleto'
+        ]
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control'}),
             'codigo': forms.TextInput(attrs={'class': 'form-control'}),
             'tipo': forms.Select(attrs={'class': 'form-select'}),
             'marca': forms.TextInput(attrs={'class': 'form-control'}),
+            'rango': forms.TextInput(attrs={'class': 'form-control'}),
+            'modelo': forms.TextInput(attrs={'class': 'form-control'}),
+            'serie': forms.TextInput(attrs={'class': 'form-control'}),
+            'ubicacion': forms.TextInput(attrs={'class': 'form-control'}),
+            'es_propio': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'cliente': forms.Select(attrs={'class': 'form-select'}),
             'ultima_calibracion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'frecuencia_meses': forms.NumberInput(attrs={'class': 'form-control'}),
             'proxima_calibracion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'alerta_dias': forms.NumberInput(attrs={'class': 'form-control'}),
             'certificado_nro': forms.TextInput(attrs={'class': 'form-control'}),
             'en_servicio': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'es_obsoleto': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 from .models import HistorialCalibracion
@@ -128,7 +139,7 @@ from .models import HistorialCalibracion
 class HistorialCalibracionForm(forms.ModelForm):
     class Meta:
         model = HistorialCalibracion
-        fields = ['fecha_calibracion', 'resultado', 'certificado_nro', 'observaciones']
+        fields = ['fecha_calibracion', 'resultado', 'certificado_nro', 'archivo_certificado', 'observaciones']
         widgets = {
             'fecha_calibracion': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'resultado': forms.Select(attrs={'class': 'form-select'}),

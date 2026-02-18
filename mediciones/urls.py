@@ -40,6 +40,7 @@ urlpatterns = [
     path('maestros/instrumentos/nuevo/', views.crear_instrumento, name='crear_instrumento'),
     path('maestros/instrumentos/<int:pk>/editar/', views.editar_instrumento, name='editar_instrumento'),
     path('maestros/instrumentos/<int:pk>/eliminar/', views.eliminar_instrumento, name='eliminar_instrumento'),
+    path('maestros/instrumentos/<int:pk>/detalle/', views.detalle_instrumento, name='detalle_instrumento'),
     path('api/instrumentos/registrar-calibracion/', views.registrar_calibracion_ajax, name='registrar_calibracion_ajax'),
     
     path('perfil/', views.perfil_usuario, name='perfil_usuario'),

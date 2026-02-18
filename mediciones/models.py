@@ -50,22 +50,35 @@ class Maquina(models.Model):
 
 class Instrumento(models.Model):
     TIPO_CHOICES = [
-        ('CALIBRE', 'Calibre'),
+        ('CALIBRE', 'Calibre / Pie de Rey'),
         ('MICROMETRO', 'Micrómetro'),
         ('COMPARADOR', 'Comparador'),
         ('GALGA', 'Galga'),
-        ('OTRO', 'Otro'),
+        ('ALESOMETRO', 'Alesómetro'),
+        ('PNP', 'Pasa / No Pasa (Tapón/Anillo)'),
+        ('PATRON', 'Bloques Patrón / Standard'),
+        ('OTRO', 'Otro / Especial'),
     ]
     nombre = models.CharField(max_length=100)
     codigo = models.CharField(max_length=50, blank=True, null=True, verbose_name="Código/Inventario")
     tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='CALIBRE')
     marca = models.CharField(max_length=50, blank=True, null=True)
+    rango = models.CharField(max_length=50, blank=True, null=True, verbose_name="Rango de Medición")
+    modelo = models.CharField(max_length=50, blank=True, null=True)
+    serie = models.CharField(max_length=50, blank=True, null=True, verbose_name="Nro. de Serie")
+    ubicacion = models.CharField(max_length=100, blank=True, null=True, verbose_name="Ubicación Física")
+    
+    # Ownership
+    es_propio = models.BooleanField(default=True, verbose_name="Propiedad de ABBAMAT")
+    cliente = models.ForeignKey('Cliente', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Cliente Dueño (si aplica)")
+
     ultima_calibracion = models.DateField(blank=True, null=True, verbose_name="Última Calibración")
     frecuencia_meses = models.IntegerField(default=12, verbose_name="Frecuencia (Meses)")
     proxima_calibracion = models.DateField(blank=True, null=True, verbose_name="Próxima Calibración")
     alerta_dias = models.IntegerField(default=15, verbose_name="Alerta Anticipada (Días)")
     certificado_nro = models.CharField(max_length=100, blank=True, null=True, verbose_name="Nro. Certificado")
     en_servicio = models.BooleanField(default=True, verbose_name="En Servicio")
+    es_obsoleto = models.BooleanField(default=False, verbose_name="Obsoleto / Baja")
 
     class Meta:
         db_table = 'INSTRUMENTOS'
@@ -100,6 +113,7 @@ class HistorialCalibracion(models.Model):
     fecha_calibracion = models.DateField()
     resultado = models.CharField(max_length=20, choices=[('APROBADO', 'Aprobado'), ('RECHAZADO', 'Rechazado')], default='APROBADO')
     certificado_nro = models.CharField(max_length=100, blank=True, null=True)
+    archivo_certificado = models.FileField(upload_to='certificados/', blank=True, null=True, verbose_name="Archivo del Certificado")
     observaciones = models.TextField(blank=True, null=True)
     usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 

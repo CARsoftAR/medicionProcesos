@@ -1,128 +1,198 @@
-{% extends 'mediciones/index.html' %}
+{% extends 'mediciones/base.html' %}
+{% load static %}
 
-{% block title %}Maestro de Instrumentos{% endblock %}
+{% block title %}Inventario Maestro de Metrología{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="premium-dashboard-container animate__animated animate__fadeIn">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h2 class="card-title" style="font-size: 1.25rem;">Inventario de Instrumentos</h2>
-            <div class="text-muted" style="font-size: 0.95rem;">
-                Administra todos los equipos de medición y sus parámetros de calibración.
+            <h1 class="premium-title">Inventario de Metrología</h1>
+            <div class="d-flex align-items-center gap-3">
+                <p class="premium-subtitle">Listado completo de equipos de medición y control.</p>
+                {% if request.GET.filter == 'alertas' %}
+                    <span class="badge bg-danger-soft text-danger animate__animated animate__pulse animate__infinite" style="font-size: 0.7rem; font-weight: 800; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 4px 10px;">
+                        <i class="ri-alarm-warning-line"></i> FILTRANDO ALERTAS
+                    </span>
+                {% endif %}
             </div>
         </div>
-        <div class="d-flex gap-2">
-            <a href="{% url 'dashboard_calibracion' %}" class="btn btn-secondary">
-                <i class="ri-dashboard-line"></i> Dashboard
+        <div class="d-flex gap-4">
+            <a href="{% url 'dashboard_calibracion' %}" class="btn-premium-secondary">
+                <i class="ri-dashboard-line"></i> Ver Dashboard
             </a>
-            <a href="{% url 'crear_instrumento' %}" class="btn btn-primary">
-                <i class="ri-add-line"></i> Nuevo Instrumento
+            <a href="{% url 'crear_instrumento' %}" class="btn-premium-primary">
+                <i class="ri-add-line"></i> Registrar Nuevo Equipo
             </a>
         </div>
     </div>
 
-    <!-- Search bar -->
-    <div class="mb-4">
-        <form method="get" class="search-bar">
-            <i class="ri-search-line"></i>
-            <input type="text" name="search" class="form-control" placeholder="Buscar por nombre o código..." value="{{ search|default:'' }}">
+    <!-- Filters Section -->
+    <div class="premium-card mb-4 p-4">
+        <form method="get" class="row g-4 align-items-center">
+            <div class="col-md-7">
+                <div class="search-box-premium">
+                    <i class="ri-search-line"></i>
+                    <input type="text" name="search" placeholder="Buscar por código (ej: CAD 37), nombre o marca..." value="{{ search|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="d-flex gap-4">
+                    <button type="submit" class="btn-premium-primary flex-grow-1 justify-content-center" style="box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);">
+                        <i class="ri-filter-3-line"></i> Aplicar Filtro
+                    </button>
+                    <a href="{% url 'lista_instrumentos' %}" class="btn-premium-danger-soft px-4" title="Limpiar todos los filtros">
+                        <i class="ri-refresh-line"></i> Limpiar
+                    </a>
+                </div>
+            </div>
         </form>
     </div>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Código/Inv.</th>
-                <th>Tipo</th>
-                <th>Marca</th>
-                <th>Próxima Cal.</th>
-                <th>En Servicio</th>
-                <th style="text-align: right;">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for inst in instrumentos %}
-            <tr>
-                <td class="fw-bold">{{ inst.nombre }}</td>
-                <td><span class="badge" style="background: rgba(var(--primary-rgb), 0.1); color: var(--primary);">{{ inst.codigo|default:"-" }}</span></td>
-                <td>{{ inst.get_tipo_display }}</td>
-                <td class="text-muted">{{ inst.marca|default:"-" }}</td>
-                <td>
-                    <span class="{% if inst.is_calibracion_vencida %}text-danger fw-bold{% elif inst.is_en_alerta %}text-warning fw-bold{% endif %}">
-                        {{ inst.proxima_calibracion|date:"d/m/Y"|default:"-" }}
-                    </span>
-                </td>
-                <td>
-                    {% if inst.en_servicio %}
-                        <span class="text-success"><i class="ri-checkbox-circle-fill"></i> SI</span>
-                    {% else %}
-                        <span class="text-danger"><i class="ri-close-circle-fill"></i> NO</span>
-                    {% endif %}
-                </td>
-                <td style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
-                    <a href="{% url 'editar_instrumento' inst.pk %}" class="btn-soft-primary">
-                        <i class="ri-edit-line"></i> Editar
-                    </a>
-                    <form action="{% url 'eliminar_instrumento' inst.pk %}" method="post" style="display: inline;" id="delete-form-inst-{{ inst.pk }}">
-                        {% csrf_token %}
-                        <button type="button" class="btn-soft-danger" onclick="confirmDelete('{{ inst.nombre }}', 'delete-form-inst-{{ inst.pk }}')">
-                            <i class="ri-delete-bin-line"></i>
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="7" class="empty-state">
-                    <div class="empty-state-icon"><i class="ri-tools-line"></i></div>
-                    <div class="empty-state-title">No hay instrumentos</div>
-                    <div>Comienza registrando tu primer micrómetro o calibre.</div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <!-- Pagination -->
-    <div class="pagination-container">
-        <div class="per-page-selector">
-            <span>Registros por página:</span>
-            <input type="number" class="per-page-input" value="{{ per_page }}" min="1" max="100" onchange="changePerPage(this.value)">
+    <!-- main Table -->
+    <div class="premium-card">
+        <div class="table-responsive">
+            <table class="table premium-list-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Identificación</th>
+                        <th>Categoría</th>
+                        <th>Marca</th>
+                        <th>Última Cal.</th>
+                        <th>Próxima Cal.</th>
+                        <th>Estado</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inst in instrumentos %}
+                    <tr class="item-row clickable-row" onclick="window.location='{% url 'detalle_instrumento' inst.pk %}';" style="cursor: pointer;">
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="inst-icon-small">
+                                    <i class="ri-heavy-showers-line"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-800 text-dark">{{ inst.nombre }}</div>
+                                    <div class="text-xxs text-primary fw-700">{{ inst.codigo|default:"S/N" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="type-badge">{{ inst.get_tipo_display }}</div>
+                            <div class="mt-1">
+                                {% if inst.es_propio %}
+                                    <span class="badge bg-primary-soft text-primary" style="font-size: 0.6rem;">ABBAMAT</span>
+                                {% else %}
+                                    <span class="badge bg-purple-soft text-purple" style="font-size: 0.6rem;" title="{{ inst.cliente.nombre }}">CLIENTE</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="text-muted small fw-600">
+                             <div>{{ inst.marca|default:"-" }}</div>
+                             <div class="text-xxs">{{ inst.ubicacion|default:"" }}</div>
+                        </td>
+                        <td class="small">{{ inst.ultima_calibracion|date:"d/m/Y"|default:"-" }}</td>
+                        <td>
+                            <div class="fw-bold {% if inst.is_calibracion_vencida %}text-danger{% elif inst.is_en_alerta %}text-warning{% endif %}">
+                                {{ inst.proxima_calibracion|date:"d/m/Y"|default:"-" }}
+                            </div>
+                        </td>
+                        <td>
+                            {% if inst.es_obsoleto %}
+                                <div class="status-pill gray" title="Instrumento dado de baja">OBSOLETO</div>
+                            {% elif not inst.en_servicio %}
+                                <div class="status-pill gray" title="Fuera de servicio temporal">BLOQUEADO</div>
+                            {% elif inst.is_calibracion_vencida %}
+                                <div class="status-pill red">VENCIDO</div>
+                            {% elif inst.is_en_alerta %}
+                                <div class="status-pill yellow">ALERTA</div>
+                            {% else %}
+                                <div class="status-pill green">APTO</div>
+                            {% endif %}
+                        </td>
+                        <td class="text-end" onclick="event.stopPropagation();">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{% url 'detalle_instrumento' inst.pk %}" class="btn-icon blue" title="Ver Historial">
+                                    <i class="ri-history-line"></i>
+                                </a>
+                                <a href="{% url 'editar_instrumento' inst.pk %}" class="btn-icon gray" title="Editar">
+                                    <i class="ri-edit-line"></i>
+                                </a>
+                                <form action="{% url 'eliminar_instrumento' inst.pk %}" method="post" id="del-{{ inst.pk }}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="button" onclick="confirmDelete('{{ inst.nombre }}', 'del-{{ inst.pk }}')" class="btn-icon red-soft">
+                                        <i class="ri-delete-bin-7-line"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5">
+                            <div class="empty-state">
+                                <i class="ri-tools-line"></i>
+                                <p>No se encontraron instrumentos con los criterios de búsqueda.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
 
-        <div class="pagination-controls">
-            {% if instrumentos.has_previous %}
-                <a href="?page={{ instrumentos.previous_page_number }}&per_page={{ per_page }}&search={{ search|default:'' }}" class="page-link-premium"><i class="ri-arrow-left-s-line"></i></a>
-            {% endif %}
-            <div class="page-link-premium active">{{ instrumentos.number }} / {{ instrumentos.paginator.num_pages }}</div>
-            {% if instrumentos.has_next %}
-                <a href="?page={{ instrumentos.next_page_number }}&per_page={{ per_page }}&search={{ search|default:'' }}" class="page-link-premium"><i class="ri-arrow-right-s-line"></i></a>
-            {% endif %}
+        <!-- Pagination -->
+        {% if instrumentos.paginator.num_pages > 1 %}
+        <div class="d-flex justify-content-between align-items-center mt-4 pt-4 border-top">
+            <div class="text-muted small fw-600">
+                Mostrando {{ instrumentos.start_index }} - {{ instrumentos.end_index }} de {{ instrumentos.paginator.count }} registros
+            </div>
+            <div class="premium-pagination">
+                {% if instrumentos.has_previous %}
+                    <a href="?page={{ instrumentos.previous_page_number }}&search={{ search|default:'' }}" class="pg-btn"><i class="ri-arrow-left-s-line"></i></a>
+                {% endif %}
+                
+                <span class="pg-current">Página {{ instrumentos.number }} de {{ instrumentos.paginator.num_pages }}</span>
+
+                {% if instrumentos.has_next %}
+                    <a href="?page={{ instrumentos.next_page_number }}&search={{ search|default:'' }}" class="pg-btn"><i class="ri-arrow-right-s-line"></i></a>
+                {% endif %}
+            </div>
         </div>
+        {% endif %}
     </div>
 </div>
 
+<style>
+    .inst-icon-small { width: 40px; height: 40px; background: #f8fafc; color: #64748b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; border: 1px solid #e2e8f0; }
+    .status-pill.gray { background: #f1f5f9; color: #64748b; }
+    .btn-icon.red-soft { background: #fef2f2; color: #ef4444; border: none; }
+    .btn-icon.red-soft:hover { background: #ef4444; color: white; }
+
+    .premium-pagination { display: flex; align-items: center; gap: 10px; }
+    .pg-btn { width: 32px; height: 32px; border-radius: 8px; background: white; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; color: #475569; text-decoration: none; transition: 0.2s; }
+    .pg-btn:hover { background: #f8fafc; border-color: #3b82f6; color: #3b82f6; }
+    .pg-current { font-size: 0.85rem; font-weight: 700; color: #1e293b; }
+    
+    .clickable-row:hover .inst-icon-small { background: #eff6ff; color: #3b82f6; border-color: #dbeafe; }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-function changePerPage(value) {
-    const urlParams = new URLSearchParams(window.location.search);
-    urlParams.set('per_page', value);
-    window.location.search = urlParams.toString();
-}
-function confirmDelete(name, formId) {
-    Swal.fire({
-        title: '¿Eliminar Instrumento?',
-        text: `Eliminarás "${name}". Se perderá su historial de calibración.`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
-        customClass: {
-            popup: 'premium-swal',
-            confirmButton: 'premium-confirm-btn premium-confirm-btn-danger',
-            cancelButton: 'premium-cancel-btn'
-        }
-    }).then((result) => { if (result.isConfirmed) document.getElementById(formId).submit(); });
-}
+    function confirmDelete(name, formId) {
+        Swal.fire({
+            title: '¿Confirmar eliminación?',
+            text: `Se borrará el instrumento "${name}" y todo su historial de calibraciones permanentemente.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar equipo',
+            cancelButtonText: 'Cancelar',
+            customClass: { popup: 'premium-swal' }
+        }).then((result) => {
+            if (result.isConfirmed) document.getElementById(formId).submit();
+        });
+    }
 </script>
 {% endblock %}

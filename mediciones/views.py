@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db import models
+from django.core.paginator import Paginator
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib import messages
@@ -121,20 +123,51 @@ def index(request):
     from django.utils import timezone
     from datetime import timedelta
     
-    planillas = PlanillaMedicion.objects.all().order_by('-id')[:15]
+    # Filter parameters
+    q = request.GET.get('q', '').strip()
+    
+    # Querysets
+    planillas_qs = PlanillaMedicion.objects.all().order_by('-id')
+    valores_qs = ValorMedicion.objects.all()
+    
+    is_filtered = False
+    if q:
+        planillas_qs = planillas_qs.filter(
+            Q(num_op__icontains=q) | 
+            Q(proyecto__icontains=q) |
+            Q(cliente__nombre__icontains=q) |
+            Q(articulo__nombre__icontains=q)
+        )
+        # Filter values based on the filtered OPs for stats
+        valores_qs = valores_qs.filter(
+            Q(op__icontains=q) | 
+            Q(planilla__proyecto__icontains=q)
+        )
+        is_filtered = True
+
+    # List for the table (limited if not searching, or more if searching)
+    limit = 15 if not q else 50
+    planillas = planillas_qs[:limit]
     
     # Metrics for Dashboard
     hoy = timezone.now()
     hace_30_dias = hoy - timedelta(days=30)
     
-    total_ops = PlanillaMedicion.objects.count()
-    mediciones_recientes = ValorMedicion.objects.filter(fecha__gte=hace_30_dias).count()
+    total_ops = planillas_qs.count()
     
-    # Global OK/NOK counts (simplificado para el dashboard inicial)
-    ok_count = ValorMedicion.objects.filter(fecha__gte=hace_30_dias, valor_pnp='OK').count()
-    nok_count = ValorMedicion.objects.filter(fecha__gte=hace_30_dias, valor_pnp='NOK').count()
+    # Current values (30 days if global, or all if specific OP)
+    if is_filtered:
+        mediciones_base = valores_qs
+    else:
+        mediciones_base = valores_qs.filter(fecha__gte=hace_30_dias)
+
+    mediciones_recientes = mediciones_base.count()
     
-    # Data for Trend Chart (last 7 days)
+    # Global OK/NOK counts
+    ok_count = mediciones_base.filter(valor_pnp='OK').count()
+    nok_count = mediciones_base.filter(valor_pnp='NOK').count()
+    
+    # Data for Trend Chart (last 7 days - or specific periods if filtered)
     dias = []
     mediciones_por_dia = []
     oks_por_dia = []
@@ -142,17 +175,17 @@ def index(request):
     for i in range(6, -1, -1):
         fecha = hoy - timedelta(days=i)
         dias.append(fecha.strftime('%d/%m'))
-        count = ValorMedicion.objects.filter(fecha__date=fecha.date()).count()
-        oks = ValorMedicion.objects.filter(fecha__date=fecha.date(), valor_pnp='OK').count()
+        count = valores_qs.filter(fecha__date=fecha.date()).count()
+        oks = valores_qs.filter(fecha__date=fecha.date(), valor_pnp='OK').count()
         mediciones_por_dia.append(count)
         oks_por_dia.append(oks)
 
-    # Active alerts for instruments
-    instrumentos = Instrumento.objects.all()
-    inst_vencidos = [i for i in instrumentos if i.is_calibracion_vencida()]
-    inst_alerta = [i for i in instrumentos if i.is_en_alerta()]
+    # Active alerts for instruments (excluding obsolete)
+    instrumentos_activos = Instrumento.objects.filter(es_obsoleto=False)
+    inst_vencidos = [i for i in instrumentos_activos if i.is_calibracion_vencida()]
+    inst_alerta = [i for i in instrumentos_activos if i.is_en_alerta()]
 
-    return render(request, 'mediciones/dashboard.html', {
+    context = {
         'planillas': planillas,
         'total_ops': total_ops,
         'mediciones_recientes': mediciones_recientes,
@@ -163,8 +196,15 @@ def index(request):
         'stats_oks': oks_por_dia,
         'inst_vencidos_count': len(inst_vencidos),
         'inst_alerta_count': len(inst_alerta),
-        'total_vencidos_alerta': len(inst_vencidos) + len(inst_alerta)
-    })
+        'total_vencidos_alerta': len(inst_vencidos) + len(inst_alerta),
+        'is_filtered': is_filtered,
+        'search_query': q
+    }
+
+    if request.GET.get('partial') == '1' or request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'mediciones/partials/dashboard_table.html', context)
+
+    return render(request, 'mediciones/dashboard.html', context)
 
 @login_required
 def asignar_op(request):
@@ -606,13 +646,27 @@ def lista_instrumentos(request):
     
     instrumentos_list = Instrumento.objects.all().order_by('nombre')
     
-    # Simple search
+    # Filters
     search = request.GET.get('search')
     if search:
         instrumentos_list = instrumentos_list.filter(
             models.Q(nombre__icontains=search) | 
-            models.Q(codigo__icontains=search)
+            models.Q(codigo__icontains=search) |
+            models.Q(marca__icontains=search)
         )
+    
+    filter_type = request.GET.get('filter')
+    if filter_type == 'alertas':
+        # Filter instruments that are either expired OR in alert state
+        from datetime import date
+        today = date.today()
+        # We use a list comprehension because is_en_alerta depends on instance attributes (alerta_dias)
+        # However, we can approximate it with a wide Q filter for performance if needed.
+        # For now, let's filter the queryset based on proxima_calibracion.
+        # A conservative approach: proxima_calibracion <= today + 60 days (max alert typically)
+        # OR just filter the list and re-queryset.
+        ids_vencidos = [i.id for i in instrumentos_list if i.is_calibracion_vencida() or i.is_en_alerta()]
+        instrumentos_list = instrumentos_list.filter(id__in=ids_vencidos)
 
     paginator = Paginator(instrumentos_list, per_page)
     page_number = request.GET.get('page')
@@ -657,20 +711,39 @@ def eliminar_instrumento(request, pk):
         messages.success(request, 'Instrumento eliminado.')
     return redirect('lista_instrumentos')
 
+@supervisor_required
+def detalle_instrumento(request, pk):
+    instrumento = get_object_or_404(Instrumento, pk=pk)
+    historial = instrumento.historial.all().order_by('-fecha_calibracion')
+    return render(request, 'mediciones/detalle_instrumento.html', {
+        'instrumento': instrumento,
+        'historial': historial
+    })
+
 @csrf_exempt
 @supervisor_required
 def registrar_calibracion_ajax(request):
     if request.method == 'POST':
-        import json
         from datetime import datetime
         from dateutil.relativedelta import relativedelta
         try:
-            data = json.loads(request.body)
-            inst_id = data.get('instrumento_id')
-            fecha_str = data.get('fecha')
-            resultado = data.get('resultado', 'APROBADO')
-            certificado = data.get('certificado', '')
-            obs = data.get('observaciones', '')
+            # Handle both JSON and FormData
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or 'multipart/form-data' in request.content_type:
+                inst_id = request.POST.get('instrumento_id')
+                fecha_str = request.POST.get('fecha')
+                resultado = request.POST.get('resultado', 'APROBADO')
+                certificado = request.POST.get('certificado', '')
+                obs = request.POST.get('observaciones', '')
+                archivo = request.FILES.get('archivo_certificado')
+            else:
+                import json
+                data = json.loads(request.body)
+                inst_id = data.get('instrumento_id')
+                fecha_str = data.get('fecha')
+                resultado = data.get('resultado', 'APROBADO')
+                certificado = data.get('certificado', '')
+                obs = data.get('observaciones', '')
+                archivo = None
             
             instrumento = Instrumento.objects.get(id=inst_id)
             fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
@@ -681,6 +754,7 @@ def registrar_calibracion_ajax(request):
                 fecha_calibracion=fecha,
                 resultado=resultado,
                 certificado_nro=certificado,
+                archivo_certificado=archivo,
                 observaciones=obs,
                 usuario=request.user
             )
@@ -689,7 +763,6 @@ def registrar_calibracion_ajax(request):
             if resultado == 'APROBADO':
                 instrumento.ultima_calibracion = fecha
                 instrumento.certificado_nro = certificado
-                # Reset next date to let save() logic or manual update handle it
                 instrumento.proxima_calibracion = fecha + relativedelta(months=instrumento.frecuencia_meses)
                 instrumento.en_servicio = True
             else:
@@ -701,22 +774,43 @@ def registrar_calibracion_ajax(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 @supervisor_required
 def dashboard_calibracion(request):
-    instrumentos = Instrumento.objects.all()
+    # Base Query: Active items (not obsolete)
+    activos = Instrumento.objects.filter(es_obsoleto=False)
     
-    vencidos = [i for i in instrumentos if i.is_calibracion_vencida()]
-    alerta = [i for i in instrumentos if i.is_en_alerta()]
-    ok = [i for i in instrumentos if not i.is_calibracion_vencida() and not i.is_en_alerta()]
-    fuera_servicio = instrumentos.filter(en_servicio=False)
+    # Active Stats
+    vencidos_count = len([i for i in activos if i.is_calibracion_vencida()])
+    alerta_count = len([i for i in activos if i.is_en_alerta()])
+    ok_count = len([i for i in activos if not i.is_calibracion_vencida() and not i.is_en_alerta() and i.en_servicio])
     
-    context = {
-        'instrumentos': instrumentos,
-        'vencidos': vencidos,
-        'alerta': alerta,
-        'ok': ok,
-        'fuera_servicio': fuera_servicio,
-        'total': instrumentos.count()
-    }
-    return render(request, 'mediciones/dashboard_calibracion.html', context)
+    # Ownership Stats
+    propios_count = activos.filter(es_propio=True).count()
+    clientes_count = activos.filter(es_propio=False).count()
+    obsoletos_count = Instrumento.objects.filter(es_obsoleto=True).count()
+    
+    # Detailed counts
+    fuera_servicio_count = activos.filter(en_servicio=False).count()
+    
+    # Stats by type (only for active)
+    tipos_count = {}
+    for choice in Instrumento.TIPO_CHOICES:
+        count = activos.filter(tipo=choice[0]).count()
+        if count > 0:
+            tipos_count[choice[1]] = count
+            
+    # List: Next calibrations (prioritizing overdue and warning)
+    prox_calibraciones = activos.order_by('proxima_calibracion')[:15]
+    
+    return render(request, 'mediciones/dashboard_calibracion.html', {
+        'vencidos_count': vencidos_count,
+        'alerta_count': alerta_count,
+        'ok_count': ok_count,
+        'fuera_servicio_count': fuera_servicio_count,
+        'propios_count': propios_count,
+        'clientes_count': clientes_count,
+        'obsoletos_count': obsoletos_count,
+        'tipos_count': tipos_count,
+        'prox_calibraciones': prox_calibraciones,
+    })
 
 @supervisor_required
 def lista_estructuras(request):

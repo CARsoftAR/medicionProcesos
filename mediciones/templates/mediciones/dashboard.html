@@ -68,7 +68,7 @@
     </div>
     <!-- Alertas -->
     <div class="col-md-3">
-        <div class="kpi-card animate__animated animate__fadeInUp" style="{% if total_vencidos_alerta > 0 %}border: 1px solid rgba(239, 68, 68, 0.3);{% endif %} --delay: 0.4s;">
+        <div onclick="window.location='{% url 'lista_instrumentos' %}?filter=alertas';" class="kpi-card animate__animated animate__fadeInUp clickable-kpi" style="{% if total_vencidos_alerta > 0 %}border: 1px solid rgba(239, 68, 68, 0.3);{% endif %} --delay: 0.4s; cursor: pointer;">
             <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
                 <i class="ri-alarm-warning-line"></i>
             </div>
@@ -101,67 +101,8 @@
 </div>
 
 <!-- TABLE SECTION -->
-<div class="card animate__animated animate__fadeInUp" style="--delay: 0.7s;">
-    <div class="d-flex justify-content-between align-items-center mb-4" style="margin-bottom: 1.5rem;">
-        <div class="d-flex align-items-center gap-2">
-             <div style="width: 8px; height: 24px; background: var(--primary); border-radius: 4px;"></div>
-             <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0;">Mediciones en Curso</h3>
-        </div>
-        <div class="d-flex gap-2">
-            <span class="badge bg-light text-dark border" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; border-radius: 10px;">{{ planillas.count }} activas</span>
-        </div>
-    </div>
-    <div style="overflow-x: auto;">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>OP / Proyecto</th>
-                    <th>Proceso</th>
-                    <th>Cliente</th>
-                    <th>Artículo</th>
-                    <th>Fecha</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for p in planillas %}
-                <tr>
-                    <td style="font-weight: 600;">
-                        {% if p.num_op %}<span style="color: var(--primary);">{{ p.num_op }}</span> / {% endif %}{{ p.proyecto|default:"-" }}
-                    </td>
-                    <td>
-                        <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.2);">
-                            {{ p.proceso.nombre }}
-                        </span>
-                    </td>
-                    <td>{{ p.cliente.nombre|default:"-" }}</td>
-                    <td>{{ p.articulo.nombre|default:"-" }}</td>
-                    <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ p.fecha_creacion|date:"d/m/y H:i" }}</td>
-                    <td style="text-align: right;">
-                        <div class="d-flex justify-content-end gap-2">
-                            <a href="{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 10px;" title="Medir">
-                                <i class="ri-eye-line"></i> Abrir
-                            </a>
-                            {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
-                            <a href="{% url 'configurar_estructura' %}?op={{ p.num_op }}&proy={{ p.proyecto }}" class="btn btn-light border" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; border-radius: 10px; color: var(--primary);" title="Editar Estructura">
-                                <i class="ri-edit-line"></i>
-                            </a>
-                            <button onclick="eliminarOP('{{ p.id }}', '{{ p.num_op }}')" class="btn btn-light border" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; border-radius: 10px; color: #ef4444;" title="Eliminar OP">
-                                <i class="ri-delete-bin-line"></i>
-                            </button>
-                            {% endif %}
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="6" style="text-align: center; padding: 4rem; color: var(--text-muted);">
-                    <i class="ri-inbox-line" style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.2;"></i>
-                    No hay mediciones activas en este momento.
-                </td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="card animate__animated animate__fadeInUp" style="--delay: 0.7s;" id="dashboard-table-container">
+    {% include 'mediciones/partials/dashboard_table.html' %}
 </div>
 {% endblock %}
 
@@ -248,6 +189,59 @@
             stroke: { show: false }
         };
         new ApexCharts(document.querySelector("#statusChart"), statusOptions).render();
+
+        // AUTO-SUBMIT SEARCH (AJAX VERSION)
+        const tableContainer = document.getElementById('dashboard-table-container');
+        
+        function bindDashboardSearch() {
+            const searchInput = document.getElementById('dashboardSearchInput');
+            if (!searchInput) return;
+
+            // Move cursor to end if already focused
+            if (searchInput === document.activeElement) {
+                searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+            }
+
+            let timeout = null;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeout);
+                timeout = setTimeout(function() {
+                    const q = searchInput.value;
+                    const url = `{% url 'index' %}?q=${encodeURIComponent(q)}&partial=1`;
+                    
+                    // Show a subtle loading state if needed
+                    tableContainer.style.opacity = '0.6';
+                    
+                    fetch(url, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                    .then(response => response.text())
+                    .then(html => {
+                        tableContainer.innerHTML = html;
+                        tableContainer.style.opacity = '1';
+                        bindDashboardSearch(); // Re-initialize events for the new HTML
+                        
+                        // Focus the new search input and keep cursor at end
+                        const newInput = document.getElementById('dashboardSearchInput');
+                        if (newInput) {
+                            newInput.focus();
+                            newInput.setSelectionRange(newInput.value.length, newInput.value.length);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error al filtrar tabla:', err);
+                        tableContainer.style.opacity = '1';
+                    });
+                }, 500);
+            });
+
+            // Prevent form submit if any
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') e.preventDefault();
+            });
+        }
+
+        bindDashboardSearch();
     });
 </script>
 {% endblock %}

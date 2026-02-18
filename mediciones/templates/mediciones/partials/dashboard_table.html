@@ -1,0 +1,60 @@
+{% load static %}
+<div id="dashboard-table-partial">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-2">
+             <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0;">Mediciones en Curso</h3>
+             {% if is_filtered %}
+                <a href="{% url 'index' %}" class="btn btn-sm btn-light border" style="font-size: 0.7rem; border-radius: 8px;">
+                    <i class="ri-close-line"></i> Quitar Filtro: {{ search_query }}
+                </a>
+             {% endif %}
+        </div>
+        <div class="d-flex gap-3 align-items-center">
+            <div class="search-box-premium" style="width: 300px;">
+                <i class="ri-search-line"></i>
+                <input type="text" name="q" id="dashboardSearchInput" placeholder="Buscar OP, Proyecto o Cliente..." value="{{ search_query }}" style="background: transparent; border: none; outline: none; width: 100%; color: var(--text-primary); font-size: 0.85rem;">
+            </div>
+        </div>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>OP / Proyecto</th>
+                    <th>Proceso</th>
+                    <th>Cliente</th>
+                    <th>Artículo</th>
+                    <th>Fecha</th>
+                    <th style="text-align: right;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in planillas %}
+                <tr class="clickable-row" onclick="window.location='{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}';" style="cursor: pointer;" title="Abrir Medición">
+                    <td style="font-weight: 600; color: var(--primary);">
+                        {% if p.num_op %}{{ p.num_op }} / {% endif %}{{ p.proyecto|default:"-" }}
+                    </td>
+                    <td>{{ p.proceso.nombre }}</td>
+                    <td>{{ p.cliente.nombre|default:"-" }}</td>
+                    <td>{{ p.articulo.nombre|default:"-" }}</td>
+                    <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ p.fecha_creacion|date:"d/m/y" }}</td>
+                    <td style="text-align: right;" onclick="event.stopPropagation();">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 10px;">
+                                <i class="ri-eye-line"></i> Abrir
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                        <i class="ri-search-line" style="font-size: 2rem; opacity: 0.2; display: block; margin-bottom: 0.5rem;"></i>
+                        No se encontraron resultados para "{{ search_query }}"
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

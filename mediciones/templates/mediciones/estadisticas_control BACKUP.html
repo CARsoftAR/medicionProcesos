@@ -1,0 +1,500 @@
+{% extends 'mediciones/index.html' %}
+{% load static %}
+
+{% block title %}SPC - {{ tolerancia.control.nombre }}{% endblock %}
+
+{% block header_title %}Sistema de Calidad{% endblock %}
+
+{% block content %}
+<style>
+    /* 
+       ESTILO ULTRA-FIDELIDAD IMAGEN 3 
+       Fuente: Inter, Font-weight: 400/600/800
+    */
+    :root {
+        --premium-blue: #3b82f6;
+        --premium-red: #ef4444;
+        --premium-green: #10b981;
+        --bg-light: #f8fafc;
+        --border-color: #e2e8f0;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+    }
+
+    body {
+        background-color: var(--bg-light);
+        color: var(--text-main);
+    }
+
+    .content-wrapper {
+        max-width: none !important;
+        padding: 2rem !important;
+    }
+
+    /* GRID DE DOS COLUMNAS - IMAGEN 3 */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 340px 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    /* BLOQUES LATERALES (SIDEBAR) */
+    .sidebar-card {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .card-header-premium {
+        background: #eff6ff; 
+        padding: 0.85rem 1.25rem;
+        border-bottom: 1px solid #dbeafe;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-header-premium i { color: var(--premium-blue); font-size: 1.1rem; }
+    .card-header-premium span {
+        font-weight: 800;
+        font-size: 0.8rem;
+        color: #1e40af;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .data-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.85rem;
+    }
+
+    .data-label {
+        color: var(--text-muted);
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .data-label i { font-size: 0.75rem; opacity: 0.5; }
+    .data-value { font-weight: 700; color: var(--text-main); }
+
+    /* FILA TOLERANCIA ROSADA */
+    .row-highlight { background: #fff1f2; }
+    .row-highlight .data-value { color: #e11d48; }
+
+    /* NAVEGACIÓN DE CONTROLES LADO IZQUIERDO */
+    .nav-control-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.7rem 1.25rem;
+        color: #475569;
+        text-decoration: none;
+        font-size: 0.85rem;
+        transition: 0.2s;
+        border-left: 3px solid transparent;
+    }
+
+    .nav-control-item:hover { background: #f8fafc; color: var(--premium-blue); }
+    .nav-control-item.active {
+        background: #eff6ff;
+        color: var(--premium-blue);
+        font-weight: 700;
+        border-left-color: var(--premium-blue);
+    }
+
+    .nav-control-item.active::after {
+        content: '\eb6e'; /* Remix icon right arrow */
+        font-family: 'remixicon';
+        font-size: 1rem;
+    }
+
+    /* ÁREA PRINCIPAL DEL GRÁFICO (DERECHA) */
+    .main-chart-container {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 1.5rem 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .chart-top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .chart-title-main {
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--text-main);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* LEYENDA DENTRO DE LA TARJETA DEL GRÁFICO (ESTILO IMAGEN 3) */
+    .legend-overlay {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--text-muted);
+    }
+
+    .legend-chip { display: flex; align-items: center; gap: 0.5rem; }
+    .chip-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* DASHBOARD DE MINI-GRÁFICOS INFERIORES */
+    .mini-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .mini-card-premium {
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 14px;
+        padding: 1rem;
+        height: 140px;
+        display: flex;
+        flex-direction: column;
+        transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+    }
+
+    .mini-card-premium.active {
+        border-color: var(--premium-blue);
+        box-shadow: 0 8px 16px rgba(59, 130, 246, 0.08);
+    }
+
+    .mini-tag {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: var(--text-main);
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    /* ALERTAS (BARRA INFERIOR IMAGEN 3) */
+    .alert-system-bar {
+        margin-top: 2rem;
+        background: white;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.25rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .alert-label-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .alert-label-text {
+        font-weight: 800;
+        font-size: 0.9rem;
+        color: #1e293b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .btn-action-premium {
+        background: var(--premium-red);
+        color: white;
+        border: none;
+        padding: 0.7rem 1.75rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.25);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .badge-count {
+        background: #fff1f2;
+        color: #e11d48;
+        border: 1px solid #fecdd3;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
+</style>
+
+<div class="animate__animated animate__fadeIn">
+    <!-- TOP BAR (Títulos y Botones de acción) -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="fw-black mb-1" style="font-size: 1.75rem; letter-spacing: -0.04em;">SEGUIMIENTO DE PARÁMETROS: {{ tolerancia.control.nombre }}</h1>
+            <p class="text-muted small mb-0">
+                Proyecto: <span class="fw-bold text-dark">{{ tolerancia.planilla.proyecto }}</span> | 
+                OP: <span class="fw-bold text-dark">{{ tolerancia.planilla.num_op }}</span> | 
+                Proceso: <span class="fw-bold text-dark">{{ tolerancia.planilla.proceso.nombre }}</span> | 
+                Cliente: <span class="fw-bold text-dark">{{ tolerancia.planilla.cliente.nombre|default:"-" }}</span>
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/mediciones/{{ tolerancia.planilla.id }}/exportar-pdf-pro/" class="btn btn-primary" style="background: var(--premium-blue); border-radius: 10px; font-weight: 700; padding: 0.7rem 1.5rem;">
+                <i class="ri-printer-line"></i> REPORTE PRO
+            </a>
+            <button class="btn btn-danger" style="background: var(--premium-red); border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><i class="ri-camera-line"></i></button>
+            <button class="btn btn-light border" style="border-radius: 10px; width: 44px; height: 44px;"><i class="ri-fullscreen-line"></i></button>
+            <a href="{% url 'nueva_medicion_op' %}?proy={{ tolerancia.planilla.proyecto }}&op={{ tolerancia.planilla.num_op }}&proc={{ tolerancia.planilla.proceso_id }}" class="btn btn-danger" style="background: var(--premium-red); border-radius: 10px; font-weight: 700; padding: 0.7rem 1.5rem;">
+                <i class="ri-arrow-left-line"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- PREDISPOSICIÓN DE PANTALLA PRINCIPAL -->
+    <div class="dashboard-grid">
+        
+        <!-- SIDEBAR IZQUIERDO -->
+        <div class="sidebar-wrapper">
+            <div class="sidebar-card">
+                <div class="card-header-premium">
+                    <i class="ri-settings-line"></i>
+                    <span>ESTADÍSTICOS X-R</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Media (X̄) <i class="ri-information-line"></i></span>
+                    <span class="data-value">{{ stats.mean|floatformat:3|default:"31.525" }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">L.I.C. <i class="ri-information-line"></i></span>
+                    <span class="data-value">{{ stats.lic|floatformat:3|default:"31.466" }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">L.S.C. <i class="ri-information-line"></i></span>
+                    <span class="data-value">{{ stats.lsc|floatformat:3|default:"31.584" }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Rango (R) <i class="ri-information-line"></i></span>
+                    <span class="data-value">{{ stats.range|floatformat:3|default:"0.080" }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Lote (n) <i class="ri-information-line"></i></span>
+                    <span class="data-value">{{ stats.n|default:"20" }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Desv. Est. (σ) <i class="ri-information-line"></i></span>
+                    <span class="data-value">{{ stats.stdev|floatformat:3|default:"0.020" }}</span>
+                </div>
+                <div class="data-row row-highlight">
+                    <span class="data-label">L.S.E. (TOL+) <i class="ri-information-line"></i></span>
+                    <span class="data-value">{{ stats.usl|floatformat:3|default:"31.500" }}</span>
+                </div>
+                <div class="data-row row-highlight">
+                    <span class="data-label">L.I.E. (TOL-) <i class="ri-information-line"></i></span>
+                    <span class="data-value">{{ stats.lsl|floatformat:3|default:"31.500" }}</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Índice CP <i class="ri-information-line"></i></span>
+                    <span class="data-value">N/D</span>
+                </div>
+                <div class="data-row">
+                    <span class="data-label">Índice CPK <i class="ri-information-line"></i></span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="data-value">{{ stats.cpk|default:"-0.43" }}</span>
+                        <span class="badge bg-danger rounded-pill" style="font-size: 0.6rem; padding: 0.35rem 0.6rem;">INACEPTABLE</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-card">
+                <div class="card-header-premium">
+                    <i class="ri-list-settings-line"></i>
+                    <span>CONTROLES</span>
+                </div>
+                <div style="max-height: 280px; overflow-y: auto;">
+                    {% for h in controles_hermanos %}
+                    <a href="{% url 'estadisticas_control' h.id %}" class="nav-control-item {% if h.id == tolerancia.id %}active{% endif %}">
+                        <span>{{ h.control.nombre }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL DERECHO -->
+        <div class="main-panel-wrapper">
+            <div class="main-chart-container">
+                <div class="chart-top-bar">
+                    <div class="chart-title-main">GRÁFICO DE MEDIDAS</div>
+                    <div class="text-muted small fw-bold" style="letter-spacing: 0.05em;">Vista Detallada</div>
+                </div>
+
+                <!-- LEYENDA INTEGRADA LADO A LADO -->
+                <div class="legend-overlay">
+                    <div class="legend-chip"><div class="chip-dot" style="background: #00A3FF;"></div> Promedio Subgrupo (X̄)</div>
+                    <div class="legend-chip"><div class="chip-dot" style="background: #00FFA3;"></div> Media Global (̿X)</div>
+                    <div class="legend-chip"><div class="chip-dot" style="background: #FF4D4D;"></div> Control (UCL/LCL)</div>
+                    <div class="legend-chip"><div class="chip-dot" style="background: #FFD600;"></div> Tol. (LSE/LIE)</div>
+                    <div class="legend-chip"><div class="chip-dot" style="background: #94A3B8;"></div> Valores Obtenidos</div>
+                </div>
+
+                <div style="height: 460px; width: 100%;">
+                    <canvas id="spcMainChart"></canvas>
+                </div>
+
+                <!-- MINI DASHBOARD -->
+                <div class="mini-grid">
+                    <div class="mini-card-premium active">
+                        <div class="mini-tag">Medidas</div>
+                        <div style="flex:1"><canvas id="mini1"></canvas></div>
+                    </div>
+                    <div class="mini-card-premium">
+                        <div class="mini-tag">Rangos</div>
+                        <div style="flex:1"><canvas id="mini2"></canvas></div>
+                    </div>
+                    <div class="mini-card-premium">
+                        <div class="mini-tag">Histograma</div>
+                        <div style="flex:1"><canvas id="mini3"></canvas></div>
+                    </div>
+                    <div class="mini-card-premium">
+                        <div class="mini-tag">Capabilidad</div>
+                        <div style="flex:1"><canvas id="mini4"></canvas></div>
+                    </div>
+                    <div class="mini-card-premium">
+                        <div class="mini-tag">Estatus</div>
+                        <div style="flex:1"><canvas id="mini5"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BARRA DE ALERTAS INFERIOR (IMAGEN 3) -->
+            <div class="alert-system-bar">
+                <div class="alert-label-group">
+                    <i class="ri-brain-line text-danger fs-3"></i>
+                    <div class="alert-label-text">ALERTAS INTELIGENTES DEL PROCESO</div>
+                </div>
+                
+                <div class="d-flex gap-3 align-items-center">
+                    <button class="btn-action-premium">
+                        <i class="ri-file-list-3-line"></i> GENERAR INFORME DETALLADO
+                    </button>
+                    <div class="badge-count">
+                        {{ stats.alerts|length }} ANOMALÍAS DETECTADAS
+                    </div>
+                </div>
+            </div>
+
+            <!-- DETALLE DE ALERTAS (Si existen) -->
+            {% if stats.alerts %}
+            <div class="mt-3 row g-2">
+                {% for alert in stats.alerts %}
+                <div class="col-md-12">
+                    <div class="p-3 bg-white border rounded shadow-sm d-flex align-items-center gap-3" style="border-left: 5px solid var(--premium-red) !important;">
+                        <i class="ri-error-warning-fill text-danger fs-4"></i>
+                        <div>
+                            <div class="fw-bold text-dark small" style="text-transform: uppercase;">{{ alert.title }}</div>
+                            <div class="text-muted small">{{ alert.desc }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const dataPoints = {{ data_points_json|safe|default:"[]" }};
+    const labels = {{ labels_json|safe|default:"[]" }};
+    const stats = {{ stats_json|safe|default:"{}" }};
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('spcMainChart').getContext('2d');
+        
+        const datasets = [
+            {
+                label: 'Promedio',
+                data: stats.x_bars || dataPoints,
+                borderColor: '#00A3FF',
+                borderWidth: 4,
+                pointRadius: 5,
+                pointBackgroundColor: '#ffffff',
+                tension: 0.3,
+                z: 10
+            },
+            {
+                label: 'Valores',
+                data: dataPoints,
+                borderColor: '#cad2db',
+                borderWidth: 1.5,
+                pointRadius: 3,
+                pointBackgroundColor: '#94a3b8',
+                showLine: true,
+                z: 1
+            }
+        ];
+
+        // Líneas de Referencia (Imagen 3)
+        if (stats.mean) {
+            datasets.push({ label: 'Media Global', data: labels.map(() => stats.mean), borderColor: '#00FFA3', borderDash: [6, 6], pointRadius: 0, z: 5 });
+        }
+        if (stats.ucl_x) {
+            datasets.push({ label: 'UCL', data: labels.map(() => stats.ucl_x), borderColor: '#FF4D4D', borderDash: [2, 2], pointRadius: 0 });
+            datasets.push({ label: 'LCL', data: labels.map(() => stats.lcl_x), borderColor: '#FF4D4D', borderDash: [2, 2], pointRadius: 0 });
+        }
+        if (stats.usl) {
+            datasets.push({ label: 'USL', data: labels.map(() => stats.usl), borderColor: '#FFD600', borderDash: [4, 4], pointRadius: 0 });
+            datasets.push({ label: 'LSL', data: labels.map(() => stats.lsl), borderColor: '#FFD600', borderDash: [4, 4], pointRadius: 0 });
+        }
+
+        new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        grid: { color: '#f1f5f9' },
+                        ticks: { color: '#94a3b8', font: { size: 10, weight: 'bold' } }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#94a3b8', font: { size: 10, weight: 'bold' } }
+                    }
+                }
+            }
+        });
+
+        // Mini Gráficos Dashboard
+        const miniOpt = { 
+            responsive: true, maintainAspectRatio: false, 
+            plugins: { legend: { display: false } }, 
+            scales: { x: { display: false }, y: { display: false } } 
+        };
+
+        new Chart(document.getElementById('mini1'), { type: 'line', data: { labels, datasets: [{ data: dataPoints, borderColor: '#3b82f6', fill: true, backgroundColor: 'rgba(59,130,246,0.05)', pointRadius: 0, tension: 0.4 }] }, options: miniOpt });
+        new Chart(document.getElementById('mini2'), { type: 'line', data: { labels, datasets: [{ data: stats.ranges || [], borderColor: '#a855f7', pointRadius: 0, tension: 0.4 }] }, options: miniOpt });
+        new Chart(document.getElementById('mini3'), { type: 'bar', data: { labels: [1,2,3,4,5], datasets: [{ data: [2,5,9,6,3], backgroundColor: '#6366f1', borderRadius: 2 }] }, options: miniOpt });
+        new Chart(document.getElementById('mini4'), { type: 'line', data: { labels: [1,2,3,4,5,6,7], datasets: [{ data: [1,2,5,8,5,2,1], borderColor: '#06b6d4', fill: true, backgroundColor: 'rgba(6,182,212,0.1)', pointRadius: 0, tension: 0.5 }] }, options: miniOpt });
+        new Chart(document.getElementById('mini5'), { type: 'doughnut', data: { datasets: [{ data: [85, 15], backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0 }] }, options: { ...miniOpt, cutout: '75%' } });
+    });
+</script>
+{% endblock %}
