@@ -117,15 +117,50 @@ def eliminar_usuario(request, user_id):
 
 @login_required
 def index(request):
+    from django.db.models import Count, Q
+    from django.utils import timezone
+    from datetime import timedelta
+    
     planillas = PlanillaMedicion.objects.all().order_by('-id')[:15]
     
+    # Metrics for Dashboard
+    hoy = timezone.now()
+    hace_30_dias = hoy - timedelta(days=30)
+    
+    total_ops = PlanillaMedicion.objects.count()
+    mediciones_recientes = ValorMedicion.objects.filter(fecha__gte=hace_30_dias).count()
+    
+    # Global OK/NOK counts (simplificado para el dashboard inicial)
+    ok_count = ValorMedicion.objects.filter(fecha__gte=hace_30_dias, valor_pnp='OK').count()
+    nok_count = ValorMedicion.objects.filter(fecha__gte=hace_30_dias, valor_pnp='NOK').count()
+    
+    # Data for Trend Chart (last 7 days)
+    dias = []
+    mediciones_por_dia = []
+    oks_por_dia = []
+    
+    for i in range(6, -1, -1):
+        fecha = hoy - timedelta(days=i)
+        dias.append(fecha.strftime('%d/%m'))
+        count = ValorMedicion.objects.filter(fecha__date=fecha.date()).count()
+        oks = ValorMedicion.objects.filter(fecha__date=fecha.date(), valor_pnp='OK').count()
+        mediciones_por_dia.append(count)
+        oks_por_dia.append(oks)
+
     # Active alerts for instruments
     instrumentos = Instrumento.objects.all()
     inst_vencidos = [i for i in instrumentos if i.is_calibracion_vencida()]
     inst_alerta = [i for i in instrumentos if i.is_en_alerta()]
 
-    return render(request, 'mediciones/index.html', {
+    return render(request, 'mediciones/dashboard.html', {
         'planillas': planillas,
+        'total_ops': total_ops,
+        'mediciones_recientes': mediciones_recientes,
+        'ok_count': ok_count,
+        'nok_count': nok_count,
+        'stats_dias': dias,
+        'stats_mediciones': mediciones_por_dia,
+        'stats_oks': oks_por_dia,
         'inst_vencidos_count': len(inst_vencidos),
         'inst_alerta_count': len(inst_alerta),
         'total_vencidos_alerta': len(inst_vencidos) + len(inst_alerta)
@@ -1134,14 +1169,18 @@ def nueva_medicion_op(request):
                         h_values = history_dict.get(f"pc_{tol.planilla_id}_{tol.control_id}", [])
 
                     analyzer = SPCAnalyzer(h_values, nominal=tol.nominal, min_limit=min_limit, max_limit=max_limit)
-                    raw_alerts = analyzer.check_rules()
+                    nelson_violations = analyzer.check_nelson_rules()
                     
-                    # Enrichment: Add Control Name to alerts for transparency
-                    for alert in raw_alerts:
-                        # Prepend Control Name to message for absolute clarity
-                        # Using a cleaner separator instead of brackets that confuse users with numeric values
-                        alert['message'] = f"📍 {tol.control.nombre}: " + alert['message']
-                        spc_alerts.append(alert)
+                    # Last point index in history
+                    last_idx = len(h_values) - 1
+                    
+                    for v in nelson_violations:
+                        # Only show alerts that involve the current/last point to avoid noise
+                        if v['point'] == last_idx:
+                            spc_alerts.append({
+                                'message': f"📍 {tol.control.nombre}: {v['desc']}",
+                                'severity': v['severity']
+                            })
                 
                 if val_obj:
                     if tol.control.pnp:
@@ -1284,17 +1323,30 @@ def guardar_medicion_ajax(request):
                 val_obj.valor_pnp = valor
                 val_obj.valor_pieza = None
             else:
-                val_obj.valor_pnp = None
                 if valor and valor.strip():
                     try:
                         clean_valor = valor.replace(',', '.')
-                        val_obj.valor_pieza = float(clean_valor)
-                        logger.info(f"AJAX Save - Converted '{valor}' -> {val_obj.valor_pieza}")
+                        val_num = float(clean_valor)
+                        val_obj.valor_pieza = val_num
+                        
+                        # Calculate OK/NOK status for the dashboard
+                        min_l, max_l = tol.get_absolute_limits()
+                        if min_l is not None and max_l is not None:
+                            if min_l <= val_num <= max_l:
+                                val_obj.valor_pnp = 'OK'
+                            else:
+                                val_obj.valor_pnp = 'NOK'
+                        else:
+                            val_obj.valor_pnp = 'OK' # If no limits, assume OK if value exists
+                            
+                        logger.info(f"AJAX Save - Converted '{valor}' -> {val_obj.valor_pieza}, Status: {val_obj.valor_pnp}")
                     except Exception as conv_err:
                         logger.error(f"AJAX Save - Conversion failed: {conv_err}")
                         val_obj.valor_pieza = None
+                        val_obj.valor_pnp = 'NOK'
                 else:
                     val_obj.valor_pieza = None
+                    val_obj.valor_pnp = None
             
             val_obj.save()
             logger.info(f"AJAX Save - Saved: valor_pieza={val_obj.valor_pieza}")
@@ -1439,208 +1491,111 @@ def estadisticas_control(request, tolerancia_id):
             data_points.append(float(v.valor_pieza))
             labels.append(f"P{v.pieza}")
 
-    # Calculations
-    stats = {}
-    if len(data_points) > 1:
-        mean = statistics.mean(data_points)
-        try:
-            stdev = statistics.stdev(data_points)
-        except:
-            stdev = 0
-            
-        lsl, usl = tolerancia.get_absolute_limits()
-        nominal = float(tolerancia.nominal) if tolerancia.nominal is not None else mean
-        
-        # Batch Status Calculation (Corrected)
-        n_approved = 0
-        n_rejected = 0
-        for v in valores_query:
-            if tolerancia.control.pnp:
-                if v.valor_pnp == 'OK': n_approved += 1
-                elif v.valor_pnp == 'NOK': n_rejected += 1
-            else:
-                if v.valor_pieza is not None:
-                    try:
-                        vf = float(v.valor_pieza)
-                        is_ok = True
-                        if lsl is not None and vf < lsl: is_ok = False
-                        if usl is not None and vf > usl: is_ok = False
-                        
-                        if not is_ok: n_rejected += 1
-                        else: n_approved += 1
-                    except: pass
-
-        # Cp and Cpk
-        cp = None
-        cpk = None
-        
-        if stdev > 0:
-            # Cp requires both limits
-            if usl is not None and lsl is not None:
-                cp = (usl - lsl) / (6 * stdev)
-            
-            # Cpk can be calculated with one or both
-            cpk_u = (usl - mean) / (3 * stdev) if usl is not None else float('inf')
-            cpk_l = (mean - lsl) / (3 * stdev) if lsl is not None else float('inf')
-            cpk = min(cpk_u, cpk_l)
-            if cpk == float('inf'): cpk = None
-        
-        # Ranges for R chart
-        ranges = []
-        for i in range(1, len(data_points)):
-            ranges.append(abs(data_points[i] - data_points[i-1]))
-        r_mean = statistics.mean(ranges) if ranges else 0
-        
-        # Control Limits (R-Chart Moving Range n=2)
-        r_lsc = r_mean * 3.267
-        r_lic = 0 # D3 is 0 for n=2
-        
-        # Control Limits (X-bar chart) - Using individuals logic
-        lic = mean - (3 * stdev)
-        lsc = mean + (3 * stdev)
-        
-        def safe_round(val, digits=4):
-            if val is None: return None
-            try:
-                import math
-                if math.isinf(val) or math.isnan(val): return None
-                return round(float(val), digits)
-            except:
-                return None
-
-        stats = {
-            'n': len(data_points),
-            'mean': safe_round(mean),
-            'stdev': safe_round(stdev),
-            'max': safe_round(max(data_points)),
-            'min': safe_round(min(data_points)),
-            'range': safe_round(max(data_points) - min(data_points)),
-            'lsl': safe_round(lsl),
-            'usl': safe_round(usl),
-            'cp': safe_round(cp, 2),
-            'cpk': safe_round(cpk, 2),
-            'lic': safe_round(lic),
-            'lsc': safe_round(lsc),
-            'r_mean': safe_round(r_mean),
-            'r_lsc': safe_round(r_lsc),
-            'r_lic': safe_round(r_lic),
-            'nominal': safe_round(nominal),
-            'n_approved': n_approved,
-            'n_rejected': n_rejected,
-            'n_total': n_approved + n_rejected
-        }
-
-        # Classification Logic
-        def get_capability_status(value):
-            if value is None:
-                return None
-            if value < 1.0:
-                return {'text': 'INACEPTABLE', 'class': 'badge-soft-danger'}
-            elif value < 1.33:
-                return {'text': 'ACEPTABLE CON INSPECCIÓN RIGUROSA', 'class': 'badge-soft-warning'}
-            elif value < 2.0:
-                return {'text': 'ACEPTABLE', 'class': 'badge-soft-success'}
-            else:
-                return {'text': 'EXCELENTE', 'class': 'badge-soft-excellent'} # Or a distinctive green
-
-        stats['cp_info'] = get_capability_status(cp)
-        stats['cpk_info'] = get_capability_status(cpk)
-
-        # --- Alertas Inteligentes (Reglas de Control SPC) ---
-        alerts = []
-        if len(data_points) >= 2:
-            # Regla 1: Fuera de límites de control (±3σ)
-            out_points = []
-            for i, val in enumerate(data_points):
-                if (lic is not None and val < lic) or (lsc is not None and val > lsc):
-                    out_points.append(f"P{i+1}")
-            
-            if out_points:
-                alerts.append({
-                    'title': 'Inestabilidad: Fuera de Control',
-                    'desc': f'Los puntos {", ".join(out_points)} están fuera de los límites estadísticos (±3σ). El proceso no es predecible.',
-                    'type': 'danger',
-                    'icon': 'ri-alarm-warning-line'
-                })
-
-            # Regla 2: Rachas (7 puntos seguidos de una lado del promedio)
-            count_above = 0
-            count_below = 0
-            for val in data_points:
-                if val > mean: 
-                    count_above += 1
-                    count_below = 0
-                elif val < mean:
-                    count_below += 1
-                    count_above = 0
-                else:
-                    count_above = 0
-                    count_below = 0
-                
-                if count_above >= 7 or count_below >= 7:
-                    side = "ENCIMA" if count_above >= 7 else "DEBAJO"
-                    alerts.append({
-                        'title': 'Racha Detectada',
-                        'desc': f'7 o más puntos consecutivos se encuentran por {side} del promedio. Indica un posible desplazamiento del proceso.',
-                        'type': 'warning',
-                        'icon': 'ri-line-chart-line'
-                    })
-                    break
-
-            # Regla 3: Tendencias (6 puntos seguidos subiendo o bajando)
-            subiendo = 1
-            bajando = 1
-            for i in range(1, len(data_points)):
-                if data_points[i] > data_points[i-1]:
-                    subiendo += 1
-                    bajando = 1
-                elif data_points[i] < data_points[i-1]:
-                    bajando += 1
-                    subiendo = 1
-                else:
-                    subiendo = 1
-                    bajando = 1
-                
-                if subiendo >= 7 or bajando >= 7:
-                    trend = "ASCENDENTE" if subiendo >= 7 else "DESCENDENTE"
-                    alerts.append({
-                        'title': f'Tendencia {trend.capitalize()}',
-                        'desc': f'Se detectaron 7 puntos consecutivos en dirección {trend}. Posible desgaste de herramienta o desajuste progresivo.',
-                        'type': 'warning',
-                        'icon': 'ri-funds-line'
-                    })
-                    break
-
-            # Variabilidad (Zig-Zag o excesiva)
-            if len(data_points) >= 14:
-                zigzag = 0
-                for i in range(1, len(data_points)-1):
-                    if (data_points[i] > data_points[i-1] and data_points[i] > data_points[i+1]) or \
-                       (data_points[i] < data_points[i-1] and data_points[i] < data_points[i+1]):
-                        zigzag += 1
-                    else:
-                        zigzag = 0
-                    
-                    if zigzag >= 14:
-                        alerts.append({
-                            'title': 'Variabilidad Inestable',
-                            'desc': 'Oscilaciones continuas detectadas (14 puntos). El proceso alterna demasiado, revisar método de medición o fijación.',
-                            'type': 'info',
-                            'icon': 'ri-pulse-line'
-                        })
-                        break
-            
-            # Regla de Capacidad: Proceso No Capaz (CPK < 1.0)
-            if cpk is not None and cpk < 1.0:
-                alerts.append({
-                    'title': 'Crítico: Capacidad Insuficiente',
-                    'desc': f'El índice CPK ({round(cpk, 2)}) es inaceptable. La variabilidad de la máquina supera las tolerancias permitidas.',
-                    'type': 'danger',
-                    'icon': 'ri-error-warning-fill'
-                })
-        
-        stats['alerts'] = alerts
+    import statistics
+    from .utils_spc import SPCAnalyzer
     
+    # Pre-calculate limits
+    lsl, usl = tolerancia.get_absolute_limits()
+    
+    # Initialize Analyzer
+    analyzer = SPCAnalyzer(data_points, nominal=tolerancia.nominal, min_limit=lsl, max_limit=usl, subgroup_size=5)
+    
+    # Get Advanced X-R Data
+    xr_data = analyzer.get_xr_data()
+    nelson_violations = analyzer.check_nelson_rules()
+    cp, cpk = analyzer.get_capability_indices()
+
+    # Prepare stats for template
+    def safe_round(val, digits=4):
+        if val is None: return None
+        try:
+            import math
+            if math.isinf(val) or math.isnan(val): return None
+            return round(float(val), digits)
+        except: return None
+
+    # Classification Logic
+    def get_capability_status(value):
+        if value is None: return None
+        if value < 1.0: return {'text': 'INACEPTABLE', 'class': 'badge-soft-danger'}
+        elif value < 1.33: return {'text': 'BAJA CAPACIDAD', 'class': 'badge-soft-warning'}
+        elif value < 1.67: return {'text': 'CAPAZ', 'class': 'badge-soft-success'}
+        else: return {'text': 'EXCELENTE', 'class': 'badge-soft-excellent'}
+
+    # Batch Status Calculation (Aproved/Rejected pieces)
+    n_approved = 0
+    n_rejected = 0
+    for v in valores_query:
+        if tolerancia.control.pnp:
+            if v.valor_pnp == 'OK': n_approved += 1
+            elif v.valor_pnp == 'NOK': n_rejected += 1
+        else:
+            if v.valor_pieza is not None:
+                try:
+                    vf = float(v.valor_pieza)
+                    is_ok = (lsl is None or vf >= lsl) and (usl is None or vf <= usl)
+                    if not is_ok: n_rejected += 1
+                    else: n_approved += 1
+                except: pass
+
+    # Build advanced stats dictionary
+    stats = {
+        'n': len(data_points),
+        'mean': safe_round(analyzer.mean),
+        'stdev': safe_round(analyzer.std),
+        'min': safe_round(min(data_points)) if data_points else None,
+        'max': safe_round(max(data_points)) if data_points else None,
+        'range': safe_round(max(data_points) - min(data_points)) if data_points else None,
+        'lsl': safe_round(lsl),
+        'usl': safe_round(usl),
+        'cp': safe_round(cp, 2),
+        'cpk': safe_round(cpk, 2),
+        'cp_info': get_capability_status(cp),
+        'cpk_info': get_capability_status(cpk),
+        'nominal': safe_round(tolerancia.nominal),
+        'lic': safe_round(analyzer.mean - 3 * analyzer.std) if analyzer.mean and analyzer.std else None,
+        'lsc': safe_round(analyzer.mean + 3 * analyzer.std) if analyzer.mean and analyzer.std else None,
+        'n_approved': n_approved,
+        'n_rejected': n_rejected,
+        'n_total': n_approved + n_rejected
+    }
+
+    if xr_data:
+        stats.update({
+            'avg_range': safe_round(xr_data['avg_range']),
+            'ucl_x': safe_round(xr_data['ucl_x']),
+            'lcl_x': safe_round(xr_data['lcl_x']),
+            'ucl_r': safe_round(xr_data['ucl_r']),
+            'lcl_r': safe_round(xr_data['lcl_r']),
+            'num_subgroups': xr_data['num_subgroups'],
+            'x_bars': [safe_round(x) for x in xr_data['x_bars']],
+            'ranges': [safe_round(r) for r in xr_data['ranges']],
+        })
+
+    # Convert Nelson violations to template alerts
+    alerts = []
+    icon_map = {1: 'ri-error-warning-line', 2: 'ri-line-chart-line', 3: 'ri-funds-line', 4: 'ri-pulse-line'}
+    type_map = {1: 'danger', 2: 'warning', 3: 'warning', 4: 'info'}
+    
+    for v in nelson_violations:
+        alerts.append({
+            'title': v['title'],
+            'desc': v['desc'],
+            'type': type_map.get(v['rule'], 'secondary'),
+            'icon': icon_map.get(v['rule'], 'ri-information-line')
+        })
+    
+    # Capacidad alert
+    if cpk is not None and cpk < 1.0:
+        alerts.append({
+            'title': 'Capacidad Crítica',
+            'desc': f'Índice CPK ({round(cpk,2)}) fuera de norma. El proceso producirá desperdicio.',
+            'type': 'danger',
+            'icon': 'ri-close-circle-line'
+        })
+    
+    stats['alerts'] = alerts
+
     # Fetch siblings for navigation
     hermanos = Tolerancia.objects.filter(
         planilla__proyecto=tolerancia.planilla.proyecto,
@@ -1657,7 +1612,8 @@ def estadisticas_control(request, tolerancia_id):
         'stats_json': json.dumps(stats),
         'data_points_json': json.dumps(data_points),
         'labels_json': json.dumps(labels),
-        'titulo': f'SPC - {tolerancia.control.nombre}'
+        'titulo': f'SPC - {tolerancia.control.nombre}',
+        'is_xr_available': xr_data is not None
     }
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1667,12 +1623,13 @@ def estadisticas_control(request, tolerancia_id):
             'labels': labels,
             'control_nombre': tolerancia.control.nombre,
             'id': tolerancia.id,
+            'planilla_id': tolerancia.planilla.id,
+            'is_xr_available': xr_data is not None,
             'proceso_id': tolerancia.planilla.proceso.id,
             'proceso_nombre': tolerancia.planilla.proceso.nombre,
             'num_op': tolerancia.planilla.num_op,
             'proyecto': tolerancia.planilla.proyecto,
-            'cliente': tolerancia.planilla.cliente.nombre,
-            'is_pnp': tolerancia.control.pnp
+            'cliente': tolerancia.planilla.cliente.nombre
         })
 
     return render(request, 'mediciones/estadisticas_control.html', context)
@@ -2040,6 +1997,105 @@ def exportar_pdf(request, planilla_id):
     return response
 
 @csrf_exempt
+@login_required
+def exportar_pdf_pro(request, planilla_id):
+    """Generates an Advanced Quality Report with SPC charts."""
+    from .utils_pdf import generate_xbar_chart, generate_r_chart, generate_capability_chart
+    from .utils_spc import SPCAnalyzer
+    import math
+
+    planilla = get_object_or_404(PlanillaMedicion, id=planilla_id)
+    tolerancias = Tolerancia.objects.filter(planilla=planilla).select_related('control', 'instrumento').order_by('posicion')
+    
+    params_spc = []
+    
+    for tol in tolerancias:
+        if tol.control.pnp: continue
+        
+        # Get data
+        valores_query = ValorMedicion.objects.filter(planilla=planilla, control=tol.control).order_by('pieza')
+        data_points = [float(v.valor_pieza) for v in valores_query if v.valor_pieza is not None]
+        labels = [f"P{v.pieza}" for v in valores_query if v.valor_pieza is not None]
+        
+        if not data_points: continue
+        
+        lsl, usl = tol.get_absolute_limits()
+        analyzer = SPCAnalyzer(data_points, nominal=tol.nominal, min_limit=lsl, max_limit=usl, subgroup_size=5)
+        xr_data = analyzer.get_xr_data()
+        nelson_violations = analyzer.check_nelson_rules()
+        cp, cpk = analyzer.get_capability_indices()
+        
+        # Helper for capability status
+        def get_capability_status(value):
+            if value is None: return None
+            if value < 1.0: return {'text': 'INACEPTABLE', 'class': 'badge-soft-danger'}
+            elif value < 1.33: return {'text': 'BAJA CAPACIDAD', 'class': 'badge-soft-warning'}
+            elif value < 1.67: return {'text': 'CAPAZ', 'class': 'badge-soft-success'}
+            else: return {'text': 'EXCELENTE', 'class': 'badge-soft-excellent'}
+
+        # Prepare stats
+        def safe_r(val):
+            if val is None or math.isinf(val) or math.isnan(val): return None
+            return round(val, 4)
+
+        stats = {
+            'n': len(data_points),
+            'mean': safe_r(analyzer.mean),
+            'stdev': safe_r(analyzer.std),
+            'range': safe_r(max(data_points) - min(data_points)),
+            'cp': safe_r(cp),
+            'cpk': safe_r(cpk),
+            'cpk_info': get_capability_status(cpk),
+            'lic': safe_r(analyzer.mean - 3 * analyzer.std) if analyzer.mean and analyzer.std else None,
+            'lsc': safe_r(analyzer.mean + 3 * analyzer.std) if analyzer.mean and analyzer.std else None,
+        }
+        
+        # Convert Nelson violations to alerts
+        alerts = []
+        icon_map = {1: 'ri-error-warning-line', 2: 'ri-line-chart-line', 3: 'ri-funds-line', 4: 'ri-pulse-line'}
+        type_map = {1: 'danger', 2: 'warning', 3: 'warning', 4: 'info'}
+        for v in nelson_violations:
+            alerts.append({'title': v['title'], 'desc': v['desc'], 'type': type_map.get(v['rule'], 'secondary')})
+        
+        if cpk is not None and cpk < 1.0:
+            alerts.append({'title': 'Capacidad Crítica', 'desc': f'CPK ({round(cpk,2)}) fuera de norma.', 'type': 'danger'})
+        
+        stats['alerts'] = alerts
+
+        # Generate unique graphs for this param
+        # We need to pass labels here to ensure alignment
+        charts = {
+            'xbar': generate_xbar_chart(data_points, xr_data, labels),
+            'range': generate_r_chart(data_points, xr_data, labels),
+            'gauss': generate_capability_chart(data_points, tol.nominal, lsl, usl)
+        }
+        
+        params_spc.append({
+            'nombre': tol.control.nombre,
+            'nominal': tol.nominal,
+            'lsl': lsl,
+            'usl': usl,
+            'stats': stats,
+            'charts': charts
+        })
+
+    context = {
+        'planilla': planilla,
+        'params_spc': params_spc,
+        'fecha_emision': timezone.now().strftime('%d/%m/%Y'),
+    }
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Reporte_PRO_OP_{planilla.num_op}.pdf"'
+    
+    template = get_template('mediciones/reporte_calidad_pro_pdf.html')
+    html = template.render(context)
+    
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Error al generar el reporte PRO', status=500)
+    return response
+
 @login_required
 def guardar_observaciones_ajax(request):
     if request.method == 'POST':
@@ -2506,6 +2562,16 @@ def importar_datos_ocr(request):
                                 if val_numeric_str:
                                     val_float = float(val_numeric_str)
                                     print(f"[OCR IMPORT DEBUG]   Pieza {pieza_num}: Float={val_float} (from '{val_raw}')")
+                                    
+                                    # Calculate status for the dashboard
+                                    min_l, max_l = tolerancia.get_absolute_limits()
+                                    if min_l is not None and max_l is not None:
+                                        if min_l <= val_float <= max_l:
+                                            val_pnp = 'OK'
+                                        else:
+                                            val_pnp = 'NOK'
+                                    else:
+                                        val_pnp = 'OK'
                                 else:
                                     print(f"[OCR IMPORT DEBUG]   Pieza {pieza_num}: Empty after cleaning '{val_raw}'")
                                     continue

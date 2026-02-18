@@ -1,0 +1,253 @@
+{% extends 'mediciones/base.html' %}
+
+{% block title %}Dashboard Ejecutivo{% endblock %}
+{% block header_title %}Dashboard Operativo{% endblock %}
+
+{% block content %}
+<!-- EXECUTIVE DASHBOARD HEADER -->
+<div class="dashboard-header mb-4 animate__animated animate__fadeIn">
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <h1 style="font-size: 1.8rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.04em;">Dashboard Operativo</h1>
+            <p style="color: var(--text-secondary); margin: 0; font-size: 0.9rem;">Resumen de calidad y producción en tiempo real</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'asignar_op' %}" class="btn btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 14px; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);">
+                <i class="ri-add-line" style="font-size: 1.2rem;"></i> Nueva OP
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- KPI CARDS GRID -->
+<div class="row g-4 mb-4">
+    <!-- Total OPs -->
+    <div class="col-md-3">
+        <div class="kpi-card animate__animated animate__fadeInUp" style="--delay: 0.1s;">
+            <div class="kpi-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
+                <i class="ri-rocket-2-line"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-label">Total OPs</span>
+                <h3 class="kpi-value">{{ total_ops }}</h3>
+                <div class="kpi-subtext">Operaciones registradas</div>
+            </div>
+        </div>
+    </div>
+    <!-- Mediciones 30d -->
+    <div class="col-md-3">
+        <div class="kpi-card animate__animated animate__fadeInUp" style="--delay: 0.2s;">
+            <div class="kpi-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">
+                <i class="ri-focus-3-line"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-label">Mediciones (30d)</span>
+                <h3 class="kpi-value">{{ mediciones_recientes }}</h3>
+                <div class="kpi-subtext">Puntos controlados</div>
+            </div>
+        </div>
+    </div>
+    <!-- Tasa de Calidad -->
+    <div class="col-md-3">
+        <div class="kpi-card animate__animated animate__fadeInUp" style="--delay: 0.3s;">
+            <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                <i class="ri-checkbox-circle-line"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-label">Tasa de Aprobación</span>
+                <h3 class="kpi-value">
+                    {% if mediciones_recientes > 0 %}
+                        {% widthratio ok_count mediciones_recientes 100 %}%
+                    {% else %}
+                        100%
+                    {% endif %}
+                </h3>
+                <div class="kpi-subtext">Cumplimiento global</div>
+            </div>
+        </div>
+    </div>
+    <!-- Alertas -->
+    <div class="col-md-3">
+        <div class="kpi-card animate__animated animate__fadeInUp" style="{% if total_vencidos_alerta > 0 %}border: 1px solid rgba(239, 68, 68, 0.3);{% endif %} --delay: 0.4s;">
+            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <i class="ri-alarm-warning-line"></i>
+            </div>
+            <div class="kpi-data">
+                <span class="kpi-label">Alertas Instrumentos</span>
+                <h3 class="kpi-value {% if total_vencidos_alerta > 0 %}text-danger{% endif %}">{{ total_vencidos_alerta }}</h3>
+                <div class="kpi-subtext">Vencimientos próximos</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CHARTS ROW -->
+<div class="row g-4 mb-4">
+    <div class="col-md-8">
+        <div class="card h-100 chart-card animate__animated animate__fadeInLeft" style="--delay: 0.5s;">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0;">Tendencia de Actividad</h3>
+                <span class="badge" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">Últimos 7 días</span>
+            </div>
+            <div id="trendChart" style="min-height: 300px;"></div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 chart-card animate__animated animate__fadeInRight" style="--delay: 0.6s;">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0; margin-bottom: 2rem;">Estado de Calidad</h3>
+            <div id="statusChart" style="min-height: 300px; display: flex; align-items: center; justify-content: center;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TABLE SECTION -->
+<div class="card animate__animated animate__fadeInUp" style="--delay: 0.7s;">
+    <div class="d-flex justify-content-between align-items-center mb-4" style="margin-bottom: 1.5rem;">
+        <div class="d-flex align-items-center gap-2">
+             <div style="width: 8px; height: 24px; background: var(--primary); border-radius: 4px;"></div>
+             <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0;">Mediciones en Curso</h3>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-light text-dark border" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; border-radius: 10px;">{{ planillas.count }} activas</span>
+        </div>
+    </div>
+    <div style="overflow-x: auto;">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>OP / Proyecto</th>
+                    <th>Proceso</th>
+                    <th>Cliente</th>
+                    <th>Artículo</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in planillas %}
+                <tr>
+                    <td style="font-weight: 600;">
+                        {% if p.num_op %}<span style="color: var(--primary);">{{ p.num_op }}</span> / {% endif %}{{ p.proyecto|default:"-" }}
+                    </td>
+                    <td>
+                        <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.2);">
+                            {{ p.proceso.nombre }}
+                        </span>
+                    </td>
+                    <td>{{ p.cliente.nombre|default:"-" }}</td>
+                    <td>{{ p.articulo.nombre|default:"-" }}</td>
+                    <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ p.fecha_creacion|date:"d/m/y H:i" }}</td>
+                    <td style="text-align: right;">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 10px;" title="Medir">
+                                <i class="ri-eye-line"></i> Abrir
+                            </a>
+                            {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                            <a href="{% url 'configurar_estructura' %}?op={{ p.num_op }}&proy={{ p.proyecto }}" class="btn btn-light border" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; border-radius: 10px; color: var(--primary);" title="Editar Estructura">
+                                <i class="ri-edit-line"></i>
+                            </a>
+                            <button onclick="eliminarOP('{{ p.id }}', '{{ p.num_op }}')" class="btn btn-light border" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; border-radius: 10px; color: #ef4444;" title="Eliminar OP">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align: center; padding: 4rem; color: var(--text-muted);">
+                    <i class="ri-inbox-line" style="font-size: 2rem; display: block; margin-bottom: 1rem; opacity: 0.2;"></i>
+                    No hay mediciones activas en este momento.
+                </td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // TREND CHART
+        const trendOptions = {
+            series: [{
+                name: 'Mediciones Totales',
+                data: {{ stats_mediciones|safe }}
+            }, {
+                name: 'Piezas OK',
+                data: {{ stats_oks|safe }}
+            }],
+            chart: {
+                height: 320,
+                type: 'area',
+                toolbar: { show: false },
+                zoom: { enabled: false },
+                background: 'transparent'
+            },
+            colors: ['#6366f1', '#10b981'],
+            dataLabels: { enabled: false },
+            stroke: { curve: 'smooth', width: 3 },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.1,
+                    stops: [0, 90, 100]
+                }
+            },
+            xaxis: {
+                categories: {{ stats_dias|safe }},
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+                labels: { style: { colors: '#94a3b8' } }
+            },
+            yaxis: {
+                labels: { style: { colors: '#94a3b8' } }
+            },
+            legend: { position: 'top', horizontalAlign: 'right', labels: { colors: '#94a3b8' } },
+            grid: {
+                borderColor: 'rgba(255,255,255,0.05)',
+                padding: { top: 0, right: 0, bottom: 0, left: 0 }
+            }
+        };
+        new ApexCharts(document.querySelector("#trendChart"), trendOptions).render();
+
+        // STATUS CHART
+        const statusOptions = {
+            series: [{{ ok_count|default:0 }}, {{ nok_count|default:0 }}],
+            chart: {
+                height: 300,
+                type: 'donut',
+            },
+            labels: ['OK', 'NOK'],
+            colors: ['#10b981', '#ef4444'],
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '75%',
+                        labels: {
+                            show: true,
+                            total: {
+                                show: true,
+                                label: 'TOTAL',
+                                color: '#94a3b8',
+                                formatter: function (w) {
+                                    return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                }
+                            },
+                            value: {
+                                color: '#f8fafc'
+                            }
+                        }
+                    }
+                }
+            },
+            legend: { position: 'bottom', labels: { colors: '#94a3b8' } },
+            stroke: { show: false }
+        };
+        new ApexCharts(document.querySelector("#statusChart"), statusOptions).render();
+    });
+</script>
+{% endblock %}

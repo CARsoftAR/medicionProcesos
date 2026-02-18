@@ -18,8 +18,12 @@
             </div>
         </div>
         <div class="d-flex gap-2 align-items-center">
-            <button id="topReportBtn" onclick="showDiagnosticReport()" class="btn btn-danger animate__animated animate__pulse animate__infinite d-flex align-items-center gap-2 px-3 shadow-danger" style="{% if not stats.alerts %}display: none !important;{% endif %} border-radius: 12px; font-weight: 800; font-size: 0.8rem; height: 42px; border: none; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); letter-spacing: 0.02em;">
-                <i class="ri-pulse-line"></i> DIAGNÓSTICO SPC
+            <a id="btnReportePro" href="/mediciones/{{ tolerancia.planilla.id }}/exportar-pdf-pro/" class="btn shadow-danger d-flex align-items-center gap-2 px-3" style="border-radius: 12px; font-weight: 800; font-size: 0.8rem; height: 42px; border: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-decoration: none; letter-spacing: 0.02em;">
+                <i class="ri-printer-line"></i> REPORTE PRO
+            </a>
+            
+            <button id="topAlertBtn" onclick="showDiagnosticReport()" class="btn btn-danger animate__animated animate__pulse animate__infinite d-flex align-items-center justify-content-center shadow-danger" style="{% if not stats.alerts %}display: none !important;{% endif %} width: 42px; height: 42px; border-radius: 12px; border: none; background: #ef4444;">
+                <i class="ri-error-warning-fill" style="font-size: 1.2rem;"></i>
             </button>
             
             <button onclick="toggleFullScreen()" class="btn shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: var(--bg-card, #161c2d);" title="Pantalla Completa">
@@ -46,32 +50,56 @@
                 </div>
                 <div class="config-card-body p-0">
                     <table class="table table-sm mb-0 stats-table-dark">
-                        <tr><td>Media (X̄)</td><td class="text-end fw-bold" id="stat-mean">{{ stats.mean|floatformat:3 }}</td></tr>
-                        <tr><td>L.I.C.</td><td class="text-end fw-bold" id="stat-lic">{{ stats.lic|floatformat:3 }}</td></tr>
-                        <tr><td>L.S.C.</td><td class="text-end fw-bold" id="stat-lsc">{{ stats.lsc|floatformat:3 }}</td></tr>
-                        <tr><td>Rango (R)</td><td class="text-end fw-bold" id="stat-range">{{ stats.range|floatformat:3 }}</td></tr>
-                        <tr><td>Lote (n)</td><td class="text-end fw-bold" id="stat-n">{{ stats.n }}</td></tr>
-                        <tr><td>Desv. Est. (σ)</td><td class="text-end fw-bold" id="stat-stdev">{{ stats.stdev|floatformat:3 }}</td></tr>
-                        <tr class="table-highlight"><td>L.S.E. (TOL+)</td><td class="text-end fw-bold text-danger" id="stat-usl">{{ stats.usl|floatformat:3|default:"N/A" }}</td></tr>
-                        <tr class="table-highlight"><td>L.I.E. (TOL-)</td><td class="text-end fw-bold text-danger" id="stat-lsl">{{ stats.lsl|floatformat:3|default:"N/A" }}</td></tr>
                         <tr>
-                            <td>Índice CP</td>
+                            <td>Media (X̄) <span class="btn-info-help" onclick="showHelp('media')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
+                            <td class="text-end fw-bold" id="stat-mean">{{ stats.mean|floatformat:3 }}</td>
+                        </tr>
+                        <tr>
+                            <td>L.I.C. <span class="btn-info-help" onclick="showHelp('lic')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
+                            <td class="text-end fw-bold" id="stat-lic">{{ stats.lic|floatformat:3 }}</td>
+                        </tr>
+                        <tr>
+                            <td>L.S.C. <span class="btn-info-help" onclick="showHelp('lsc')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
+                            <td class="text-end fw-bold" id="stat-lsc">{{ stats.lsc|floatformat:3 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Rango (R) <span class="btn-info-help" onclick="showHelp('rango')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
+                            <td class="text-end fw-bold" id="stat-range">{{ stats.range|floatformat:3 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Lote (n) <span class="btn-info-help" onclick="showHelp('n')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
+                            <td class="text-end fw-bold" id="stat-n">{{ stats.n }}</td>
+                        </tr>
+                        <tr>
+                            <td>Desv. Est. (σ) <span class="btn-info-help" onclick="showHelp('sigma')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
+                            <td class="text-end fw-bold" id="stat-stdev">{{ stats.stdev|floatformat:3 }}</td>
+                        </tr>
+                        <tr class="table-highlight">
+                            <td>L.S.E. (TOL+) <span class="btn-info-help" onclick="showHelp('lse')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
+                            <td class="text-end fw-bold text-danger" id="stat-usl">{{ stats.usl|floatformat:3|default:"N/A" }}</td>
+                        </tr>
+                        <tr class="table-highlight">
+                            <td>L.I.E. (TOL-) <span class="btn-info-help" onclick="showHelp('lie')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
+                            <td class="text-end fw-bold text-danger" id="stat-lsl">{{ stats.lsl|floatformat:3|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <td>Índice CP <span class="btn-info-help" onclick="showHelp('cp')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
                             <td class="text-end">
                                 <div class="d-flex justify-content-end align-items-center gap-2" id="stat-cp-container">
-                                    <span class="fw-bold" id="stat-cp">{{ stats.cp|default:"N/D" }}</span>
-                                    {% if stats.cp_info and stats.cp %}
-                                    <span class="badge {{ stats.cp_info.class }}" style="font-size: 0.7rem;">{{ stats.cp_info.text }}</span>
+                                    <span class="fw-bold">{{ stats.cp|default:"N/D" }}</span>
+                                    {% if stats.cp and stats.cp_info %}
+                                        <span class="badge {{ stats.cp_info.class }}" style="font-size: 0.7rem;">{{ stats.cp_info.text }}</span>
                                     {% endif %}
                                 </div>
                             </td>
                         </tr>
                         <tr>
-                            <td>Índice CPK</td>
+                            <td>Índice CPK <span class="btn-info-help" onclick="showHelp('cpk')" title="Ver explicación"><i class="ri-information-line"></i></span></td>
                             <td class="text-end">
                                 <div class="d-flex justify-content-end align-items-center gap-2" id="stat-cpk-container">
-                                    <span class="fw-bold" id="stat-cpk">{{ stats.cpk|default:"N/D" }}</span>
-                                    {% if stats.cpk_info and stats.cpk %}
-                                    <span class="badge {{ stats.cpk_info.class }}" style="font-size: 0.7rem;">{{ stats.cpk_info.text }}</span>
+                                    <span class="fw-bold">{{ stats.cpk|default:"N/D" }}</span>
+                                    {% if stats.cpk and stats.cpk_info %}
+                                        <span class="badge {{ stats.cpk_info.class }}" style="font-size: 0.7rem;">{{ stats.cpk_info.text }}</span>
                                     {% endif %}
                                 </div>
                             </td>
@@ -396,6 +424,35 @@
         transform: translateY(-3px);
         box-shadow: 0 15px 30px -5px rgba(37, 99, 235, 0.5) !important;
     }
+
+    /* Help Button Styling */
+    .btn-info-help {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        color: #94a3b8;
+        font-size: 0.7rem;
+        cursor: pointer;
+        margin-left: 6px;
+        transition: all 0.2s;
+        vertical-align: middle;
+    }
+    .btn-info-help:hover {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+        transform: scale(1.1);
+    }
+    .stats-table-dark td {
+        vertical-align: middle;
+        padding-top: 0.6rem !important;
+        padding-bottom: 0.6rem !important;
+    }
 </style>
 
 <!-- Chart.js -->
@@ -414,86 +471,123 @@
 
     // --- Data Preparation Helpers ---
     function getTrendConfig(isThumb = false) {
+        const useSubgroups = DATA.stats.x_bars && DATA.stats.x_bars.length > 0;
+        const subgroupSize = 5; // Default from view
+
+        const datasets = [];
+
+        // 1. Raw Individual Measurements (Always show these as dots)
+        datasets.push({
+            label: 'Valores Obtenidos',
+            data: DATA.points,
+            borderColor: 'rgba(148, 163, 184, 0.4)', // Slate tenue
+            backgroundColor: 'rgba(148, 163, 184, 0.2)',
+            borderWidth: 1.5,
+            pointRadius: isThumb ? 0 : 4,
+            pointBackgroundColor: 'rgba(148, 163, 184, 0.6)',
+            fill: false,
+            tension: 0.1,
+            order: 5, // Back
+            showLine: true // Always show line to see chronological sequence
+        });
+
+        // 2. Subgroup Means (X-Bar Line) - Overlaid
+        if (useSubgroups && !isThumb) {
+            // Map subgroup means to positions (at the end of each subgroup)
+            const xBarData = [];
+            for (let i = 0; i < DATA.stats.x_bars.length; i++) {
+                // Place the average point at the position of the last piece of the subgroup
+                const pos = ((i + 1) * subgroupSize) - 1;
+                xBarData.push({ x: DATA.labels[pos], y: DATA.stats.x_bars[i] });
+            }
+
+            datasets.push({
+                label: 'Promedio Subgrupo (X̄)',
+                data: xBarData,
+                borderColor: '#00d4ff', 
+                backgroundColor: 'rgba(0, 212, 255, 0.1)',
+                borderWidth: 3,
+                pointRadius: 6,
+                pointBackgroundColor: '#00d4ff',
+                pointBorderColor: '#fff',
+                tension: 0.2,
+                order: 1 // Front
+            });
+        }
+
+        // 3. Reference Lines (Limits)
+        if (!isThumb) {
+            if (typeof DATA.stats.mean === 'number') {
+                datasets.push({
+                    label: 'Media Global (X̿)',
+                    data: DATA.labels.map(() => DATA.stats.mean),
+                    borderColor: '#00ff88',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    order: 2
+                });
+            }
+            if (typeof DATA.stats.ucl_x === 'number') {
+                datasets.push({
+                    label: 'Control (UCL)',
+                    data: DATA.labels.map(() => DATA.stats.ucl_x),
+                    borderColor: '#ff4d6a',
+                    borderWidth: 2,
+                    borderDash: [4, 4],
+                    pointRadius: 0,
+                    order: 3
+                });
+            }
+            if (typeof DATA.stats.lcl_x === 'number') {
+                datasets.push({
+                    label: 'Control (LCL)',
+                    data: DATA.labels.map(() => DATA.stats.lcl_x),
+                    borderColor: '#ff4d6a',
+                    borderWidth: 2,
+                    borderDash: [4, 4],
+                    pointRadius: 0,
+                    order: 3
+                });
+            }
+            // Tolerance Limits (Only show if not cluttering)
+            if (typeof DATA.stats.usl === 'number') {
+                datasets.push({
+                    label: 'Tol. (LSE)',
+                    data: DATA.labels.map(() => DATA.stats.usl),
+                    borderColor: '#ffcc00',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    order: 4
+                });
+            }
+            if (typeof DATA.stats.lsl === 'number') {
+                datasets.push({
+                    label: 'Tol. (LIE)',
+                    data: DATA.labels.map(() => DATA.stats.lsl),
+                    borderColor: '#ffcc00',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    order: 4
+                });
+            }
+        }
+
         return {
             type: 'line',
             data: {
-                labels: DATA.labels,
-                datasets: [
-                    {
-                        label: 'Mediciones',
-                        data: DATA.points,
-                        borderColor: '#00d4ff', // Cyan neón
-                        backgroundColor: 'rgba(0, 212, 255, 0.15)',
-                        borderWidth: isThumb ? 2 : 3,
-                        pointRadius: isThumb ? 0 : 5,
-                        pointBackgroundColor: '#00d4ff',
-                        pointBorderColor: '#fff',
-                        tension: 0,
-                        order: 1
-                    },
-                    // --- Reference Lines (Only for Main Chart) ---
-                    (!isThumb && typeof DATA.stats.mean === 'number') ? {
-                        label: 'Media (X̄)',
-                        data: DATA.labels.map(() => DATA.stats.mean),
-                        borderColor: '#00ff88', // Verde neón
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                        pointRadius: 0,
-                        order: 2
-                    } : null,
-                    (!isThumb && typeof DATA.stats.lsc === 'number') ? {
-                        label: 'Límites Control (LSC)',
-                        data: DATA.labels.map(() => DATA.stats.lsc),
-                        borderColor: '#ff4d6a', // Rosa neón
-                        borderWidth: 2,
-                        borderDash: [4, 4],
-                        pointRadius: 0,
-                        order: 3
-                    } : null,
-                    (!isThumb && typeof DATA.stats.lic === 'number') ? {
-                        label: 'Límites Control (LIC)',
-                        data: DATA.labels.map(() => DATA.stats.lic),
-                        borderColor: '#ff4d6a', // Rosa neón
-                        borderWidth: 2,
-                        borderDash: [4, 4],
-                        pointRadius: 0,
-                        order: 3
-                    } : null,
-                    (!isThumb && typeof DATA.stats.usl === 'number') ? {
-                        label: 'Límites Tol. (LSE)',
-                        data: DATA.labels.map(() => DATA.stats.usl),
-                        borderColor: '#ffcc00', // Amarillo neón
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        order: 4
-                    } : null,
-                    (!isThumb && typeof DATA.stats.lsl === 'number') ? {
-                        label: 'Límites Tol. (LIE)',
-                        data: DATA.labels.map(() => DATA.stats.lsl),
-                        borderColor: '#ffcc00', // Amarillo neón
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        order: 4
-                    } : null
-                ].filter(Boolean)
+                labels: DATA.labels, // Always use P1, P2...
+                datasets: datasets.filter(Boolean)
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
+                interaction: { mode: 'index', intersect: false },
                 plugins: { 
                     legend: { 
                         display: !isThumb,
                         position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            boxWidth: 8,
-                            color: '#1e293b',
-                            padding: 20
-                        }
+                        labels: { usePointStyle: true, boxWidth: 8, color: '#94a3b8', padding: 20 }
                     }, 
                     tooltip: { enabled: !isThumb } 
                 },
@@ -501,12 +595,12 @@
                     x: { 
                         display: !isThumb, 
                         grid: { display: false },
-                        ticks: { color: '#475569' }
+                        ticks: { color: '#94a3b8' }
                     },
                     y: { 
                         display: !isThumb,
-                        grid: { color: 'rgba(0,0,0,0.05)' },
-                        ticks: { color: '#475569' }
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8' }
                     }
                 }
             }
@@ -514,71 +608,107 @@
     }
 
     function getRangeConfig(isThumb = false) {
-        const ranges = DATA.points.map((v, i) => i === 0 ? null : Math.abs(v - DATA.points[i-1]));
+        const useSubgroups = DATA.stats.ranges && DATA.stats.ranges.length > 0;
+        const subgroupSize = 5; 
+
+        const datasets = [];
+
+        // 1. Individual Moving Range (mR)
+        // Only show as "secondary" grey line if we HAVE subgroups
+        if (useSubgroups && !isThumb) {
+            const mRData = DATA.points.map((v, i) => i === 0 ? null : Math.abs(v - DATA.points[i-1]));
+            datasets.push({
+                label: 'Variación Individual (mR)',
+                data: mRData,
+                borderColor: 'rgba(148, 163, 184, 0.4)',
+                backgroundColor: 'rgba(148, 163, 184, 0.2)',
+                borderWidth: 1.5,
+                pointRadius: isThumb ? 0 : 4,
+                pointBackgroundColor: 'rgba(148, 163, 184, 0.6)',
+                fill: false,
+                tension: 0.1,
+                order: 5,
+                showLine: true
+            });
+        }
+
+        // 2. Main Range Data (Subgroup R or Individual mR if no subgroups)
+        let mainData;
+        if (useSubgroups && !isThumb) {
+            mainData = [];
+            for (let i = 0; i < DATA.stats.ranges.length; i++) {
+                const pos = ((i + 1) * subgroupSize) - 1;
+                mainData.push({ x: DATA.labels[pos], y: DATA.stats.ranges[i] });
+            }
+        } else {
+            mainData = DATA.points.map((v, i) => i === 0 ? null : Math.abs(v - DATA.points[i-1]));
+        }
+
+        datasets.push({
+            label: useSubgroups ? 'Rango Subgrupo (R)' : 'Rango Móvil',
+            data: mainData,
+            borderColor: '#a855f7', 
+            backgroundColor: 'rgba(168, 85, 247, 0.15)',
+            borderWidth: isThumb ? 2 : 3,
+            pointRadius: isThumb ? 0 : (useSubgroups ? 6 : 4),
+            pointBackgroundColor: '#a855f7',
+            pointBorderColor: '#fff',
+            tension: 0.1,
+            order: 1
+        });
+
+        // 3. Reference Lines
+        if (!isThumb) {
+            if (typeof DATA.stats.avg_range === 'number') {
+                datasets.push({
+                    label: 'Rango Medio (R̄)',
+                    data: DATA.labels.map(() => DATA.stats.avg_range),
+                    borderColor: '#00ff88',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                    order: 2
+                });
+            }
+            if (typeof DATA.stats.ucl_r === 'number') {
+                datasets.push({
+                    label: 'Control (UCL)',
+                    data: DATA.labels.map(() => DATA.stats.ucl_r),
+                    borderColor: '#ff4d6a',
+                    borderWidth: 2,
+                    borderDash: [4, 4],
+                    pointRadius: 0,
+                    order: 3
+                });
+            }
+            if (typeof DATA.stats.lcl_r === 'number') {
+                datasets.push({
+                    label: 'Control (LCL)',
+                    data: DATA.labels.map(() => DATA.stats.lcl_r),
+                    borderColor: '#ff4d6a',
+                    borderWidth: 2,
+                    borderDash: [4, 4],
+                    pointRadius: 0,
+                    order: 3
+                });
+            }
+        }
+
         return {
             type: 'line',
             data: {
                 labels: DATA.labels,
-                datasets: [
-                    {
-                        label: 'Rango Móvil',
-                        data: ranges,
-                        borderColor: '#a855f7', // Violeta neón
-                        backgroundColor: 'rgba(168, 85, 247, 0.15)',
-                        borderWidth: isThumb ? 2 : 3,
-                        pointRadius: isThumb ? 0 : 4,
-                        pointBackgroundColor: '#a855f7',
-                        pointBorderColor: '#fff',
-                        tension: 0,
-                        order: 1
-                    },
-                    // --- Reference Lines (Only for Main Chart) ---
-                    (!isThumb && typeof DATA.stats.r_mean === 'number') ? {
-                        label: 'Rango Medio (R̄)',
-                        data: DATA.labels.map(() => DATA.stats.r_mean),
-                        borderColor: '#00ff88', // Verde neón
-                        borderWidth: 2,
-                        borderDash: [5, 5],
-                        pointRadius: 0,
-                        order: 2
-                    } : null,
-                    (!isThumb && typeof DATA.stats.r_lsc === 'number') ? {
-                        label: 'Límites Control (LSC)',
-                        data: DATA.labels.map(() => DATA.stats.r_lsc),
-                        borderColor: '#ff4d6a', // Rosa neón
-                        borderWidth: 2,
-                        borderDash: [4, 4],
-                        pointRadius: 0,
-                        order: 3
-                    } : null,
-                    (!isThumb && typeof DATA.stats.r_lic === 'number') ? { // Check undefined/null specifically as it might be 0
-                        label: 'Límites Control (LIC)',
-                        data: DATA.labels.map(() => DATA.stats.r_lic),
-                        borderColor: '#ff4d6a', // Rosa neón
-                        borderWidth: 2,
-                        borderDash: [4, 4],
-                        pointRadius: 0,
-                        order: 3
-                    } : null
-                ].filter(Boolean)
+                datasets: datasets.filter(Boolean)
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false,
-                },
+                interaction: { mode: 'index', intersect: false },
                 plugins: { 
                     legend: { 
                         display: !isThumb,
                         position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            boxWidth: 8,
-                            color: '#1e293b',
-                            padding: 20
-                        }
+                        labels: { usePointStyle: true, boxWidth: 8, color: '#94a3b8', padding: 20 }
                     },
                     tooltip: { enabled: !isThumb } 
                 },
@@ -586,13 +716,13 @@
                     x: { 
                         display: !isThumb, 
                         grid: { display: false },
-                        ticks: { color: '#475569' }
+                        ticks: { color: '#94a3b8' }
                     },
                     y: { 
                         display: !isThumb, 
                         beginAtZero: true,
-                        grid: { color: 'rgba(0,0,0,0.05)' },
-                        ticks: { color: '#475569' }
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        ticks: { color: '#94a3b8' }
                     }
                 }
             }
@@ -961,13 +1091,14 @@
             document.getElementById('controlTitleHeader').innerText = `SEGUIMIENTO DE PARÁMETROS: ${data.control_nombre}`;
             document.getElementById('controlSubHeader').innerText = `Proyecto: ${data.proyecto} | OP: ${data.num_op} | Proceso: ${data.proceso_nombre} | Cliente: ${data.cliente}`;
             document.getElementById('btnVolver').href = `/mediciones/nueva/?proy=${data.proyecto}&op=${data.num_op}&proc=${data.proceso_id}`;
+            document.getElementById('btnReportePro').href = `/mediciones/${data.planilla_id}/exportar-pdf-pro/`;
             
-            // Top Report Button Visibility
-            const topReportBtn = document.getElementById('topReportBtn');
+            // Top Alert Button Visibility (replaces the old Top Report Btn name)
+            const topAlertBtn = document.getElementById('topAlertBtn');
             if (data.stats.alerts.length > 0) {
-                topReportBtn.style.setProperty('display', 'flex', 'important');
+                topAlertBtn.style.setProperty('display', 'flex', 'important');
             } else {
-                topReportBtn.style.setProperty('display', 'none', 'important');
+                topAlertBtn.style.setProperty('display', 'none', 'important');
             }
 
             // 3. Update Stats Table
@@ -1006,13 +1137,18 @@
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             ${data.stats.alerts.length > 0 ? `
-                                <button onclick="showDiagnosticReport()" class="btn btn-sm btn-danger d-flex align-items-center gap-1 shadow-danger" style="font-weight: 700; border-radius: 8px; font-size: 0.7rem; padding: 0.4rem 0.8rem;">
+                                <a href="/mediciones/${data.planilla_id}/exportar-pdf-pro/" class="btn btn-sm btn-danger d-flex align-items-center gap-1 shadow-danger" style="font-weight: 700; border-radius: 8px; font-size: 0.7rem; padding: 0.4rem 0.8rem; text-decoration: none;">
                                     <i class="ri-article-line"></i> GENERAR INFORME DETALLADO
-                                </button>
+                                </a>
                                 <span class="badge" style="font-size: 0.7rem; font-weight: 700; background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">${data.stats.alerts.length} ANOMALÍAS DETECTADAS</span>
                             ` : `
-                                <i class="ri-checkbox-circle-fill text-success"></i>
-                                <span class="badge" style="font-size: 0.7rem; font-weight: 700; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">PROCESO ESTABLE</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <a href="/mediciones/${data.planilla_id}/exportar-pdf-pro/" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1" style="font-weight: 700; border-radius: 8px; font-size: 0.7rem; padding: 0.4rem 0.8rem; text-decoration: none;">
+                                        <i class="ri-printer-line"></i> IMPRIMIR REPORTE
+                                    </a>
+                                    <i class="ri-checkbox-circle-fill text-success"></i>
+                                    <span class="badge" style="font-size: 0.7rem; font-weight: 700; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);">PROCESO ESTABLE</span>
+                                </div>
                             `}
                         </div>
                     </div>
@@ -1220,9 +1356,66 @@
         });
     }
 
-    // Handle browser back/forward buttons
-    window.addEventListener('popstate', () => {
-        window.location.reload();
-    });
+    // --- Help System ---
+    function showHelp(topic) {
+        if (typeof Swal === 'undefined') return;
+
+        const concepts = {
+            'media': {
+                title: 'Media Aritmética (X̄)',
+                text: 'Es el promedio de todas tus mediciones. Representa el "centro" de tu proceso. Si la media está muy lejos de tu Valor Nominal, el proceso está descentrado.'
+            },
+            'lic': {
+                title: 'Límite Control Inferior (L.I.C.)',
+                text: 'Es la frontera estadística inferior de tu máquina. Se calcula como la Media - 3 Desviaciones Estándar. Cualquier punto debajo de esta línea indica una anomalía estadística, incluso si está dentro de tolerancia.'
+            },
+            'lsc': {
+                title: 'Límite Control Superior (L.S.C.)',
+                text: 'Es la frontera estadística superior. Representa el límite de variabilidad natural de tu máquina. Si un punto lo supera, algo inusual ocurrió en el proceso (cambio de herramienta, material distinto, etc.).'
+            },
+            'rango': {
+                title: 'Rango (R)',
+                text: 'Es la diferencia entre el valor más alto y el más bajo. Mide la dispersión total. Un rango muy alto indica que el proceso es inestable y las piezas salen muy diferentes entre sí.'
+            },
+            'n': {
+                title: 'Tamaño de Lote (n)',
+                text: 'Es la cantidad de piezas medidas que se están analizando. A mayor número de piezas, más confiables son los resultados estadísticos.'
+            },
+            'sigma': {
+                title: 'Desviación Estándar (σ)',
+                text: 'Es la medida de precisión más importante. Indica qué tan "agrupadas" están las piezas respecto al promedio. Una sigma baja significa que la máquina es extremadamente precisa y repetitiva.'
+            },
+            'lse': {
+                title: 'Límite Superior Ingeniería (L.S.E.)',
+                text: 'Es la tolerancia máxima permitida por el plano o el cliente. Cualquier pieza sobre este valor es un RECHAZO (NOK).'
+            },
+            'lie': {
+                title: 'Límite Inferior Ingeniería (L.I.E.)',
+                text: 'Es la tolerancia mínima permitida por el plano. Cualquier pieza debajo de este valor debe ser rechazada.'
+            },
+            'cp': {
+                title: 'Índice de Capacidad (CP)',
+                text: 'Compara el ancho de la tolerancia permitida con la variabilidad real de tu máquina. Te dice si la máquina es CAPAZ de fabricar la pieza si estuviera perfectamente centrada. <br><br><b>¿Por qué dice N/D?</b><br>Si tus tolerancias LSE y LIE son iguales (ej: ambas 31.50), el ancho es cero y no se puede calcular. Debes configurar una tolerancia (ej: +/- 0.05) para ver este valor.'
+            },
+            'cpk': {
+                title: 'Índice de Capacidad Real (CPK)',
+                text: 'Es el valor más real. Evalúa la capacidad de la máquina considerando qué tan bien estás centrando la producción. El objetivo es que sea mayor a 1.33. Si es menor a 1.0, el proceso va a generar piezas malas tarde o temprano.'
+            }
+        };
+
+        const concept = concepts[topic];
+        if (!concept) return;
+
+        Swal.fire({
+            title: `<span style="color: #1e293b; font-weight: 800;">${concept.title}</span>`,
+            html: `<p style="color: #475569; font-size: 1.05rem; line-height: 1.6; text-align: left; margin: 10px 0;">${concept.text}</p>`,
+            confirmButtonText: 'Entendido',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-confirm-btn'
+            }
+        });
+    }
 </script>
 {% endblock %}

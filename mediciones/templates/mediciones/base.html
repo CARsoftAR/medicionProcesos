@@ -1,0 +1,276 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABBAMAT - {% block title %}Calidad{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'mediciones/css/index.css' %}?v=5.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header" style="height: 100px; padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.03);">
+                <a href="{% url 'index' %}" style="display: flex; align-items: center; gap: 1rem; text-decoration: none;">
+                    <div class="brand-icon">A</div>
+                    <div class="brand-text">ABBAMAT</div>
+                </a>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- SECCIÓN PRINCIPAL -->
+                <div class="nav-section">
+                    <div class="nav-header">PRINCIPAL</div>
+                    <ul class="nav-list">
+                        <li>
+                            <a href="{% url 'index' %}" class="nav-link active-indigo {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                                <i class="ri-dashboard-3-line"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <!-- Operaciones Group -->
+                        <li class="nav-item-group">
+                            <a href="#" class="nav-link active-indigo group-trigger {% if 'mediciones' in request.path or 'panel-geografico' in request.path or 'nueva-op' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
+                                <i class="ri-clipboard-line"></i>
+                                <span>Operaciones</span>
+                                <i class="ri-arrow-down-s-line chevron"></i>
+                            </a>
+                            <ul class="sub-menu {% if 'mediciones' in request.path or 'nueva-op' in request.path %}open{% endif %}">
+                                {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                                <li>
+                                     <a href="{% url 'lista_estructuras' %}" class="active-indigo {% if request.resolver_match.url_name == 'lista_estructuras' %}active{% endif %}">
+                                         <i class="ri-git-merge-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                         Armar Estructura
+                                     </a>
+                                 </li>
+                                {% endif %}
+                                <li>
+                                     <a href="{% url 'nueva_medicion_op' %}" class="active-indigo {% if request.resolver_match.url_name == 'nueva_medicion_op' %}active{% endif %}">
+                                         <i class="ri-add-circle-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                         Nueva Medición (OP)
+                                     </a>
+                                 </li>
+                                 <li>
+                                     <a href="{% url 'ocr_lector_planos' %}" class="active-indigo {% if request.resolver_match.url_name == 'ocr_lector_planos' %}active{% endif %}">
+                                         <i class="ri-file-search-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                         Importar Plano (OCR)
+                                         <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.6em;">BETA</span>
+                                     </a>
+                                 </li>
+                                 <li>
+                                     <a href="#" class="active-indigo">
+                                         <i class="ri-error-warning-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                         Sistema de NCR
+                                         <span class="badge bg-warning text-dark rounded-pill ms-2" style="font-size: 0.6em;">PRÓXIMAMENTE</span>
+                                     </a>
+                                 </li>
+                            </ul>
+                        </li>
+                        
+                        <li>
+                            <a href="{% url 'lista_clientes' %}" class="nav-link active-cyan {% if request.resolver_match.url_name == 'lista_clientes' %}active{% endif %}">
+                                <i class="ri-user-line"></i>
+                                <span>Clientes</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- SECCIÓN ADMINISTRACIÓN -->
+                <div class="nav-section">
+                    <div class="nav-header">ADMINISTRACIÓN</div>
+                    <ul class="nav-list">
+                        {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                        <li class="nav-item-group">
+                            <a href="#" class="nav-link active-purple group-trigger {% if 'maestros' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
+                                <i class="ri-booklet-line"></i>
+                                <span>Maestros</span>
+                                <i class="ri-arrow-down-s-line chevron"></i>
+                            </a>
+                            <ul class="sub-menu {% if 'maestros' in request.path %}open{% endif %}">
+                                <li>
+                                    <a href="{% url 'lista_procesos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_procesos' %}active{% endif %}">
+                                        <i class="ri-node-tree" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        Procesos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'lista_elementos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_elementos' %}active{% endif %}">
+                                        <i class="ri-stack-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        Elementos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'lista_controles' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_controles' %}active{% endif %}">
+                                        <i class="ri-shield-check-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        Controles
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'lista_instrumentos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_instrumentos' %}active{% endif %}">
+                                        <i class="ri-tools-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        Instrumentos
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'dashboard_calibracion' %}" class="active-purple {% if request.resolver_match.url_name == 'dashboard_calibracion' %}active{% endif %}">
+                                        <i class="ri-shield-check-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        Calibraciones
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+
+                <!-- SECCIÓN SISTEMA -->
+                <div class="nav-section" style="margin-bottom: 4rem;">
+                    <div class="nav-header">SISTEMA</div>
+                    <ul class="nav-list">
+                        {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                        <li>
+                            <a href="{% url 'lista_usuarios' %}" class="nav-link active-emerald {% if 'usuarios' in request.path %}active{% endif %}">
+                                <i class="ri-group-line"></i>
+                                <span>Usuarios</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                            <a href="#" class="nav-link active-red {% if 'configuracion' in request.path %}active{% endif %}">
+                                <i class="ri-settings-3-line"></i>
+                                <span>Configuración</span>
+                                <i class="ri-arrow-right-s-line chevron"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Perfil de Usuario -->
+            <div class="user-profile-wrapper" style="border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); margin-top: auto;">
+                <a href="{% url 'perfil_usuario' %}" class="user-profile-link" style="text-decoration: none; display: flex; align-items: center; padding: 1.5rem 1.25rem; transition: all 0.2s;">
+                    <div class="user-avatar" style="width: 44px; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="ri-user-3-fill" style="font-size: 1.2rem;"></i>
+                    </div>
+                    <div class="user-info" style="margin-left: 1rem; flex: 1;">
+                        <div class="user-name" style="color: white; font-weight: 600; font-size: 0.95rem;">{{ user.username }}</div>
+                        <div class="user-role" style="color: #94a3b8; font-size: 0.8rem; margin-top: 2px;">{{ user.profile.get_role_display|default:"Usuario" }}</div>
+                    </div>
+                </a>
+                <div style="padding: 0 1.25rem 1.5rem 1.25rem;">
+                    <a href="{% url 'logout' %}" class="btn-logout-premium" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 0.75rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;">
+                        <i class="ri-logout-box-r-line"></i> Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </aside>
+
+        <script>
+            function toggleMenu(e, element) {
+                e.preventDefault();
+                element.classList.toggle('active-parent');
+                const isExpanded = element.getAttribute('aria-expanded') === 'true';
+                element.setAttribute('aria-expanded', !isExpanded);
+                const subMenu = element.nextElementSibling;
+                if (subMenu && subMenu.classList.contains('sub-menu')) {
+                    subMenu.classList.toggle('open');
+                }
+            }
+        </script>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="breadcrumb">
+                    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.025em;">
+                        {% block header_title %}Sistema de Calidad{% endblock %}
+                    </h2>
+                </div>
+                <div class="current-date">
+                    {{ now|date:"l, d F Y" }}
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-wrapper">
+                {% if messages %}
+                    <div id="messages-container" style="margin-bottom: 2rem;">
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'success' %}success{% elif message.tags == 'error' %}danger{% else %}warning{% endif %}">
+                                <i class="ri-{% if message.tags == 'success' %}checkbox-circle{% elif message.tags == 'error' %}error-warning{% else %}information{% endif %}-fill" style="margin-right: 0.5rem; vertical-align: bottom;"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <script>
+                        setTimeout(function() {
+                            const container = document.getElementById('messages-container');
+                            if (container) {
+                                container.style.transition = 'opacity 0.5s ease';
+                                container.style.opacity = '0';
+                                setTimeout(() => container.remove(), 500);
+                            }
+                        }, 1200);
+                    </script>
+                {% endif %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals or Global Overlays if needed -->
+    {% block modals %}{% endblock %}
+
+    <!-- Common Scripts -->
+    <script>
+        function eliminarOP(id, op) {
+            Swal.fire({
+                title: '¿ELIMINAR OP ' + op + '?',
+                text: "Se borrarán todos los controles y mediciones asociadas. Esta acción no se puede deshacer.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'SÍ, ELIMINAR',
+                cancelButtonText: 'CANCELAR',
+                customClass: {
+                    confirmButton: 'premium-swal-confirm btn-danger',
+                    cancelButton: 'premium-swal-cancel',
+                    popup: 'premium-swal-popup'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/api/planilla/' + id + '/delete-full/', {
+                        method: 'POST',
+                        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire({
+                                title: 'ELIMINADO',
+                                text: 'La OP ha sido eliminada correctamente.',
+                                icon: 'success',
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

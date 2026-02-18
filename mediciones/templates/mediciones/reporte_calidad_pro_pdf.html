@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 1cm;
+            @frame footer {
+                -pdf-frame-content: footer_content;
+                bottom: 1cm;
+                margin-left: 1cm;
+                margin-right: 1cm;
+                height: 0.8cm;
+            }
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 9pt;
+            color: #1e293b;
+        }
+        .page-break { page-break-after: always; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10pt;
+        }
+        th, td {
+            border: 0.5pt solid #cbd5e1;
+            padding: 2pt;
+            text-align: center;
+        }
+        .info-table {
+            table-layout: fixed;
+        }
+        .label-cell {
+            background-color: #f1f5f9;
+            font-weight: bold;
+            text-align: left;
+            font-size: 8pt;
+        }
+        .value-cell {
+            text-align: left;
+            font-size: 9pt;
+        }
+        
+        .header-box {
+            border: 1pt solid #1e293b;
+            padding: 10pt;
+            margin-bottom: 20pt;
+        }
+        .section-title {
+            background-color: #1e293b;
+            color: white;
+            padding: 3pt 6pt;
+            font-weight: bold;
+            margin-top: 8pt;
+            margin-bottom: 4pt;
+            font-size: 10pt;
+            border-radius: 4pt;
+        }
+        
+        .chart-container {
+            text-align: center;
+            margin: 4pt 0;
+            padding: 2pt;
+        }
+        .chart-img {
+            width: 18cm;
+        }
+        .chart-img-half {
+            width: 9cm;
+        }
+        
+        .stats-grid {
+            width: 100%;
+        }
+        .stats-grid td {
+            width: 25%;
+            font-size: 8pt;
+        }
+        
+        .alert-box {
+            border-left: 3pt solid #ef4444;
+            background-color: #fef2f2;
+            padding: 6pt;
+            margin-bottom: 5pt;
+            font-size: 8pt;
+            text-align: left;
+        }
+        .alert-title {
+            font-weight: bold;
+            color: #b91c1c;
+        }
+        
+        .footer {
+            text-align: right;
+            font-size: 8pt;
+            color: #64748b;
+        }
+        
+        .badge {
+            padding: 2pt 5pt;
+            border-radius: 3pt;
+            font-size: 7pt;
+            font-weight: bold;
+        }
+        .badge-danger { background-color: #fee2e2; color: #b91c1c; }
+        .badge-warning { background-color: #fef3c7; color: #92400e; }
+        .badge-success { background-color: #dcfce7; color: #166534; }
+        .badge-info { background-color: #e0f2fe; color: #075985; }
+
+        .summary-table th { background-color: #f8fafc; font-size: 8pt; }
+        .summary-table td { font-size: 8pt; }
+    </style>
+</head>
+<body>
+
+    <!-- PORTADA / RESUMEN -->
+    <div style="text-align: center; margin-bottom: 10pt;">
+        <h1 style="margin: 0; color: #0f172a; font-size: 18pt;">CERTIFICADO DE CALIDAD PRO</h1>
+        <p style="color: #64748b; margin-top: 3pt; font-size: 9pt;">Grupo ABBAMAT - Análisis Estadístico de Procesos (SPC)</p>
+    </div>
+
+    <div class="section-title">INFORMACIÓN GENERAL</div>
+    <table style="width: 100%; table-layout: fixed;">
+        <!-- Fila auxiliar para forzar anchos de columna -->
+        <tr>
+            <td style="width: 20%; border: none; padding: 0; height: 0;"></td>
+            <td style="width: 30%; border: none; padding: 0; height: 0;"></td>
+            <td style="width: 20%; border: none; padding: 0; height: 0;"></td>
+            <td style="width: 30%; border: none; padding: 0; height: 0;"></td>
+        </tr>
+        <tr>
+            <td class="label-cell">PROYECTO</td>
+            <td class="value-cell" colspan="3">{{ planilla.proyecto|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">ORDEN DE PRODUCCIÓN (OP)</td>
+            <td class="value-cell">{{ planilla.num_op }}</td>
+            <td class="label-cell">FECHA EMISIÓN</td>
+            <td class="value-cell" style="text-align: center;">{{ fecha_emision }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">CLIENTE</td>
+            <td class="value-cell">{{ planilla.cliente.nombre }}</td>
+            <td class="label-cell">CANTIDAD LOTE</td>
+            <td class="value-cell">{{ planilla.cantidad|floatformat:0 }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">PROCESO / DENOMINACIÓN</td>
+            <td class="value-cell" colspan="3">{{ planilla.proceso.nombre|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <div class="section-title">RESUMEN DE MEDICIONES</div>
+    <table class="summary-table">
+        <thead>
+            <tr>
+                <th>DETALLE</th>
+                <th>NOMINAL</th>
+                <th>TOLERANCIA</th>
+                <th>MEDIA</th>
+                <th>CPK</th>
+                <th>ESTATUS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for param in params_spc %}
+            <tr>
+                <td style="text-align: left; font-weight: bold;">{{ param.nombre }}</td>
+                <td>{{ param.nominal|floatformat:3 }}</td>
+                <td>{{ param.lsl|floatformat:3 }} / {{ param.usl|floatformat:3 }}</td>
+                <td>{{ param.stats.mean|floatformat:3 }}</td>
+                <td style="font-weight: bold;">{{ param.stats.cpk|floatformat:2|default:"N/D" }}</td>
+                <td>
+                    {% if param.stats.cpk_info %}
+                        <span class="badge {% if param.stats.cpk_info.text == 'INACEPTABLE' %}badge-danger{% elif param.stats.cpk_info.text == 'BAJA CAPACIDAD' %}badge-warning{% else %}badge-success{% endif %}">
+                            {{ param.stats.cpk_info.text }}
+                        </span>
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- DETALLE POR PARÁMETRO -->
+    {% for param in params_spc %}
+    <div class="section-title">ANÁLISIS DETALLADO: {{ param.nombre|upper }}</div>
+    
+    <table class="stats-grid">
+        <tr>
+            <td class="label-cell" style="width: 20%;">Muestra (n)</td><td>{{ param.stats.n }}</td>
+            <td class="label-cell" style="width: 20%;">Desv. Est. (σ)</td><td>{{ param.stats.stdev|floatformat:4 }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">L.I.C. / L.S.C.</td><td>{{ param.stats.lic|floatformat:3 }} / {{ param.stats.lsc|floatformat:3 }}</td>
+            <td class="label-cell">Rango (R)</td><td>{{ param.stats.range|floatformat:3 }}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Índice CP</td><td>{{ param.stats.cp|floatformat:2|default:"N/D" }}</td>
+            <td class="label-cell">Índice CPK</td><td style="font-weight: bold;">{{ param.stats.cpk|floatformat:2|default:"N/D" }}</td>
+        </tr>
+    </table>
+
+    {% if param.charts.xbar %}
+    <div class="chart-container">
+        <img src="{{ param.charts.xbar }}" class="chart-img">
+    </div>
+    {% endif %}
+
+    <table style="width: 100%; border: none; border-collapse: collapse;">
+        <tr>
+            <td style="width: 49%; border: none; padding-right: 4pt; vertical-align: top;">
+                {% if param.charts.range %}
+                <div class="chart-container">
+                    <img src="{{ param.charts.range }}" style="width: 100%;">
+                </div>
+                {% endif %}
+            </td>
+            <td style="width: 49%; border: none; padding-left: 4pt; vertical-align: top;">
+                {% if param.charts.gauss %}
+                <div class="chart-container">
+                    <img src="{{ param.charts.gauss }}" style="width: 100%;">
+                </div>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+
+    {% if param.stats.alerts %}
+    <div style="margin-top: 5pt; page-break-inside: avoid;">
+        <p style="font-weight: bold; margin-bottom: 2pt; font-size: 8pt;">Anomalías Detectadas (Reglas de Nelson):</p>
+        {% for alert in param.stats.alerts %}
+        <div class="alert-box" style="border-left-color: {% if alert.type == 'danger' %}#ef4444{% elif alert.type == 'warning' %}#f59e0b{% else %}#3b82f6{% endif %};">
+            <span class="alert-title">{{ alert.title }}</span>: {{ alert.desc }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not forloop.last %}<div class="page-break"></div>{% endif %}
+    {% endfor %}
+
+    <!-- FOOTER HTML -->
+    <div id="footer_content" class="footer">
+        Página <pdf:pagenumber> de <pdf:pagecount> | Reporte RQ-PRO | Grupo ABBAMAT | Generado el {{ fecha_emision }}
+    </div>
+
+</body>
+</html>
