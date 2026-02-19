@@ -222,6 +222,35 @@
     @media (max-width: 1200px) {
         .verification-bar { grid-template-columns: repeat(2, 1fr); }
     }
+
+    /* Editable Inputs */
+    .ocr-input-edit {
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: inherit;
+        font-weight: inherit;
+        color: inherit;
+        text-align: inherit;
+        width: 100%;
+        padding: 4px;
+        transition: all 0.2s;
+        outline: none;
+    }
+    .ocr-input-edit:hover {
+        background: rgba(59, 130, 246, 0.05);
+        border-color: #cbd5e1;
+    }
+    .ocr-input-edit:focus {
+        background: white;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    .val-input {
+        width: 65px;
+        margin: 0 auto;
+    }
 </style>
 
 <div class="premium-container animate__animated animate__fadeIn">
@@ -231,7 +260,23 @@
         
         <form method="post" enctype="multipart/form-data" id="ocr-upload-form">
             {% csrf_token %}
-            <input type="file" name="plano_pdf" id="plano_pdf" accept="application/pdf" style="display: none;" onchange="document.getElementById('ocr-upload-form').submit(); showLoader();">
+            
+
+            <div class="mb-3" {% if user.profile.gemini_api_key %}style="display:none;"{% endif %}>
+                <small class="text-muted d-block mb-1" style="font-size: 0.7rem;">Google Gemini API Key (Opcional)</small>
+                <input type="password" name="api_key" class="form-control form-control-sm" 
+                       placeholder="Pegar API Key aquí..." 
+                       style="background: #f8fafc; border: 1px solid #e2e8f0; font-size: 0.75rem;"
+                       value="{{ user.profile.gemini_api_key|default:'' }}">
+            </div>
+            {% if user.profile.gemini_api_key %}
+            <div class="mb-3 text-center">
+                <small class="text-success"><i class="ri-check-double-line"></i> IA Activada</small>
+                <a href="#" onclick="this.parentElement.style.display='none'; this.parentElement.previousElementSibling.style.display='block'; return false;" style="font-size: 0.7rem; display: block;">Cambiar Key</a>
+            </div>
+            {% endif %}
+
+            <input type="file" name="plano_pdf" id="plano_pdf" accept="application/pdf" style="display: none;" onchange="if(this.files.length > 0) { document.getElementById('ocr-upload-form').submit(); showLoader(); }">
             <div id="upload-content" class="upload-box" onclick="document.getElementById('plano_pdf').click();">
                 <i class="ri-file-pdf-2-line"></i>
                 <span>Cargar PDF</span>
@@ -239,8 +284,16 @@
             </div>
             <div id="processing-loader" style="display: none;" class="text-center py-4">
                 <span class="spinner-border spinner-border-sm text-primary mb-2"></span>
-                <div class="text-primary fw-bold small">Analizando...</div>
+                <div class="text-primary fw-bold small">Digitalizando y extrayendo metadatos...</div>
+                <div class="text-muted" style="font-size: 0.6rem;">IA Vision Engine v2.0</div>
             </div>
+            
+            <script>
+                function showLoader() {
+                    document.getElementById('processing-loader').style.display = 'block';
+                    document.getElementById('upload-content').style.display = 'none';
+                }
+            </script>
         </form>
 
         {% if success %}
@@ -342,21 +395,28 @@
                     </thead>
                     <tbody>
                         {% for row in matrix %}
-                        <tr style="border-bottom: 1px solid #f1f5f9;">
-                            <td class="fw-bold ps-4" style="color: #475569; font-size: 0.8rem; border-right: 1px solid #f1f5f9; white-space: nowrap;">{{ row.control }}</td>
-                            <td class="text-center" style="color: #2563eb; font-weight: 800; font-size: 0.9rem; white-space: nowrap;">{{ row.nominal }}</td>
+                        <tr class="ocr-row" style="border-bottom: 1px solid #f1f5f9;">
+                            <td class="fw-bold ps-4" style="color: #475569; font-size: 0.8rem; border-right: 1px solid #f1f5f9; white-space: nowrap;">
+                                <input type="text" class="ocr-input-edit text-start edit-control" value="{{ row.control }}" style="font-weight: 700; width: 250px;">
+                            </td>
+                            <td class="text-center" style="color: #2563eb; font-weight: 800; font-size: 0.9rem; white-space: nowrap;">
+                                <input type="text" class="ocr-input-edit text-center edit-nominal" value="{{ row.nominal }}" style="color: #2563eb; font-weight: 800;">
+                            </td>
                             <td class="text-center" style="font-size: 0.85rem; border-right: 1px solid #f1f5f9; white-space: nowrap;">
-                                <span style="color: #94a3b8; font-weight: 400;">±</span>
-                                <span style="color: #475569; font-weight: 700;">{{ row.tolerancia|default:"0.00"|slice:"2:" }}</span>
+                                <div class="d-flex align-items-center justify-content-center">
+                                    <span style="color: #94a3b8; font-weight: 400; margin-right: 2px;">±</span>
+                                    <input type="text" class="ocr-input-edit text-start edit-tol" value="{{ row.tolerancia|default:"0.00"|slice:"2:" }}" style="color: #475569; font-weight: 700; width: 60px; padding-left: 0;">
+                                </div>
                             </td>
                             <td class="text-center" style="border-right: 2px solid #e2e8f0; white-space: nowrap;">
-                                <span style="font-size: 0.75rem; font-weight: 800; color: #1e293b; background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px;">{{ row.instrumento }}</span>
+                                <input type="text" class="ocr-input-edit text-center edit-instr" value="{{ row.instrumento }}" style="font-size: 0.75rem; font-weight: 800; color: #1e293b; background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px; width: 80px;">
                             </td>
                             {% for item in row.valores %}
-                            <td class="text-center" style="padding: 0.8rem 0.5rem; border-right: 1px solid #f8fafc;">
-                                <span class="val-text {% if item.ok == False %}nok{% endif %}" style="font-size: 0.95rem; font-weight: 800;">
-                                    {% if item.val %}{{ item.val }}{% else %}{{ item }}{% endif %}
-                                </span>
+                            <td class="text-center" style="padding: 0.6rem 0.4rem; border-right: 1px solid #f8fafc;">
+                                <input type="text" 
+                                       class="ocr-input-edit text-center val-input edit-val {% if item.ok == False %}nok{% endif %}" 
+                                       value="{% if item.val %}{{ item.val }}{% else %}{{ item }}{% endif %}"
+                                       style="font-size: 0.95rem; font-weight: 800; {% if item.ok == False %}color: #ef4444;{% else %}color: #10b981;{% endif %}">
                             </td>
                             {% endfor %}
                         </tr>
@@ -371,6 +431,22 @@
             <i class="ri-file-pdf-line" style="font-size: 8rem;"></i>
             <h2 class="fw-bold mt-4">Esperando Documento...</h2>
             <p>Suba un archivo PDF para comenzar el proceso de verificación.</p>
+        </div>
+        {% endif %}
+
+        {% if header.ai_error_msg %}
+        <div class="alert alert-danger animate__animated animate__headShake" role="alert" style="margin-top: 1rem;">
+            <i class="ri-error-warning-line me-2"></i>
+            <strong>Error de IA:</strong> {{ header.ai_error_msg }}. 
+            <small class="d-block mt-1">Por favor verifique su API Key o intente nuevamente.</small>
+        </div>
+        {% endif %}
+        
+        {% if header.denominacion == "DOCUMENTO ESCANEADO - DATOS NO LEGIBLES" %}
+        <div class="alert alert-warning animate__animated animate__headShake" role="alert" style="margin-top: 2rem;">
+            <i class="ri-alert-line me-2"></i>
+            <strong>Atención:</strong> El documento parece ser una imagen escaneada sin texto digital. 
+            El sistema no pudo extraer los valores automáticamente. Por favor, complete los datos manualmente.
         </div>
         {% endif %}
     </main>
@@ -391,7 +467,26 @@
     document.getElementById('btn-importar-sistema').addEventListener('click', function() {
         const header = JSON.parse('{{ header_json|escapejs }}');
         const piezas = JSON.parse('{{ piezas_json|escapejs }}');
-        const matrix = JSON.parse('{{ matrix_json|escapejs }}');
+        
+        // Colactar matrix desde la tabla editable
+        const matrix = [];
+        document.querySelectorAll('.ocr-row').forEach(tr => {
+            const rowData = {
+                control: tr.querySelector('.edit-control').value,
+                nominal: tr.querySelector('.edit-nominal').value,
+                tolerancia: '± ' + tr.querySelector('.edit-tol').value,
+                instrumento: tr.querySelector('.edit-instr').value,
+                valores: []
+            };
+            
+            tr.querySelectorAll('.edit-val').forEach(input => {
+                // Si el original era un objeto {val, ok}, mantenemos estructura básica
+                // El backend procesará los valores
+                rowData.valores.push(input.value);
+            });
+            
+            matrix.push(rowData);
+        });
         
         const payload = {
             header: header,

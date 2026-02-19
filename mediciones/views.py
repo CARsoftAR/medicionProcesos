@@ -17,6 +17,8 @@ from django.http import HttpResponse
 from django.utils import timezone
 import datetime
 import re
+import os
+from .utils_ocr import parse_ocr_data
 
 def supervisor_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
@@ -776,19 +778,19 @@ def registrar_calibracion_ajax(request):
 def dashboard_calibracion(request):
     # Base Query: Active items (not obsolete)
     activos = Instrumento.objects.filter(es_obsoleto=False)
+    en_uso = activos.filter(en_servicio=True)
     
-    # Active Stats
-    vencidos_count = len([i for i in activos if i.is_calibracion_vencida()])
-    alerta_count = len([i for i in activos if i.is_en_alerta()])
-    ok_count = len([i for i in activos if not i.is_calibracion_vencida() and not i.is_en_alerta() and i.en_servicio])
+    # Mutually Exclusive Stats for the Chart (only for in-service)
+    vencidos_count = len([i for i in en_uso if i.is_calibracion_vencida()])
+    alerta_count = len([i for i in en_uso if i.is_en_alerta()])
+    ok_count = len([i for i in en_uso if not i.is_calibracion_vencida() and not i.is_en_alerta()])
     
+    # Unavailable states
+    bloqueados_count = activos.filter(en_servicio=False).count()
     # Ownership Stats
     propios_count = activos.filter(es_propio=True).count()
     clientes_count = activos.filter(es_propio=False).count()
     obsoletos_count = Instrumento.objects.filter(es_obsoleto=True).count()
-    
-    # Detailed counts
-    fuera_servicio_count = activos.filter(en_servicio=False).count()
     
     # Stats by type (only for active)
     tipos_count = {}
@@ -804,7 +806,8 @@ def dashboard_calibracion(request):
         'vencidos_count': vencidos_count,
         'alerta_count': alerta_count,
         'ok_count': ok_count,
-        'fuera_servicio_count': fuera_servicio_count,
+        'bloqueados_count': bloqueados_count,
+        'fuera_servicio_count': bloqueados_count,  # Alias to fix the error and support template
         'propios_count': propios_count,
         'clientes_count': clientes_count,
         'obsoletos_count': obsoletos_count,
@@ -2210,274 +2213,107 @@ def guardar_observaciones_ajax(request):
 @login_required
 def ocr_lector_planos(request):
     """
-    Vista Lector OCR de Planos (PDF) - Versión Avanzada.
-    Simula el procesamiento de 'Vision Artificial' detectando matrices de mediciones manuscritas.
+    Vista Lector OCR de Planos (PDF) - Modo Inteligente + AI.
     """
     context = {}
+    
+    # Get or create profile for current user to handle API Key
+    from .models import Profile
+    try:
+        profile = request.user.profile
+    except Profile.DoesNotExist:
+        profile = Profile.objects.create(user=request.user)
+    
+    # Handle API Key updates from POST
+    if request.method == 'POST':
+        api_key_input = request.POST.get('api_key', '').strip()
+        if api_key_input:
+            profile.gemini_api_key = api_key_input
+            profile.save()
+            
+    # Use key from profile
+    gemini_key = profile.gemini_api_key
+
     if request.method == 'POST' and request.FILES.get('plano_pdf'):
         pdf_file = request.FILES['plano_pdf']
+        file_name = pdf_file.name
         
-        # 1. Simular tiempo de procesamiento pesado (IA/Vision)
-        import time
-        time.sleep(3) 
+        # Usar el nuevo motor de OCR pasando la KEY
+        print(f"[DEBUG-VIEW] Iniciando OCR para {file_name}...")
+        from .utils_ocr import parse_ocr_data
+        header_info, extracted_matrix, piezas_cols = parse_ocr_data(pdf_file, file_name, api_key=gemini_key)
+        print(f"[DEBUG-VIEW] OCR Finalizado. Éxito: {bool(extracted_matrix)}")
         
-        # 2. IA/Vision Intelligence Selection (MOCK ENGINE V2)
-        # We use a session-based sticky toggle to ensure that subsequent uploads 
-        # return different results if the filename doesn't explicitly help us.
-        last_op = request.session.get('last_ocr_op', '46681')
+        # IA de Emparejamiento Automático con la Base de Datos
+        from .models import Proceso, Articulo, Elemento, Cliente
+        auto_matched = {'proceso_id': '', 'articulo_id': '', 'elemento_id': '', 'cliente_id': ''}
         
-        # Check filename first for explicit match
-        file_name_lower = pdf_file.name.lower()
-        if '46438' in file_name_lower or '25-080' in file_name_lower or 'aspro' in file_name_lower:
-            is_op_46438 = True
-        elif '46681' in file_name_lower or '25-055' in file_name_lower or 'binning' in file_name_lower:
-            is_op_46438 = False
-        else:
-            # If no clue in filename, alternate from the last one to simulate "new file detection"
-            is_op_46438 = (last_op == '46681')
-            
-        # Update session to remember what we just returned
-        request.session['last_ocr_op'] = '46438' if is_op_46438 else '46681'
-        
-        if is_op_46438:
-            # Data for OP 46438 (Project 25-080) - ASPRO
-            header_info = {
-                'proyecto': '25-080',
-                'op': '46438',
-                'pieza_inicio': 1,
-                'pieza_fin': 20,
-                'denominacion': 'PRENSA VALVULA DE 4° ETAPA',
-                'articulo': '15086',
-                'cliente': 'ASPRO',
-                'operacion': '1° OPERACIÓN TORNO'
-            }
-            piezas_cols = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
-            extracted_matrix = [
-                {
-                    'control': '1. Altura Total 31.50', 'nominal': '31.50', 'tolerancia': '+0.50/-0.0', 
-                    'min': '31.50', 'max': '32.00', 'instrumento': 'CAD 37',
-                    'valores': ['31.51', '31.53', '31.53', '31.54', '31.51', '31.52', '31.50', '31.55', '31.58', '31.53', '31.51', '31.52', '31.53', '31.54', '31.50', '31.51', '31.52', '31.53', '31.54', '31.50']
-                },
-                {
-                    'control': '2. Altura ranura 14.00', 'nominal': '14.00', 'tolerancia': '± 0.25', 
-                    'min': '13.75', 'max': '14.25', 'instrumento': 'CAD 37',
-                    'valores': ['13.95', '13.93', '13.98', '13.99', '14.01', '14.02', '14.00', '13.98', '13.95', '13.96', '13.94', '13.97', '13.98', '13.92', '13.95', '13.99', '14.00', '14.02', '13.98', '13.95']
-                },
-                {
-                    'control': '3. Altura 8.00', 'nominal': '8.00', 'tolerancia': '± 0.25', 
-                    'min': '7.75', 'max': '8.25', 'instrumento': 'CAD 37',
-                    'valores': ['7.95', '8.01', '8.00', '8.02', '8.05', '8.01', '8.00', '8.03', '8.10', '8.10', '8.02', '8.01', '8.00', '8.05', '8.01', '8.00', '8.03', '8.01', '8.00', '8.05']
-                },
-                {
-                    'control': '4. Ra (3.2)', 'nominal': '3.20', 'tolerancia': 'MAX', 
-                    'min': '0.00', 'max': '3.20', 'instrumento': 'CAD 37',
-                    'valores': ['OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK', 'OK']
-                },
-                {
-                    'control': '5. Exterior Ø 45.90', 'nominal': '45.90', 'tolerancia': '± 0.10', 
-                    'min': '45.80', 'max': '46.00', 'instrumento': 'MIC 10',
-                    'valores': ['45.92', '45.93', '45.95', '45.92', '45.92', '45.92', '45.92', '45.93', '45.91', '45.91', '45.92', '45.91', '45.92', '45.93', '45.92', '45.91', '45.91', '45.91', '45.91', '45.91']
-                },
-                {
-                    'control': '6. Exterior Ø 46.28', 'nominal': '46.28', 'tolerancia': '-0.03', 
-                    'min': '46.25', 'max': '46.28', 'instrumento': 'MIC 10',
-                    'valores': ['46.27', '46.26', '46.26', '46.27', '46.27', '46.27', '46.22', '46.27', '46.28', '46.26', '46.27', '46.27', '46.28', '46.28', '46.27', '46.26', '46.26', '46.26', '46.26', '46.26']
-                },
-                {
-                    'control': '7. Interior Ø 34.35', 'nominal': '34.35', 'tolerancia': '± 0.15', 
-                    'min': '34.20', 'max': '34.50', 'instrumento': 'CAD 37',
-                    'valores': ['34.30', '34.32', '34.31', '34.31', '34.35', '34.30', '34.32', '34.35', '34.31', '34.28', '34.30', '34.32', '34.31', '34.35', '34.30', '34.32', '34.35', '34.31', '34.30', '34.30']
-                },
-                {
-                    'control': '8. Ancho ranura 3.70', 'nominal': '3.70', 'tolerancia': '+- 0.10', 
-                    'min': '3.60', 'max': '3.80', 'instrumento': 'CAD 32',
-                    'valores': ['3.69', '3.70', '3.70', '3.68', '3.69', '3.69', '3.69', '3.68', '3.67', '3.67', '3.68', '3.62', '3.63', '3.68', '3.63', '3.67', '3.69', '3.70', '3.66', '3.64']
-                },
-                {
-                    'control': '9. Ranura Ø 42.18', 'nominal': '42.18', 'tolerancia': '± 0.05', 
-                    'min': '42.13', 'max': '42.23', 'instrumento': 'MIC 10',
-                    'valores': ['42.08', '42.14', '42.12', '42.13', '42.10', '42.11', '42.10', '42.10', '42.12', '42.09', '42.11', '42.10', '42.12', '42.13', '42.12', '42.11', '42.10', '42.12', '42.10', '42.09']
-                }
-            ]
-        else:
-            # Default Data for OP 46681 (Project 25-055) - BINNING
-            header_info = {
-                'proyecto': '25-055', # Specifically from "N° PROYECTO"
-                'op': '46681',
-                'pieza_inicio': 1,
-                'pieza_fin': 22,
-                'denominacion': 'BOLSILLO 1" KGD',      # -> Mapped to Proceso in DB
-                'articulo': '109432',                 # -> Mapped to Articulo in DB
-                'cliente': 'BINNING OILTOOLS S.A',    # -> Mapped to Cliente in DB
-                'operacion': 'AGUJEREADO Y FRESADO EN 4TO EJE' # -> Mapped to Elemento in DB
-            }
-            piezas_cols = [
-                1, 3, 2, 4, 5, 6, 27, 26, 24, 14,             # Bloque 1
-                13, 11, 12, 15, 17, 16, 8, 25, 10, 9, 7, 23, 22 # Bloque 2
-            ]
-            extracted_matrix = [
-                {
-                    'control': '1. Ancho Fresado', 
-                    'nominal': '35.70', 'tolerancia': '± 0.20', 
-                    'min': '35.50', 'max': '35.90', 'instrumento': 'CAD 45',
-                    'valores': [
-                        '35.68', '35.63', '35.67', '35.68', '35.64', '35.77', '35.70', '35.72', '35.72', '35.70', # B1
-                        '35.65', '35.65', '35.60', '35.66', '35.68', '35.71', '35.74', '35.69', '35.70', '35.72', '35.69', '35.70', '35.72' # B2
-                    ]
-                },
-                {
-                    'control': '2. Largo Fresado', 
-                    'nominal': '66.70', 'tolerancia': '± 0.30', 
-                    'min': '66.40', 'max': '67.00', 'instrumento': 'CPR 4',
-                    'valores': [
-                        '66.68', '66.70', '66.68', '66.69', '66.98', '67.00', '66.96', '66.98', '66.95', '66.95',
-                        '66.75', '66.70', '66.89', '66.77', '66.81', '66.83', '66.80', '66.81', '66.78', '66.79', '66.81', '66.86', '66.84'
-                    ]
-                },
-                {
-                    'control': '3. Alt. Inc. Lado 1', 
-                    'nominal': '39.00', 'tolerancia': '± 0.20', 
-                    'min': '38.80', 'max': '39.20', 'instrumento': 'CPR 4',
-                    'valores': [
-                        '39.20', '39.12', '39.10', '39.10', '39.12', '39.08', '39.02', '39.03', '39.01', '39.02',
-                        '38.90', '39.00', '39.00', '38.85', '38.86', '38.94', '39.00', '38.97', '38.95', '38.98', '38.93', '39.03', '38.89'
-                    ]
-                },
-                {
-                    'control': '4. Alt. Inc. Lado 2', 
-                    'nominal': '36.00', 'tolerancia': '± 0.20', 
-                    'min': '35.80', 'max': '36.20', 'instrumento': 'CPR 4',
-                    'valores': [
-                        '36.10', '36.05', '36.03', '36.02', '36.04', '36.04', '36.02', '36.03', '36.03', '36.04',
-                        '35.94', '35.90', '36.06', '36.12', '36.06', '36.10', '36.08', '36.05', '36.10', '36.05', '36.04', '36.10'
-                    ]
-                },
-                {
-                    'control': '5. Distancia Ø10', 
-                    'nominal': '162.00', 'tolerancia': '± 0.50', 
-                    'min': '161.50', 'max': '162.50', 'instrumento': 'CAD 45',
-                    'valores': [
-                        '161.96', '161.94', '161.97', '161.95', '161.99', '161.97', '162.00', '162.01', '162.00', '162.02',
-                        '162.00', '162.00', '162.00', '162.00', '162.00', '162.00', '162.00', '162.00', '162.00', '162.00', '162.00', '162.00', '162.00'
-                    ]
-                },
-                 {
-                    'control': '6. E/ Centro Ø10', 
-                    'nominal': '17.50', 'tolerancia': '± 0.10', 
-                    'min': '17.40', 'max': '17.60', 'instrumento': 'CAD 45',
-                    'valores': [
-                        '17.50', '17.50', '17.50', '17.50', '17.50', '17.50', '17.50', '17.48', '17.49', '17.48',
-                        '17.50', '17.50', '17.50', '17.50', '17.50', '17.50', '17.50', '17.50', '17.50', '17.50', '17.50', '17.50', '17.50'
-                    ]
-                },
-                 {
-                    'control': '7. Altura al plano', 
-                    'nominal': '16.50', 'tolerancia': '± 0.10', 
-                    'min': '16.40', 'max': '16.60', 'instrumento': 'CAD 45',
-                    'valores': [
-                        '16.50', '16.50', '16.50', '16.50', '16.50', '16.50', '16.50', '16.53', '16.50', '16.51',
-                        '16.50', '16.51', '16.52', '16.50', '16.51', '16.50', '16.52', '16.54', '16.50', '16.53', '16.50', '16.50', '16.52'
-                    ]
-                },
-                 {
-                    'control': '8. Ø Agujero', 
-                    'nominal': '10.00', 'tolerancia': '± 0.10', 
-                    'min': '9.90', 'max': '10.10', 'instrumento': 'CAD 45',
-                    'valores': [
-                        '10.10', '10.12', '10.11', '10.13', '10.11', '10.10', '10.08', '10.07', '10.08', '10.06',
-                        '10.05', '10.05', '10.02', '10.02', '10.01', '10.01', '10.02', '10.02', '10.06', '10.05', '10.04', '10.03', '10.02'
-                    ]
-                }
-            ]
-        
-        # 3. Auto-Discovery Intelligence (Matching with DB)
-        auto_matched = {
-            'proceso_id': '',
-            'articulo_id': '',
-            'elemento_id': '',
-            'cliente_id': ''
-        }
-        
-        def fuzzy_match(model, text):
-            if not text: return None
-            # Tries exact first
-            match = model.objects.filter(nombre__iexact=text).first()
-            if match: return match
-            
-            # Tries normalization (uppercase, no spaces, standardizing 'TO' as '°')
-            def normalize(s):
-                return s.upper().replace(' ', '').replace('TO', '°').strip()
-            
-            clean_target = normalize(text)
-            for obj in model.objects.all():
-                if normalize(obj.nombre) == clean_target:
-                    return obj
-            return None
+        # Buscar cliente por nombre parcial si existe
+        if header_info['cliente']:
+            c = Cliente.objects.filter(nombre__icontains=header_info['cliente'].strip()[:10]).first()
+            if c: auto_matched['cliente_id'] = c.id
 
-        def get_or_create_fuzzy(model, text):
-            if not text: return None
-            # Try matching existing first
-            match = fuzzy_match(model, text)
-            if match: return match
-            # Not found? Create it automatically as requested
-            return model.objects.create(nombre=text)
+        # Buscar artículo por código
+        if header_info['articulo']:
+            a = Articulo.objects.filter(nombre__icontains=header_info['articulo'].strip()).first()
+            if a: auto_matched['articulo_id'] = a.id
 
-        # 1. Process / Denominación
-        pro_obj = get_or_create_fuzzy(Proceso, header_info.get('denominacion'))
-        if pro_obj: auto_matched['proceso_id'] = pro_obj.id
-        
-        # 2. Artículo
-        art_obj = get_or_create_fuzzy(Articulo, header_info.get('articulo'))
-        if art_obj: auto_matched['articulo_id'] = art_obj.id
-        
-        # 3. Elemento / Operación
-        ele_obj = get_or_create_fuzzy(Elemento, header_info.get('operacion'))
-        if ele_obj: auto_matched['elemento_id'] = ele_obj.id
-        
-        # 4. Cliente
-        cli_obj = get_or_create_fuzzy(Cliente, header_info.get('cliente'))
-        if cli_obj: auto_matched['cliente_id'] = cli_obj.id
+        # Buscar Proceso (en la DB 'Proceso' parece guardar la denominación del producto)
+        if header_info['denominacion']:
+            clean_den = header_info['denominacion'].replace('"', '').strip()[:15]
+            p = Proceso.objects.filter(nombre__icontains=clean_den).first()
+            if p: auto_matched['proceso_id'] = p.id
 
-        # Procesar validaciones en el backend (evitar lógica compleja en template)
+        # Buscar Operación/Elemento (en la DB 'Elemento' parece guardar la operación técnica)
+        if header_info['operacion']:
+            clean_op = header_info['operacion'].replace('°', '').strip()[:10]
+            e = Elemento.objects.filter(nombre__icontains=clean_op).first()
+            if not e:
+                e = Elemento.objects.filter(nombre__icontains=header_info['operacion'][:10]).first()
+            if e: auto_matched['elemento_id'] = e.id
+
+        # Procesar matriz para el frontend (validar OK/NOK)
         valid_matrix = []
         for row in extracted_matrix:
             try:
-                min_val = float(row['min'])
-                max_val = float(row['max'])
+                nom_float = float(row['nominal'])
+                # Parsing simple de tol ±
+                try: 
+                    t_val = float(row['tolerancia'].replace('±', '').strip())
+                except: 
+                    t_val = 0.0
+                
+                min_v, max_v = nom_float - t_val, nom_float + t_val
                 processed_vals = []
                 
                 for v in row['valores']:
-                    v_clean = str(v).strip().upper()
-                    if v_clean in ['OK', 'PASA', 'PASS']:
-                        processed_vals.append({'val': v, 'ok': True})
+                    if v in ['OK', 'NOK']:
+                        processed_vals.append({'val': v, 'ok': (v == 'OK')})
                     else:
                         try:
-                            val_float = float(v.replace(',', '.'))
-                            is_ok = min_val <= val_float <= max_val
+                            v_f = float(v)
+                            is_ok = min_v <= v_f <= max_v
                             processed_vals.append({'val': v, 'ok': is_ok})
-                        except (ValueError, AttributeError):
-                            processed_vals.append({'val': v, 'ok': False}) # Error parsing or NOK number
+                        except:
+                            processed_vals.append({'val': v, 'ok': True}) # Assume OK if cannot parse
                 
-                # Crear nueva fila con valores procesados
                 new_row = row.copy()
                 new_row['valores'] = processed_vals
                 valid_matrix.append(new_row)
-            except ValueError:
-                valid_matrix.append(row) # Fallback if limits are invalid
+            except:
+                valid_matrix.append(row) # Keep original row if parsing fails
 
         import json
         context = {
             'success': True,
-            'filename': pdf_file.name,
+            'filename': file_name,
             'header': header_info,
             'auto_matched': auto_matched,
-            'piezas': piezas_cols, # Using the explicit list of piece numbers
+            'piezas': piezas_cols,
             'matrix': valid_matrix,
-            # Serialized versions for JS
             'header_json': json.dumps(header_info),
             'piezas_json': json.dumps(piezas_cols),
             'matrix_json': json.dumps(valid_matrix),
-            # Master data for selectors (sorted)
             'procesos': Proceso.objects.all().order_by('nombre'),
             'articulos': Articulo.objects.all().order_by('nombre'),
             'elementos': Elemento.objects.all().order_by('nombre'),
@@ -2513,7 +2349,6 @@ def importar_datos_ocr(request):
 
             # 1. Gestionar Planilla (Buscar o Crear)
             proyecto_nombre = header.get('proyecto', 'OCR Import')
-            # Extract only digits from OP string if needed, assuming valid int
             op_str = str(header.get('op', '0'))
             op_numero = int(''.join(filter(str.isdigit, op_str)) or 0)
             
@@ -2525,24 +2360,27 @@ def importar_datos_ocr(request):
             elemento_id = data.get('elemento_id')
             cliente_id = data.get('cliente_id')
             
-            # Ensure we search/create by both OP and Project to be more specific
-            # OPs might be repeated across different projects in some systems
-            planilla, created = PlanillaMedicion.objects.get_or_create(
-                num_op=op_numero,
-                proyecto=proyecto_nombre,
-                defaults={
-                    'fecha_elaborador': timezone.now().date(),
-                    'observaciones': 'Importado automáticamente via OCR',
-                }
-            )
-
+            # FIX: First try to find by OP only to allow updating existing records even if Project name slightly changed in OCR
+            planilla = PlanillaMedicion.objects.filter(num_op=op_numero).first()
+            created = False
+            
+            if not planilla:
+                planilla = PlanillaMedicion.objects.create(
+                    num_op=op_numero,
+                    proyecto=proyecto_nombre,
+                    fecha_elaborador=timezone.now().date(),
+                    observaciones='Importado automáticamente via OCR'
+                )
+                created = True
+            else:
+                # Update existing planilla with information from current OCR
+                if proyecto_nombre and (not planilla.proyecto or planilla.proyecto == 'OCR Import'):
+                    planilla.proyecto = proyecto_nombre
+                
             # If the planilla already existed, the user wants to refresh it from the PDF
             # So we clear existing structure (Tolerances and associated Values) to avoid duplicates
             if not created:
                 planilla.tolerancia_set.all().delete()
-                # Values are usually cascaded from tolerances, but also from planilla.
-                # To be absolutely sure we don't have stray data for this OP:
-                # (Optional: planilla.valores.all().delete() if needed, but Tolerancia.delete() should handle it)
                 ValorMedicion.objects.filter(planilla=planilla).delete()
             
             # Helper to safely set FK IDs from strings/nulls

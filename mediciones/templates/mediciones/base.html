@@ -88,12 +88,12 @@
                     <ul class="nav-list">
                         {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                         <li class="nav-item-group">
-                            <a href="#" class="nav-link active-purple group-trigger {% if 'maestros' in request.path or 'instrumentos' in request.path or 'dashboard' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
+                            <a href="#" class="nav-link active-purple group-trigger {% if request.resolver_match.url_name == 'lista_procesos' or request.resolver_match.url_name == 'lista_elementos' or request.resolver_match.url_name == 'lista_controles' %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
                                 <i class="ri-booklet-line"></i>
                                 <span>Maestros</span>
                                 <i class="ri-arrow-down-s-line chevron"></i>
                             </a>
-                            <ul class="sub-menu {% if 'maestros' in request.path or 'instrumentos' in request.path or 'dashboard' in request.path %}open{% endif %}">
+                            <ul class="sub-menu {% if request.resolver_match.url_name == 'lista_procesos' or request.resolver_match.url_name == 'lista_elementos' or request.resolver_match.url_name == 'lista_controles' %}open{% endif %}">
                                 <li>
                                     <a href="{% url 'lista_procesos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_procesos' %}active{% endif %}">
                                         <i class="ri-node-tree" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
@@ -112,16 +112,26 @@
                                         Controles
                                     </a>
                                 </li>
+                            </ul>
+                        </li>
+
+                        <li class="nav-item-group">
+                            <a href="#" class="nav-link active-teal group-trigger {% if 'instrumento' in request.path or 'calibracion' in request.path or 'dashboard' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
+                                <i class="ri-tools-line"></i>
+                                <span>Instrumentos</span>
+                                <i class="ri-arrow-down-s-line chevron"></i>
+                            </a>
+                            <ul class="sub-menu {% if 'instrumento' in request.path or 'calibracion' in request.path or 'dashboard' in request.path %}open{% endif %}">
                                 <li>
-                                    <a href="{% url 'lista_instrumentos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_instrumentos' %}active{% endif %}">
-                                        <i class="ri-tools-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
-                                        Instrumentos
+                                    <a href="{% url 'lista_instrumentos' %}" class="active-teal {% if request.resolver_match.url_name == 'lista_instrumentos' %}active{% endif %}">
+                                        <i class="ri-compass-3-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
+                                        Listado de Equipos
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{% url 'dashboard_calibracion' %}" class="active-purple {% if request.resolver_match.url_name == 'dashboard_calibracion' %}active{% endif %}">
+                                    <a href="{% url 'dashboard_calibracion' %}" class="active-teal {% if request.resolver_match.url_name == 'dashboard_calibracion' %}active{% endif %}">
                                         <i class="ri-calendar-check-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
-                                        Calibraciones
+                                        Dashboard Metrología
                                         {% if global_vencidos_count > 0 %}
                                             <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 0.6em;">{{ global_vencidos_count }}</span>
                                         {% elif global_alertas_count > 0 %}

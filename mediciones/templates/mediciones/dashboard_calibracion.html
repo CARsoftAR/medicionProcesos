@@ -215,10 +215,10 @@
         new Chart(statusCtx, {
             type: 'doughnut',
             data: {
-                labels: ['Operativos', 'En Alerta', 'Vencidos'],
+                labels: ['Operativos', 'En Alerta', 'Vencidos', 'Bloqueados', 'Obsoletos'],
                 datasets: [{
-                    data: [{{ ok_count }}, {{ alerta_count }}, {{ vencidos_count }}],
-                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                    data: [{{ ok_count }}, {{ alerta_count }}, {{ vencidos_count }}, {{ bloqueados_count }}, {{ obsoletos_count }}],
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#64748b', '#cbd5e1'],
                     borderWidth: 0,
                     cutout: '75%'
                 }]
