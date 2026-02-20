@@ -11,6 +11,8 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='OPERADOR')
     gemini_api_key = models.CharField(max_length=255, blank=True, null=True, verbose_name="Gemini API Key")
+    alerta_calibracion_dias = models.IntegerField(default=15, verbose_name="Días anticipación alerta")
+    tema_preferido = models.CharField(max_length=10, choices=[('LIGHT', 'Claro'), ('DARK', 'Oscuro')], default='LIGHT')
 
     class Meta:
         db_table = 'USER_PROFILES'

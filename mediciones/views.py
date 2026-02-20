@@ -2272,36 +2272,67 @@ def ocr_lector_planos(request):
                 e = Elemento.objects.filter(nombre__icontains=header_info['operacion'][:10]).first()
             if e: auto_matched['elemento_id'] = e.id
 
-        # Procesar matriz para el frontend (validar OK/NOK)
+        # Procesar matriz con Lógica de Tolerancia Industrial (Soporta Asimétricas)
         valid_matrix = []
         for row in extracted_matrix:
             try:
-                nom_float = float(row['nominal'])
-                # Parsing simple de tol ±
-                try: 
-                    t_val = float(row['tolerancia'].replace('±', '').strip())
-                except: 
-                    t_val = 0.0
+                # 1. Parsing del Nominal
+                nom_str = str(row['nominal']).replace(',', '.')
+                nom_float = float(re.findall(r"[-+]?\d*\.\d+|\d+", nom_str)[0])
                 
-                min_v, max_v = nom_float - t_val, nom_float + t_val
+                # 2. Parsing de Tolerancias (+0.20/-0.10 o ±0.05)
+                tol_str = str(row['tolerancia']).replace(',', '.').strip()
+                t_plus = 0.0
+                t_minus = 0.0
+                
+                if '±' in tol_str:
+                    try:
+                        t_val = float(re.findall(r"\d*\.\d+|\d+", tol_str)[0])
+                        t_plus = t_val
+                        t_minus = t_val
+                    except: pass
+                elif '/' in tol_str or ('+' in tol_str and '-' in tol_str):
+                    # Caso asimétrico: +0.20/-0.10
+                    matches = re.findall(r"([+-]\s*\d*\.\d+|[+-]\s*\d+)", tol_str)
+                    for m in matches:
+                        val = float(m.replace(' ', ''))
+                        if '+' in m: t_plus = abs(val)
+                        if '-' in m: t_minus = abs(val)
+                else:
+                    try:
+                        t_val = float(re.findall(r"\d*\.\d+|\d+", tol_str)[0])
+                        t_plus = t_val
+                        t_minus = t_val
+                    except: pass
+
+                min_v, max_v = nom_float - t_minus, nom_float + t_plus
                 processed_vals = []
                 
                 for v in row['valores']:
-                    if v in ['OK', 'NOK']:
-                        processed_vals.append({'val': v, 'ok': (v == 'OK')})
+                    v_str = str(v).strip().upper().replace(',', '.')
+                    if v_str in ['OK', 'ACEPTADO']:
+                        processed_vals.append({'val': v, 'ok': True})
+                    elif v_str in ['NOK', 'RECHAZADO']:
+                        processed_vals.append({'val': v, 'ok': False})
                     else:
                         try:
-                            v_f = float(v)
-                            is_ok = min_v <= v_f <= max_v
-                            processed_vals.append({'val': v, 'ok': is_ok})
+                            nums = re.findall(r"[-+]?\d*\.\d+|\d+", v_str)
+                            if nums:
+                                v_f = float(nums[0])
+                                # Validar dentro del rango (con margen de error de redondeo)
+                                is_ok = (min_v - 0.0001) <= v_f <= (max_v + 0.0001)
+                                processed_vals.append({'val': v, 'ok': is_ok})
+                            else:
+                                processed_vals.append({'val': v, 'ok': True})
                         except:
-                            processed_vals.append({'val': v, 'ok': True}) # Assume OK if cannot parse
+                            processed_vals.append({'val': v, 'ok': True})
                 
                 new_row = row.copy()
                 new_row['valores'] = processed_vals
                 valid_matrix.append(new_row)
-            except:
-                valid_matrix.append(row) # Keep original row if parsing fails
+            except Exception as e:
+                print(f"[ERROR-TOL] {row.get('control')}: {e}")
+                valid_matrix.append(row)
 
         import json
         context = {
@@ -2427,13 +2458,56 @@ def importar_datos_ocr(request):
                     control.pnp = True
                     control.save()
 
-                # C. Gestionar Tolerancia
+                # C. Gestionar Tolerancia (Soporta Asimétricas +0.2/-0.1 y Rangos Negativos -0.20/-0.50)
                 try:
-                    nominal_val = float(str(row.get('nominal', 0)).replace(',', '.'))
-                    tol_str = str(row.get('tolerancia', '')).replace('±', '').replace('+', '').replace('-', '').strip()
-                    tol_val = float(tol_str.replace(',', '.')) if tol_str and tol_str.replace('.','').replace(',','').isdigit() else 0.0
-                except (ValueError, TypeError):
-                    nominal_val, tol_val = 0.0, 0.0
+                    nom_str = str(row.get('nominal', '0')).replace(',', '.')
+                    nominal_val = float(re.findall(r"[-+]?\d*\.\d+|\d+", nom_str)[0])
+                    
+                    tol_str = str(row.get('tolerancia', '')).replace(',', '.').strip()
+                    limit_max = 0.0
+                    limit_min = 0.0
+                    
+                    # Normalizar string (quitar espacios entre signos y números)
+                    # Ej: "- 0.5" -> "-0.5"
+                    tol_str_clean = re.sub(r'([-+])\s+(\d)', r'\1\2', tol_str)
+                    
+                    if '±' in tol_str_clean:
+                        vals = re.findall(r"\d*\.?\d+", tol_str_clean)
+                        if vals:
+                            v = float(vals[0])
+                            limit_max = abs(v)
+                            limit_min = -abs(v)
+                    else:
+                        # Extraer todos los números con su signo
+                        matches = re.findall(r"[-+]?\d*\.?\d+", tol_str_clean)
+                        # Filtrar posibles matches vacíos o puntos sueltos
+                        floats = []
+                        for m in matches:
+                            try:
+                                if m not in ['.', '-', '+']:
+                                     floats.append(float(m))
+                            except: pass
+                        
+                        if len(floats) >= 2:
+                            # Caso Clásico: 2 valores (ej: -0.20, -0.50)
+                            limit_max = max(floats) # -0.20
+                            limit_min = min(floats) # -0.50
+                        elif len(floats) == 1:
+                            val = floats[0]
+                            if '+' in tol_str_clean and val > 0:
+                                limit_max = val
+                                limit_min = 0.0
+                            elif '-' in tol_str_clean and val < 0:
+                                limit_max = 0.0
+                                limit_min = val
+                            else:
+                                # Sin signo explícito o valor '0' -> Asumir simétrico si no es 0
+                                # Si es 0, queda 0/0
+                                limit_max = abs(val)
+                                limit_min = -abs(val)
+
+                except (ValueError, TypeError, IndexError):
+                    nominal_val, limit_max, limit_min = 0.0, 0.0, 0.0
 
                 # D. Gestionar Instrumento
                 instrumento_nombre = row.get('instrumento', '').strip()
@@ -2451,8 +2525,8 @@ def importar_datos_ocr(request):
                     control=control,
                     defaults={
                         'nominal': nominal_val,
-                        'minimo': -tol_val,
-                        'maximo': tol_val,
+                        'minimo': limit_min,
+                        'maximo': limit_max,
                         'posicion': i + 1,
                         'instrumento': instrumento_obj
                     }
@@ -2543,3 +2617,31 @@ def importar_datos_ocr(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
+
+@login_required
+def configuracion_sistema(request):
+    if request.method == 'POST':
+        api_key = request.POST.get('api_key', '').strip()
+        alerta_dias = request.POST.get('alerta_dias', '15')
+        tema = request.POST.get('tema', 'LIGHT')
+        
+        user_profile = request.user.profile
+        
+        # Guardar en Base de Datos (Seguro)
+        user_profile.gemini_api_key = api_key
+        try:
+            user_profile.alerta_calibracion_dias = int(alerta_dias)
+        except ValueError:
+            pass # Mantener anterior
+            
+        user_profile.tema_preferido = tema
+        user_profile.save()
+        
+        # También guardar en sesión temporalmente por si acaso (backward compatibility)
+        if api_key:
+            request.session['gemini_api_key'] = api_key
+        
+        messages.success(request, 'Preferencias guardadas exitosamente.')
+        return redirect('configuracion_sistema')
+    
+    return render(request, 'mediciones/configuracion.html')

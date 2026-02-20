@@ -1,0 +1,80 @@
+{% extends 'mediciones/base.html' %}
+
+{% block title %}Configuración del Sistema{% endblock %}
+
+{% block content %}
+<div class="row animate__animated animate__fadeIn">
+    <!-- Header -->
+    <div class="col-12 mb-4">
+        <h1 class="page-title" style="font-size: 1.8rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">
+            <i class="ri-settings-3-line text-primary me-2"></i>Configuración del Sistema
+        </h1>
+        <p class="text-muted">Administre las claves y preferencias de su entorno de trabajo.</p>
+    <!-- </div> -->
+
+    <!-- API Keys Section -->
+    <div class="col-12">
+        <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
+            <div class="card-header bg-white border-bottom py-3">
+                <h5 class="mb-0 fw-bold text-dark"><i class="ri-key-2-line me-2 text-warning"></i>Credenciales de API</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-bold" style="font-size: 0.9rem;">Google Gemini API Key</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="ri-google-fill text-muted"></i></span>
+                            <input type="password" name="api_key" class="form-control border-start-0 ps-0" 
+                                   placeholder="Ingrese su clave de API de Google Gemini..."
+                                   value="{{ user.profile.gemini_api_key|default:'' }}">
+                        </div>
+                        <div class="form-text mt-2">
+                            <i class="ri-information-line me-1"></i> Esta clave es necesaria para utilizar las funciones de OCR inteligente.
+                            Si no tiene una, puede obtenerla en <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-primary text-decoration-none">Google AI Studio</a>.
+                        </div>
+                    </div>
+
+                    <hr class="my-5" style="border-top: 1px dashed #cbd5e1;">
+
+                    <div class="mb-4">
+                        <h5 class="mb-4 fw-bold text-dark"><i class="ri-equalizer-line me-2 text-info"></i>Preferencias Generales</h5>
+                        
+                        <div class="row g-4">
+                            <!-- Alertas -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold" style="font-size: 0.9rem;">Días de anticipación para Alertas</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-end-0"><i class="ri-alarm-warning-line text-muted"></i></span>
+                                    <input type="number" name="alerta_dias" class="form-control border-start-0 ps-0" 
+                                           value="{{ user.profile.alerta_calibracion_dias|default:'15' }}" min="1" max="90">
+                                </div>
+                                <div class="form-text mt-1">Días antes del vencimiento para avisar calibraciones.</div>
+                            </div>
+                            
+                            <!-- Tema -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold" style="font-size: 0.9rem;">Tema de la Interfaz</label>
+                                <select name="tema" class="form-select">
+                                    <option value="LIGHT" {% if user.profile.tema_preferido == 'LIGHT' %}selected{% endif %}>Claro (Light Mode)</option>
+                                    <option value="DARK" {% if user.profile.tema_preferido == 'DARK' %}selected{% endif %}>Oscuro (Dark Mode)</option>
+                                </select>
+                                <div class="form-text mt-1">Seleccione la apariencia visual del sistema.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-5 pt-3 border-top">
+                        <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 8px; font-weight: 600;">
+                            <i class="ri-save-line me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+</div>
+{% endblock %}

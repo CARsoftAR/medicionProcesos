@@ -158,7 +158,7 @@
                         </li>
                         {% endif %}
                         <li>
-                            <a href="#" class="nav-link active-red {% if 'configuracion' in request.path %}active{% endif %}">
+                            <a href="{% url 'configuracion_sistema' %}" class="nav-link active-red {% if 'configuracion' in request.path %}active{% endif %}">
                                 <i class="ri-settings-3-line"></i>
                                 <span>Configuración</span>
                                 <i class="ri-arrow-right-s-line chevron"></i>
