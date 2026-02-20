@@ -3,94 +3,239 @@
 {% block title %}Maestro de Clientes{% endblock %}
 
 {% block content %}
-<div class="card">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<style>
+    :root {
+        --stitch-primary: #e11d48;     /* Rose 600 */
+        --stitch-secondary: #fda4af;   /* Rose 300 */
+        --stitch-bg: #fdf2f8;          /* Rose 50 */
+        --stitch-text: #1e293b;        /* Slate 800 */
+        --stitch-glass: rgba(255, 255, 255, 0.9);
+        --stitch-border: rgba(225, 29, 72, 0.15);
+        --stitch-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.08);
+    }
+    
+    body { font-family: 'Inter', sans-serif; background-color: var(--stitch-bg); }
+
+    .stitch-module {
+        background: var(--stitch-glass);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--stitch-border);
+        border-radius: 24px;
+        padding: 2.5rem;
+        box-shadow: var(--stitch-shadow);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .stitch-header { margin-bottom: 2rem; }
+    .stitch-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--stitch-text);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+    }
+    .stitch-subtitle { color: #64748b; font-size: 0.9rem; margin-top: 0.2rem; font-weight: 500; }
+
+    .btn-stitch-primary {
+        background: linear-gradient(135deg, var(--stitch-primary), #be123c);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3);
+    }
+    .btn-stitch-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(225, 29, 72, 0.4);
+        color: white;
+    }
+
+    .table-stitch { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 1.5rem; }
+    .table-stitch th {
+        background: transparent;
+        color: var(--stitch-primary);
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.75rem;
+        padding: 1rem;
+        border-bottom: 2px dashed var(--stitch-border);
+    }
+    .table-stitch td {
+        padding: 1.2rem 1rem;
+        border-bottom: 1px solid rgba(225, 29, 72, 0.05);
+        color: var(--stitch-text);
+        font-size: 0.95rem;
+        vertical-align: middle;
+        transition: background-color 0.2s;
+    }
+    .table-stitch tr:hover td { background-color: rgba(225, 29, 72, 0.02); }
+
+    .btn-action-soft {
+        background: rgba(225, 29, 72, 0.04);
+        color: var(--stitch-primary);
+        border: 1px solid rgba(225, 29, 72, 0.1);
+        border-radius: 8px;
+        padding: 0.4rem 0.8rem;
+        font-weight: 700;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.75rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .btn-action-soft:hover {
+        background: var(--stitch-primary);
+        color: white;
+        border-color: var(--stitch-primary);
+        transform: translateY(-1px);
+    }
+
+    .pagination-stitch { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--stitch-border); padding-top: 1.5rem; }
+    .pager-controls { display: flex; gap: 0.5rem; align-items: center; }
+    .pager-btn {
+        background: white;
+        border: 1px solid rgba(225, 29, 72, 0.15);
+        border-radius: 8px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--stitch-text);
+        text-decoration: none;
+        transition: all 0.2s;
+        font-weight: 600;
+        font-family: 'Outfit', sans-serif;
+    }
+    .pager-btn:hover:not(.disabled) { background: var(--stitch-primary); color: white; border-color: var(--stitch-primary); }
+    .pager-btn.active { background: var(--stitch-primary); color: white; border-color: var(--stitch-primary); pointer-events: none; }
+    .pager-btn.disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
+
+    .per-page-input-stitch {
+        background: transparent;
+        border: 1px dashed rgba(225, 29, 72, 0.3);
+        border-radius: 8px;
+        padding: 0.4rem;
+        width: 60px;
+        text-align: center;
+        color: var(--stitch-primary);
+        font-weight: 800;
+        font-family: 'Outfit', sans-serif;
+        outline: none;
+        transition: 0.2s;
+    }
+    .per-page-input-stitch:focus { border-style: solid; border-color: var(--stitch-primary); }
+</style>
+
+<div class="stitch-module animate__animated animate__fadeIn">
+    <div class="stitch-header d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="card-title" style="font-size: 1.25rem;">Clientes</h2>
-            <div class="text-muted" style="font-size: 0.95rem;">
-                Administra la base de datos de clientes.
-            </div>
+            <h2 class="stitch-title">Clientes</h2>
+            <div class="stitch-subtitle">Administra la base de datos de clientes corporativos.</div>
         </div>
-        <a href="{% url 'crear_cliente' %}" class="btn btn-primary">
+        <a href="{% url 'crear_cliente' %}" class="btn-stitch-primary">
             <i class="ri-add-line"></i> Nuevo Cliente
         </a>
     </div>
 
-    <table class="data-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th style="text-align: right;">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for cliente in clientes %}
-            <tr>
-                <td style="width: 80px; font-family: monospace; color: var(--text-secondary);">#{{ cliente.id }}</td>
-                <td class="fw-bold">{{ cliente.nombre }}</td>
-                <td style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
-                    <a href="{% url 'editar_cliente' cliente.pk %}" class="btn-soft-primary">
-                        <i class="ri-edit-line"></i> Editar
-                    </a>
-                    <form action="{% url 'eliminar_cliente' cliente.pk %}" method="post" style="display: inline;" id="delete-form-cliente-{{ cliente.pk }}">
-                        {% csrf_token %}
-                        <button type="button" class="btn-soft-danger" onclick="confirmDelete('{{ cliente.nombre }}', 'delete-form-cliente-{{ cliente.pk }}')">
-                            <i class="ri-delete-bin-line"></i> Borrar
-                        </button>
-                    </form>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3" class="empty-state">
-                    <div class="empty-state-icon">
-                        <i class="ri-user-line"></i>
-                    </div>
-                    <div class="empty-state-title">No hay clientes definidos</div>
-                    <div>Comienza registrando tu primer cliente.</div>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table-stitch">
+            <thead>
+                <tr>
+                    <th class="text-start" style="width: 100px;">ID</th>
+                    <th class="text-start">Nombre</th>
+                    <th class="text-end" style="width: 200px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td class="text-start" style="font-family: 'Outfit', monospace; color: var(--stitch-primary); font-weight: 800;">#{{ cliente.id }}</td>
+                    <td class="text-start fw-bold" style="letter-spacing: -0.01em;">{{ cliente.nombre }}</td>
+                    <td class="text-end">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'editar_cliente' cliente.pk %}" class="btn-action-soft">
+                                <i class="ri-edit-line"></i> Editar
+                            </a>
+                            <form action="{% url 'eliminar_cliente' cliente.pk %}" method="post" style="margin: 0;" id="delete-form-cliente-{{ cliente.pk }}">
+                                {% csrf_token %}
+                                <button type="button" class="btn-action-soft" onclick="confirmDelete('{{ cliente.nombre }}', 'delete-form-cliente-{{ cliente.pk }}')">
+                                    <i class="ri-delete-bin-line"></i> Borrar
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center py-5">
+                        <div style="opacity: 0.4;">
+                            <i class="ri-user-smile-line" style="font-size: 4rem; color: var(--stitch-primary);"></i>
+                            <h4 class="mt-3" style="font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--stitch-text); text-transform: uppercase;">Sin Clientes</h4>
+                            <p style="color: #64748b; font-weight: 500;">Comienza registrando tu primer cliente en el sistema.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
     <!-- Pagination and Per Page Selector -->
-    <div class="pagination-container">
-        <div class="per-page-selector">
-            <span>Registros por página:</span>
-            <input type="number" class="per-page-input" value="{{ per_page }}" min="1" max="100" 
+    <div class="pagination-stitch">
+        <div class="d-flex align-items-center gap-2">
+            <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Registros p/pág:</span>
+            <input type="number" class="per-page-input-stitch" value="{{ per_page }}" min="1" max="100" 
                    onchange="changePerPage(this.value)"
                    onkeydown="if(event.key==='Enter') changePerPage(this.value)">
         </div>
 
-        <div class="pagination-controls">
+        <div class="pager-controls">
             {% if clientes.has_previous %}
-                <a href="?page=1&per_page={{ per_page }}" class="page-link-premium">
+                <a href="?page=1&per_page={{ per_page }}" class="pager-btn" title="Primera">
                     <i class="ri-double-left-line"></i>
                 </a>
-                <a href="?page={{ clientes.previous_page_number }}&per_page={{ per_page }}" class="page-link-premium">
+                <a href="?page={{ clientes.previous_page_number }}&per_page={{ per_page }}" class="pager-btn" title="Anterior">
                     <i class="ri-arrow-left-s-line"></i>
                 </a>
             {% else %}
-                <div class="page-link-premium disabled"><i class="ri-double-left-line"></i></div>
-                <div class="page-link-premium disabled"><i class="ri-arrow-left-s-line"></i></div>
+                <div class="pager-btn disabled"><i class="ri-double-left-line"></i></div>
+                <div class="pager-btn disabled"><i class="ri-arrow-left-s-line"></i></div>
             {% endif %}
 
-            <div class="page-link-premium active">
-                {{ clientes.number }} de {{ clientes.paginator.num_pages }}
+            <div class="pager-btn active" style="width: auto; padding: 0 1rem;">
+                {{ clientes.number }} / {{ clientes.paginator.num_pages }}
             </div>
 
             {% if clientes.has_next %}
-                <a href="?page={{ clientes.next_page_number }}&per_page={{ per_page }}" class="page-link-premium">
+                <a href="?page={{ clientes.next_page_number }}&per_page={{ per_page }}" class="pager-btn" title="Siguiente">
                     <i class="ri-arrow-right-s-line"></i>
                 </a>
-                <a href="?page={{ clientes.paginator.num_pages }}&per_page={{ per_page }}" class="page-link-premium">
+                <a href="?page={{ clientes.paginator.num_pages }}&per_page={{ per_page }}" class="pager-btn" title="Última">
                     <i class="ri-double-right-line"></i>
                 </a>
             {% else %}
-                <div class="page-link-premium disabled"><i class="ri-arrow-right-s-line"></i></div>
-                <div class="page-link-premium disabled"><i class="ri-double-right-line"></i></div>
+                <div class="pager-btn disabled"><i class="ri-arrow-right-s-line"></i></div>
+                <div class="pager-btn disabled"><i class="ri-double-right-line"></i></div>
             {% endif %}
         </div>
     </div>

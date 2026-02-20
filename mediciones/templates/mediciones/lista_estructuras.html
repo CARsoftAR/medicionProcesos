@@ -3,101 +3,105 @@
 {% block title %}Estructuras de Medición{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-end align-items-center mb-4">
-    <a href="{% url 'configurar_estructura' %}" class="btn btn-primary" style="padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600;">
-        <i class="ri-add-line" style="margin-right: 0.5rem;"></i> Nueva Estructura
-    </a>
-</div>
-
-<div class="card">
-    <div class="card-body p-0">
-        <div style="overflow-x: auto;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="padding: 1.25rem;">OP / PROYECTO</th>
-                        <th>CLIENTE</th>
-                        <th>ARTÍCULO</th>
-                        <th class="text-end" style="padding-right: 1.25rem;">ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for e in estructuras %}
-                    <tr>
-                        <td style="padding: 1.25rem;">
-                            <div style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem;">
-                                {% if e.num_op %}{{ e.num_op }} / {% endif %}{{ e.proyecto }}
-                            </div>
-                        </td>
-                        <td>
-                            <span style="color: var(--text-secondary); font-weight: 500;">{{ e.cliente.nombre|default:"-" }}</span>
-                        </td>
-                        <td>
-                            <span class="badge" style="background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.2); padding: 0.4rem 0.8rem; border-radius: 8px;">
-                                {{ e.articulo.nombre|default:"Sin Artículo" }}
-                            </span>
-                        </td>
-                        <td class="text-end" style="padding-right: 1.25rem;">
-                            <div class="d-flex gap-2 justify-content-end">
-                                <a href="{% url 'configurar_estructura' %}?op={{ e.num_op|default:'' }}&proy={{ e.proyecto|default:'' }}" 
-                                   class="btn-action-edit" 
-                                   title="Editar Estructura"
-                                   style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); width: 38px; height: 38px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid var(--border-light);">
-                                    <i class="ri-edit-line"></i>
-                                </a>
-                                <button type="button" 
-                                        onclick="deleteStructure('{{ e.proyecto }}', '{{ e.num_op }}')"
-                                        class="btn-action-delete"
-                                        title="Eliminar Estructura"
-                                        style="background: rgba(239, 68, 68, 0.1); color: #ef4444; width: 38px; height: 38px; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
-                                    <i class="ri-delete-bin-line"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" class="empty-state">
-                            <i class="ri-layout-grid-line" style="font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.1;"></i>
-                            Aún no se han definido estructuras de medición.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
 <style>
-    .btn-action-edit:hover {
-        background: rgba(255, 255, 255, 0.1) !important;
-        color: var(--text-primary) !important;
-        transform: translateY(-2px);
-    }
-
-    .btn-action-delete:hover {
-        background: rgba(239, 68, 68, 0.2) !important;
-        color: #f87171 !important;
-        transform: translateY(-2px);
+    :root {
+        --stitch-primary: #e11d48;     /* Rose 600 */
+        --stitch-secondary: #fda4af;   /* Rose 300 */
+        --stitch-bg: #fdf2f8;          /* Rose 50 */
+        --stitch-text: #1e293b;        /* Slate 800 */
+        --stitch-glass: rgba(255, 255, 255, 0.9);
+        --stitch-border: rgba(225, 29, 72, 0.15);
+        --stitch-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.08);
     }
     
-    .data-table thead th {
-        background: rgba(255, 255, 255, 0.02);
-        color: var(--text-secondary);
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
+    body { 
+        background-color: var(--stitch-bg) !important;
+        font-family: 'Inter', sans-serif; 
+    }
+
+    .btn-stitch-primary {
+        background: linear-gradient(135deg, var(--stitch-primary), #be123c);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 0.85rem 1.75rem;
+        font-weight: 800;
+        font-family: 'Outfit', sans-serif;
         letter-spacing: 0.05em;
-        border-bottom: 1px solid var(--border-color);
+        transition: all 0.3s;
+        box-shadow: 0 10px 20px -5px rgba(225, 29, 72, 0.4);
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+
+    .btn-stitch-primary:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 15px 30px -5px rgba(225, 29, 72, 0.5);
+        color: white;
+    }
+
+    .stitch-module {
+        background: var(--stitch-glass);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--stitch-border);
+        border-radius: 20px;
+        box-shadow: var(--stitch-shadow);
+        overflow: hidden;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table thead th {
+        background: rgba(225, 29, 72, 0.03);
+        color: var(--stitch-primary);
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+        padding: 1rem 1.25rem;
+        border-bottom: 2px solid var(--stitch-border);
     }
     
     .data-table tbody tr {
         transition: background 0.2s;
+        border-bottom: 1px dashed var(--stitch-border);
     }
     
     .data-table tbody tr:hover {
-        background: rgba(255, 255, 255, 0.03) !important;
+        background: rgba(225, 29, 72, 0.02) !important;
+    }
+
+    .btn-action-edit {
+        background: rgba(225, 29, 72, 0.05) !important; 
+        color: var(--stitch-primary) !important; 
+        width: 38px; height: 38px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid var(--stitch-border) !important;
+        transition: all 0.2s;
+    }
+    .btn-action-edit:hover {
+        background: rgba(225, 29, 72, 0.1) !important;
+        color: #be123c !important;
+        transform: translateY(-2px);
+        border-color: rgba(225, 29, 72, 0.3) !important;
+    }
+
+    .btn-action-delete {
+        background: rgba(239, 68, 68, 0.1) !important; 
+        color: #ef4444 !important; 
+        width: 38px; height: 38px; border: 1px solid rgba(239, 68, 68, 0.2) !important; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+    }
+    .btn-action-delete:hover {
+        background: rgba(239, 68, 68, 0.2) !important;
+        color: #b91c1c !important;
+        transform: translateY(-2px);
     }
 
     .swal2-popup .swal2-icon.no-border {
@@ -106,6 +110,77 @@
         box-shadow: none !important;
     }
 </style>
+
+<div class="container-fluid py-4 animate__animated animate__fadeIn" style="max-width: 1400px;">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.8rem; letter-spacing: -0.025em; color: var(--stitch-text); margin: 0;">ESTRUCTURAS DE MEDICIÓN</h1>
+            <p style="color: #64748b; font-weight: 500; font-size: 0.95rem; margin: 0;">Configura las plantillas para OPs y Proyectos referenciados a Clientes.</p>
+        </div>
+        <a href="{% url 'configurar_estructura' %}" class="btn-stitch-primary">
+            <i class="ri-add-line" style="font-size: 1.2rem;"></i> NUEVA ESTRUCTURA
+        </a>
+    </div>
+
+    <div class="stitch-module">
+        <div class="card-body p-0">
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>OP / PROYECTO</th>
+                            <th>CLIENTE</th>
+                            <th>ARTÍCULO</th>
+                            <th class="text-end">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in estructuras %}
+                        <tr>
+                            <td style="padding: 1.25rem;">
+                                <div style="font-weight: 800; color: var(--stitch-text); font-size: 1.05rem;">
+                                    {% if e.num_op %}{{ e.num_op }} / {% endif %}{{ e.proyecto }}
+                                </div>
+                            </td>
+                            <td>
+                                <span style="color: #64748b; font-weight: 600;">{{ e.cliente.nombre|default:"-" }}</span>
+                            </td>
+                            <td>
+                                <span class="badge" style="background: rgba(225, 29, 72, 0.1); color: var(--stitch-primary); border: 1px solid rgba(225, 29, 72, 0.2); padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 700;">
+                                    {{ e.articulo.nombre|default:"Sin Artículo" }}
+                                </span>
+                            </td>
+                            <td class="text-end" style="padding-right: 1.25rem;">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="{% url 'configurar_estructura' %}?op={{ e.num_op|default:'' }}&proy={{ e.proyecto|default:'' }}" 
+                                       class="btn-action-edit" 
+                                       title="Editar Estructura">
+                                        <i class="ri-edit-line" style="font-size: 1.1rem;"></i>
+                                    </a>
+                                    <button type="button" 
+                                            onclick="deleteStructure('{{ e.proyecto }}', '{{ e.num_op }}')"
+                                            class="btn-action-delete"
+                                            title="Eliminar Estructura">
+                                        <i class="ri-delete-bin-line" style="font-size: 1.1rem;"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" style="padding: 4rem 1rem; text-align: center; color: #94a3b8;">
+                                <i class="ri-layout-grid-fill" style="font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.2; color: var(--stitch-primary);"></i>
+                                <div style="font-weight: 600; font-size: 1.1rem;">AÚN NO SE HAN DEFINIDO ESTRUCTURAS</div>
+                                <div style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">Crea tu primera estructura utilizando el botón superior.</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>

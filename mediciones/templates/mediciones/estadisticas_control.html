@@ -9,8 +9,8 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div class="d-flex align-items-center gap-3">
             <div>
-                <h1 id="controlTitleHeader" style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.025em;">
-                    SEGUIMIENTO DE PARÁMETROS: {{ tolerancia.control.nombre }}
+                <h1 id="controlTitleHeader" style="font-size: 1.5rem; font-family: 'Outfit', sans-serif; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: -0.025em; text-transform: uppercase;">
+                    SEGUIMIENTO DE PARÁMETROS: <span style="color: #e11d48;">{{ tolerancia.control.nombre }}</span>
                 </h1>
                 <p id="controlSubHeader" style="color: #64748b; font-size: 0.95rem; margin: 0; font-weight: 500;">
                     Proyecto: {{ tolerancia.planilla.proyecto }} | OP: {{ tolerancia.planilla.num_op }} | Proceso: {{ tolerancia.planilla.proceso.nombre }} | Cliente: {{ tolerancia.planilla.cliente.nombre }}
@@ -18,19 +18,19 @@
             </div>
         </div>
         <div class="d-flex gap-2 align-items-center">
-            <a id="btnReportePro" href="/mediciones/{{ tolerancia.planilla.id }}/exportar-pdf-pro/" class="btn shadow-danger d-flex align-items-center gap-2 px-3" style="border-radius: 12px; font-weight: 800; font-size: 0.8rem; height: 42px; border: none; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; text-decoration: none; letter-spacing: 0.02em;">
+            <a id="btnReportePro" href="/mediciones/{{ tolerancia.planilla.id }}/exportar-pdf-pro/" class="btn shadow-danger d-flex align-items-center gap-2 px-3" style="border-radius: 14px; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 0.8rem; height: 42px; border: none; background: linear-gradient(135deg, var(--stitch-primary, #e11d48), #be123c); color: white; text-decoration: none; letter-spacing: 0.05em; text-transform: uppercase;">
                 <i class="ri-printer-line"></i> REPORTE PRO
             </a>
             
-            <button id="topAlertBtn" onclick="showDiagnosticReport()" class="btn btn-danger animate__animated animate__pulse animate__infinite d-flex align-items-center justify-content-center shadow-danger" style="{% if not stats.alerts %}display: none !important;{% endif %} width: 42px; height: 42px; border-radius: 12px; border: none; background: #ef4444;">
+            <button id="topAlertBtn" onclick="showDiagnosticReport()" class="btn btn-danger animate__animated animate__pulse animate__infinite d-flex align-items-center justify-content-center shadow-danger" style="{% if not stats.alerts %}display: none !important;{% endif %} width: 42px; height: 42px; border-radius: 14px; border: none; background: var(--stitch-primary, #e11d48);">
                 <i class="ri-error-warning-fill" style="font-size: 1.2rem;"></i>
             </button>
             
-            <button onclick="toggleFullScreen()" class="btn shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-radius: 12px; border: 1px solid #e2e8f0; background: #ffffff;" title="Pantalla Completa">
-                <i class="ri-fullscreen-line" id="fsIcon" style="font-size: 1.2rem; color: #64748b;"></i>
+            <button onclick="toggleFullScreen()" class="btn shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-radius: 14px; border: 1px solid rgba(225, 29, 72, 0.15); background: rgba(255,255,255,0.9);" title="Pantalla Completa">
+                <i class="ri-fullscreen-line" id="fsIcon" style="font-size: 1.2rem; color: var(--stitch-primary, #e11d48);"></i>
             </button>
 
-            <a id="btnVolver" href="{% url 'ingreso_mediciones' tolerancia.planilla.id %}" class="btn" style="background-color: #ef4444; color: white; padding: 0.6rem 1.5rem; border-radius: 12px; font-size: 0.9rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);">
+            <a id="btnVolver" href="{% url 'ingreso_mediciones' tolerancia.planilla.id %}" class="btn" style="background-color: var(--stitch-primary, #e11d48); color: white; padding: 0.6rem 1.5rem; border-radius: 14px; font-size: 0.9rem; font-family: 'Outfit', sans-serif; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.3); text-transform: uppercase; letter-spacing: 0.05em;">
                 <i class="ri-arrow-left-line"></i> Volver
             </a>
         </div>
@@ -137,7 +137,7 @@
                                    onclick="loadControlData(event, {{ sibling.id }}, this)"
                                    data-id="{{ sibling.id }}"
                                    class="list-group-item list-group-item-action d-flex align-items-center justify-content-between px-3 py-1.5 control-list-item"
-                                   style="font-size: 0.8rem; transition: all 0.2s; border: none; border-left: 3px solid transparent; background: transparent; {% if sibling.id == tolerancia.id %}background-color: rgba(99, 102, 241, 0.1) !important; color: #4338ca !important; font-weight: 600; border-left-color: #6366f1 !important;{% else %}color: #475569;{% endif %}">
+                                   style="font-size: 0.8rem; transition: all 0.2s; border: none; border-left: 3px solid transparent; background: transparent; {% if sibling.id == tolerancia.id %}background-color: rgba(225, 29, 72, 0.1) !important; color: #e11d48 !important; font-family: 'Outfit', sans-serif; font-weight: 800; border-left-color: #e11d48 !important;{% else %}color: #475569;{% endif %}">
                                     <span class="text-truncate d-flex align-items-center gap-2" style="flex: 1;">
                                         {{ sibling.control.nombre }}
                                     </span>
@@ -272,6 +272,18 @@
 </div><!-- /ec-page-wrapper -->
 
 <style>
+    :root {
+        --stitch-primary: #e11d48;     /* Rose 600 */
+        --stitch-secondary: #fda4af;   /* Rose 300 */
+        --stitch-bg: #fdf2f8;          /* Rose 50 */
+        --stitch-text: #1e293b;        /* Slate 800 */
+        --stitch-glass: rgba(255, 255, 255, 0.9);
+        --stitch-border: rgba(225, 29, 72, 0.15);
+        --stitch-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.08);
+    }
+    
+    body { font-family: 'Inter', sans-serif; }
+
     /* ===== LAYOUT OVERRIDE ===== */
     .ec-page-wrapper {
         padding: 0.75rem 1rem;
@@ -281,7 +293,7 @@
         max-width: 100%;
         box-sizing: border-box;
         overflow-x: hidden;
-        background: #f8fafc;
+        background: var(--stitch-bg);
         gap: 0.75rem;
     }
 
@@ -334,7 +346,11 @@
         color: #475569;
         line-height: 1.1;
     }
-    .stats-table-compact td:first-child { color: #64748b; font-weight: 500; }
+    .stats-table-compact td:first-child { 
+        color: #64748b; 
+        font-weight: 500; 
+        white-space: nowrap; 
+    }
     .stats-table-compact td:last-child { color: #0f172a; font-weight: 700; text-align: right; }
     .stats-table-compact tr.table-highlight td { background: rgba(239, 68, 68, 0.04); }
 
@@ -376,8 +392,8 @@
         color: #475569 !important;
     }
     .control-list-item:hover {
-        background: rgba(99, 102, 241, 0.06) !important;
-        color: #4338ca !important;
+        background: rgba(225, 29, 72, 0.06) !important;
+        color: var(--stitch-primary) !important;
         text-decoration: none !important;
     }
     .list-group-item.control-list-item {
@@ -391,11 +407,11 @@
     .chart-thumb:hover {
         transform: translateY(-3px);
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
-        border: 1px solid #3b82f6 !important;
+        border: 1px solid var(--stitch-primary) !important;
     }
     .chart-thumb.active {
-        border: 2px solid #3b82f6 !important;
-        background: rgba(59, 130, 246, 0.1);
+        border: 2px solid var(--stitch-primary) !important;
+        background: rgba(225, 29, 72, 0.05);
     }
 
     .badge-soft-danger {
@@ -420,12 +436,33 @@
     }
 
     .card {
-        background: #ffffff !important;
-        border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+        background: var(--stitch-glass) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--stitch-border) !important;
+        box-shadow: var(--stitch-shadow) !important;
+        border-radius: 20px !important;
+    }
+    .config-card {
+        background: var(--stitch-glass) !important;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--stitch-border) !important;
+        box-shadow: var(--stitch-shadow) !important;
+        border-radius: 20px !important;
+    }
+    .config-card-header {
+        background: transparent !important;
+        color: var(--stitch-primary) !important;
+        font-family: 'Outfit', sans-serif !important;
+        border-bottom: 1px dashed var(--stitch-border) !important;
+    }
+    .config-card-header i, .config-card-header span {
+        color: var(--stitch-primary) !important;
     }
     .card-body h5, .card-body h6 {
-        color: #0f172a !important;
+        color: var(--stitch-text) !important;
+        font-family: 'Outfit', sans-serif !important;
     }
     .text-xxs {
         font-size: 0.65rem;
@@ -531,10 +568,10 @@
         justify-content: center;
         width: 18px;
         height: 18px;
-        background: rgba(0, 0, 0, 0.04);
-        border: 1px solid rgba(0, 0, 0, 0.1);
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
         border-radius: 50%;
-        color: #64748b;
+        color: #3b82f6;
         font-size: 0.7rem;
         cursor: pointer;
         margin-left: 6px;

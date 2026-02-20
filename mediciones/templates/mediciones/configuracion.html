@@ -3,69 +3,164 @@
 {% block title %}Configuración del Sistema{% endblock %}
 
 {% block content %}
-<div class="row animate__animated animate__fadeIn">
-    <!-- Header --> -->
-    <div class="col-12 mb-4">
-        <h1 class="page-title" style="font-size: 1.8rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">
-            <i class="ri-settings-3-line text-primary me-2"></i>Configuración del Sistema
-        </h1>
-        <p class="text-muted">Administre las claves y preferencias de su entorno de trabajo.</p> -->
-    <!-- </div> -->
+<style>
+    :root {
+        --stitch-primary: #e11d48;     /* Rose 600 */
+        --stitch-secondary: #fda4af;   /* Rose 300 */
+        --stitch-bg: #fdf2f8;        /* Rose 50 */
+        --stitch-text: #1e293b;       /* Slate 800 */
+        --stitch-glass: rgba(255, 255, 255, 0.9);
+        --stitch-border: rgba(225, 29, 72, 0.1);
+    }
 
-    <!-- API Keys Section -->
-    <div class="col-12">
-        <div class="card shadow-sm border-0" style="border-radius: 16px; overflow: hidden;">
-            <div class="card-header bg-white border-bottom py-3">
-                <h5 class="mb-0 fw-bold text-dark"><i class="ri-key-2-line me-2 text-warning"></i>Credenciales de API</h5>
+    body {
+        background-color: var(--stitch-bg) !important;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .stitch-module {
+        background: var(--stitch-glass);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--stitch-border);
+        border-radius: 24px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.05);
+        padding: 2rem !important;
+    }
+
+    .stitch-module:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 50px -12px rgba(225, 29, 72, 0.1);
+        border-color: rgba(225, 29, 72, 0.2);
+    }
+
+    .stitch-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--stitch-text) 30%, var(--stitch-primary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.02em;
+    }
+
+    .stitch-label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--stitch-primary);
+        margin-bottom: 0.5rem;
+        display: block;
+        opacity: 0.8;
+    }
+
+    .stitch-input {
+        background: #fdf5f5;
+        border: 1px solid var(--stitch-border);
+        color: var(--stitch-text);
+        padding: 0.85rem 1.25rem;
+        border-radius: 12px;
+        width: 100%;
+        transition: all 0.3s;
+        font-size: 0.95rem;
+    }
+
+    .stitch-input:focus {
+        background: #ffffff;
+        border-color: var(--stitch-primary);
+        box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
+        outline: none;
+    }
+
+    .btn-stitch-primary {
+        background: linear-gradient(135deg, var(--stitch-primary), #be123c);
+        color: white;
+        border: none;
+        border-radius: 14px;
+        padding: 0.85rem 1.75rem;
+        font-weight: 800;
+        font-family: 'Outfit', sans-serif;
+        letter-spacing: 0.05em;
+        transition: all 0.3s;
+        box-shadow: 0 10px 20px -5px rgba(225, 29, 72, 0.4);
+        text-transform: uppercase;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-stitch-primary:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 15px 30px -5px rgba(225, 29, 72, 0.5);
+        color: white;
+    }
+</style>
+
+<div class="container-fluid py-4 animate__animated animate__fadeIn" style="max-width: 900px;">
+    
+    <div class="mb-5 text-center">
+        <h1 class="stitch-title mb-2" style="font-size: 2.5rem;">CONFIGURACIÓN DEL SISTEMA</h1>
+        <p style="color: #64748b; font-weight: 500;">Administra las credenciales y preferencias de tu entorno industrial.</p>
+    </div>
+
+    <form method="post" class="stitch-module">
+        {% csrf_token %}
+        
+        <div class="mb-5">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div style="width: 40px; height: 40px; background: rgba(225, 29, 72, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--stitch-primary);">
+                    <i class="ri-key-2-line" style="font-size: 1.25rem;"></i>
+                </div>
+                <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.2rem; margin: 0; color: var(--stitch-text);">
+                    CREDENCIALES DE API
+                </h2>
             </div>
-            <div class="card-body p-4">
-                <form method="post">
-                    {% csrf_token %}
-                    
-                    <div class="mb-4">
-                        <label class="form-label fw-bold" style="font-size: 0.9rem;">Google Gemini API Key</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="ri-google-fill text-muted"></i></span>
-                            <input type="password" name="api_key" class="form-control border-start-0 ps-0" 
-                                   placeholder="Ingrese su clave de API de Google Gemini..."
-                                   value="{{ user.profile.gemini_api_key|default:'' }}">
-                        </div>
-                        <div class="form-text mt-2">
-                            <i class="ri-information-line me-1"></i> Esta clave es necesaria para utilizar las funciones de OCR inteligente.
-                            Si no tiene una, puede obtenerla en <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-primary text-decoration-none">Google AI Studio</a>.
-                        </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <label class="stitch-label">Google Gemini API Key</label>
+                    <input type="password" name="api_key" class="stitch-input" 
+                           placeholder="Ingresa tu clave de API de Google Gemini..."
+                           value="{{ user.profile.gemini_api_key|default:'' }}">
+                    <div class="mt-2" style="font-size: 0.8rem; color: #64748b; font-weight: 500;">
+                        <i class="ri-information-line" style="color: var(--stitch-primary); margin-right: 4px;"></i>
+                        Clave necesaria para el procesamiento de IA (OCR). Obtén una en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--stitch-primary); font-weight: 700; text-decoration: none;">Google AI Studio</a>.
                     </div>
-
-                    <hr class="my-5" style="border-top: 1px dashed #cbd5e1;">
-
-                    <div class="mb-4">
-                        <h5 class="mb-4 fw-bold text-dark"><i class="ri-equalizer-line me-2 text-info"></i>Preferencias Generales</h5>
-                        
-                        <div class="row g-4">
-                            <!-- Alertas -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold" style="font-size: 0.9rem;">Días de anticipación para Alertas</label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light border-end-0"><i class="ri-alarm-warning-line text-muted"></i></span>
-                                    <input type="number" name="alerta_dias" class="form-control border-start-0 ps-0" 
-                                           value="{{ user.profile.alerta_calibracion_dias|default:'15' }}" min="1" max="90">
-                                </div>
-                                <div class="form-text mt-1">Días antes del vencimiento para avisar calibraciones.</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex justify-content-end mt-5 pt-3 border-top">
-                        <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 8px; font-weight: 600;">
-                            <i class="ri-save-line me-2"></i>Guardar Cambios
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-    </div>
-    </div>
+
+        <hr style="border-top: 2px dashed rgba(225, 29, 72, 0.1); margin: 2rem 0;">
+
+        <div class="mb-4">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div style="width: 40px; height: 40px; background: rgba(14, 165, 233, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #0ea5e9;">
+                    <i class="ri-equalizer-line" style="font-size: 1.25rem;"></i>
+                </div>
+                <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.2rem; margin: 0; color: var(--stitch-text);">
+                    PREFERENCIAS GENERALES
+                </h2>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="stitch-label">Anticipación de Alertas (Días)</label>
+                    <input type="number" name="alerta_dias" class="stitch-input" 
+                           value="{{ user.profile.alerta_calibracion_dias|default:'15' }}" min="1" max="90">
+                    <div class="mt-2" style="font-size: 0.8rem; color: #64748b; font-weight: 500;">
+                        Días de anticipación para avisos de calibraciones vencidas.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 d-flex justify-content-end">
+            <button type="submit" class="btn-stitch-primary">
+                <i class="ri-save-3-line" style="font-size: 1.2rem;"></i> GUARDAR CAMBIOS
+            </button>
+        </div>
+    </form>
 </div>
-
-
 {% endblock %}
