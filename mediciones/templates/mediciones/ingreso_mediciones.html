@@ -4,466 +4,339 @@
 {% block title %}Ingreso de Mediciones{% endblock %}
 
 {% block content %}
-<!-- TEMPLATE VERSION 2.0 - GRID LAYOUT ENABLED -->
+
+<!-- FUENTES INDUSTRIALES DE ALTA PRECISIN -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Fira+Sans:wght@300;400;600;800&family=Outfit:wght@800&display=swap" rel="stylesheet">
+
 <style>
-    /* Override content-wrapper for this page only */
+    :root {
+        --stitch-bg: #fffbfb;
+        --stitch-surface: #ffffff;
+        --stitch-primary: #e11d48; /* Ruby Red */
+        --stitch-secondary: #fb7185; /* Rose */
+        --stitch-border: rgba(225, 29, 72, 0.08);
+        --stitch-text: #1e1b1b;
+        --stitch-muted: #7f7171;
+        --stitch-success: #10b981;
+        --stitch-danger: #e11d48;
+        --stitch-glass: rgba(255, 255, 255, 0.7);
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--stitch-bg);
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(225, 29, 72, 0.02) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(251, 113, 133, 0.02) 0%, transparent 50%);
+        color: var(--stitch-text);
+        min-height: 100vh;
+    }
+
     .content-wrapper {
-        max-width: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-    }
-    
-    /* Premium Grid Layout for two-column design */
-    .premium-grid-layout {
-        display: grid !important;
-        grid-template-columns: 320px 1fr !important;
-        gap: 2rem !important;
-        width: 100% !important;
-        max-width: 1800px !important;
+        max-width: 1400px !important;
         margin: 0 auto !important;
-        padding: 1.5rem !important;
+        padding: 3rem !important;
     }
-    
-    .premium-sidebar-col {
-        position: relative !important;
+
+    /* STITCH MODULES (RUBY BENTO) */
+    .stitch-module {
+        background: var(--stitch-glass);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--stitch-border);
+        border-radius: 24px;
+        box-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.05);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
     }
-    
-    .premium-main-col {
-        position: relative !important;
-        min-width: 0 !important;
+
+    .stitch-module:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 50px -12px rgba(225, 29, 72, 0.1);
+        border-color: rgba(225, 29, 72, 0.2);
     }
-    
-    @media (max-width: 992px) {
-        .premium-grid-layout {
-            grid-template-columns: 1fr !important;
-            gap: 1.5rem !important;
-        }
+
+    /* TYPOGRAPHY: CRIMSON PRECISION */
+    .stitch-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, var(--stitch-text) 30%, var(--stitch-primary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stitch-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--stitch-primary);
+        margin-bottom: 0.5rem;
+        opacity: 0.8;
+    }
+
+    /* STACKED BENTO GRID */
+    .stitch-tile {
+        display: grid;
+        grid-template-columns: 1fr 100px 140px 100px 180px;
+        gap: 1.5rem;
+        align-items: center;
+        background: #ffffff;
+        padding: 1.5rem 2.5rem;
+        border-radius: 20px;
+        border: 1px solid #f9ecec;
+        margin-bottom: 1.25rem;
+        transition: all 0.3s;
+        box-shadow: 0 2px 4px rgba(225, 29, 72, 0.02);
+    }
+
+    .stitch-tile:last-child {
+        border-bottom: none;
+    }
+
+    .stitch-tile:hover {
+        background: #fffafa;
+        border-color: var(--stitch-secondary);
+        transform: scale(1.005);
+    }
+
+    .stitch-val-input {
+        background: #fdf5f5;
+        border: 2px solid transparent;
+        color: var(--stitch-primary);
+        text-align: center;
+        font-family: 'Fira Code', monospace;
+        font-size: 1.4rem;
+        font-weight: 800;
+        border-radius: 12px;
+        width: 100%;
+        height: 52px;
+        transition: all 0.3s;
+    }
+
+    .stitch-val-input:focus {
+        background: #ffffff;
+        border-color: var(--stitch-primary);
+        box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
+        outline: none;
+    }
+
+    /* STATUS FLUX */
+    .status-flux {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        position: relative;
+    }
+
+    .status-flux.ok { background: var(--stitch-success); box-shadow: 0 0 10px rgba(16, 185, 129, 0.3); }
+    .status-flux.nok { background: var(--stitch-danger); box-shadow: 0 0 10px rgba(225, 29, 72, 0.3); }
+    .status-flux.pending { background: #e5e1e1; }
+
+    /* ACTION BUTTONS */
+    .btn-stitch-primary {
+        background: var(--stitch-primary);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        width: 100%;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        transition: all 0.3s;
+    }
+
+    .btn-stitch-primary:hover {
+        background: #4f46e5;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+    }
+
+    .btn-stitch-outline {
+        background: transparent;
+        border: 1px solid var(--stitch-border);
+        color: var(--stitch-text);
+        padding: 1rem;
+        border-radius: 10px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s;
+    }
+
+    .btn-stitch-outline:hover {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: var(--stitch-primary);
+    }
+
+    .stitch-layout {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 2rem;
+    }
+
+    @media (max-width: 1200px) {
+        .cyber-layout-grid { grid-template-columns: 1fr; }
     }
 </style>
 
-
-<div class="premium-page-container">
+<div class="animate__animated animate__fadeIn">
     <form method="post">
         {% csrf_token %}
-        <div class="premium-grid-layout">
-            <!-- Left Panel: Nueva Medición Form -->
-            <div class="premium-sidebar-col">
-                <div class="premium-panel-side">
-                    <!-- Top Title Section -->
+        
+        <div class="d-flex align-items-center justify-content-between mb-5 mt-2">
+            <div>
+                <a href="javascript:history.back()" class="text-decoration-none text-muted fw-bold small opacity-50 hover-opacity-100 transition-all">
+                    <i class="ri-arrow-left-up-line"></i> SISTEMA / VOLVER AL PANEL
+                </a>
+                <h1 class="stitch-title mt-2" style="font-size: 2.75rem;">Control de Calidad v3.0</h1>
+            </div>
+            <div class="stitch-module d-flex align-items-center gap-4" style="padding: 1rem 2rem;">
+                <div>
+                    <span class="stitch-label" style="margin: 0;">IDENTIFICADOR PIEZA</span>
+                    <div class="fw-bold mt-1" style="font-size: 1.5rem; color: var(--stitch-primary);">#{{ pieza_actual|stringformat:"04d" }}</div>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="?pieza={{ prev_pieza }}" class="btn-stitch-outline p-0 {% if not prev_pieza %}disabled opacity-25{% endif %}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                        <i class="ri-arrow-left-s-line"></i>
+                    </a>
+                    <a href="?pieza={{ next_pieza }}" class="btn-stitch-outline p-0" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                        <i class="ri-arrow-right-s-line"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="stitch-layout">
+            <!-- SIDEBAR MODULE -->
+            <div class="sidebar-flux">
+                <div class="stitch-module mb-4 p-4">
                     <div class="mb-4">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <a href="javascript:history.back()" class="btn-back-simple">
-                                <i class="ri-arrow-left-line"></i> Volver
-                            </a>
-                        </div>
-                        <h1 class="side-title-main">Nueva Medición</h1>
-                        <p class="side-subtitle-main">Seleccione el proyecto y proceso para ingresar valores.</p>
+                        <label class="stitch-label">Empresa Cliente</label>
+                        <div class="fw-bold" style="color: var(--stitch-primary); font-size: 1.1rem;">{{ planilla.cliente.nombre }}</div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="stitch-label">Proyecto / Pieza</label>
+                        <div class="fw-bold text-white">{{ planilla.proyecto }}</div>
+                        <div class="text-muted small">OP: {{ planilla.num_op }}</div>
                     </div>
 
-                    <!-- Proyecto -->
-                    <div class="config-card mb-3">
-                        <div class="config-card-header text-primary">
-                            <i class="ri-layout-grid-line"></i>
-                            <span>PROYECTO</span>
-                        </div>
-                        <div class="config-card-body">
-                            <input type="text" class="form-control input-clean" value="{{ planilla.proyecto }}" readonly>
-                        </div>
+                    <div class="mb-4">
+                        <label class="stitch-label">Proceso Activo</label>
+                        <select name="proceso" class="stitch-input" required>
+                            <option value="">-- SELECCIONAR PROCESO --</option>
+                            {% for p in procesos %}
+                                <option value="{{ p.id }}" {% if p.id == planilla.proceso.id %}selected{% endif %}>{{ p.nombre }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
 
-                    <!-- OP Section -->
-                    <div class="config-card mb-3">
-                        <div class="config-card-header text-primary">
-                            <i class="ri-file-list-3-line"></i>
-                            <span>OP #</span>
-                        </div>
-                        <div class="config-card-body">
-                            <input type="text" class="form-control input-clean" value="{{ planilla.num_op }}" readonly>
-                        </div>
+                    <div class="mb-2">
+                        <label class="stitch-label">Pieza Actual</label>
+                        <input type="number" name="pieza" value="{{ pieza_actual }}" class="stitch-input text-center" style="font-size: 1.25rem; font-weight: 700;">
                     </div>
+                </div>
 
-                    <!-- Cliente -->
-                    <div class="config-card mb-3">
-                        <div class="config-card-header text-primary">
-                            <i class="ri-user-heart-line"></i>
-                            <span>CLIENTE</span>
-                        </div>
-                        <div class="config-card-body">
-                            <div class="text-muted fw-medium">{{ planilla.cliente.nombre }}</div>
-                        </div>
-                    </div>
-
-                    <!-- Proceso -->
-                    <div class="config-card mb-3">
-                        <div class="config-card-header text-success">
-                            <i class="ri-checkbox-circle-line"></i>
-                            <span>PROCESO</span>
-                        </div>
-                        <div class="config-card-body">
-                            <select name="proceso" class="form-select input-clean" required>
-                                <option value="">Seleccione Proceso...</option>
-                                <!-- Add your process options here -->
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Pieza Selector -->
-                    <div class="config-card mb-4">
-                        <div class="config-card-header text-info">
-                            <i class="ri-stack-line"></i>
-                            <span>PIEZA ACTUAL</span>
-                        </div>
-                        <div class="config-card-body">
-                            <div class="d-flex align-items-center gap-2">
-                                <a href="?pieza={{ prev_pieza }}" class="btn btn-sm btn-secondary" {% if not prev_pieza %}style="opacity:0.5; pointer-events:none;"{% endif %}>
-                                    <i class="ri-arrow-left-s-line"></i>
-                                </a>
-                                
-                                <input type="number" name="pieza" value="{{ pieza_actual }}" 
-                                       class="form-control input-clean text-center fw-bold" 
-                                       style="flex: 1;">
-                                
-                                <a href="?pieza={{ next_pieza }}" class="btn btn-sm btn-secondary">
-                                    <i class="ri-arrow-right-s-line"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="action-panel-dark" style="padding: 1rem;">
-                        <button type="submit" name="guardar" class="btn btn-secondary w-100 mb-2" style="border-radius: 10px; font-weight: 700;">
-                            <i class="ri-save-3-line"></i> Guardar Parcial
-                        </button>
-                        <button type="submit" name="guardar_siguiente" class="btn-guardar-estructura w-100" style="margin-top: 0 !important;">
-                            <i class="ri-check-double-line"></i> Confirmar y Siguiente
-                        </button>
-                    </div>
+                <div class="stitch-module p-4">
+                    <button type="submit" name="guardar_siguiente" class="btn-stitch-primary mb-3">
+                        <i class="ri-rocket-2-line"></i>
+                        GUARDAR Y SIGUIENTE
+                    </button>
+                    <button type="submit" name="guardar" class="btn-stitch-outline">
+                        <i class="ri-save-line"></i>
+                        GUARDAR PROVISIONAL
+                    </button>
                 </div>
             </div>
 
-            <!-- Right Panel: Controls Hierarchy Display -->
-            <div class="premium-main-col">
-                <div class="main-canvas-premium">
-                    <div class="canvas-header">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="blue-line-indicator"></div>
-                                <div>
-                                    <h3 class="canvas-title">CONTROLES A MEDIR - PIEZA {{ pieza_actual }}</h3>
-                                    <div class="text-muted fw-bold" style="font-size: 0.8rem; text-transform: uppercase; margin-top: 2px;">
-                                        {% if planilla.proceso %}{{ planilla.proceso.nombre }}{% endif %}
-                                        {% if planilla.articulo or planilla.elemento %}
-                                            {% if planilla.proceso %} / {% endif %}
-                                            {% if planilla.articulo %}{{ planilla.articulo.nombre }}{% endif %}
-                                            {% if planilla.elemento %}{% if planilla.articulo %} - {% endif %}{{ planilla.elemento.nombre }}{% endif %}
-                                        {% endif %}
-                                        {% if planilla.proyecto %} - {{ planilla.proyecto }}{% endif %}
-                                        {% if not planilla.proceso and not planilla.articulo and not planilla.elemento and not planilla.proyecto %} - {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-muted small">
-                                <strong>ART:</strong> {{ planilla.articulo.nombre }}
-                            </div>
+            <!-- MAIN GRID MODULE -->
+            <div class="main-flux">
+                <div class="stitch-module p-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-4" style="border-color: rgba(255,255,255,0.05);">
+                        <h3 class="stitch-title" style="font-size: 1.4rem;">
+                            <i class="ri-bubble-chart-line"></i> GRILLA DE ANÁLISIS / CONTROLES ACTIVOS
+                        </h3>
+                        <div class="text-muted small fw-bold">
+                            CONTROLES: <span style="color: var(--stitch-primary);">{{ rows|length }}</span>
                         </div>
                     </div>
 
-                    <div id="controls-container" class="mt-2">
-                        {% if rows %}
+                    {% if rows %}
+                        <div class="stitch-grid-container">
                             {% for row in rows %}
-                            <div class="control-measurement-card">
-                                <div class="control-card-header">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <i class="ri-ruler-2-line text-primary"></i>
-                                        <span class="control-name">{{ row.tolerancia.control.nombre }}</span>
+                            <div class="stitch-tile animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|add:1 }}0ms;">
+                                <div>
+                                    <div class="stitch-label" style="font-size: 0.55rem; opacity: 0.8; margin-bottom: 2px;">CONTROL</div>
+                                    <div class="fw-bold text-white mb-1 text-truncate" style="max-width: 250px;" title="{{ row.tolerancia.control.nombre }}">
+                                        {{ row.tolerancia.control.nombre }}
                                     </div>
-                                    {% if row.tolerancia.id_instrumento %}
-                                    <div class="instrument-badge">
-                                        <i class="ri-tools-line"></i>
-                                        Instrumento #{{ row.tolerancia.id_instrumento }}
+                                    <div class="d-flex align-items-center gap-2 mt-1">
+                                        <a href="{% url 'estadisticas_control' row.tolerancia.id %}" target="_blank" class="text-decoration-none d-flex align-items-center gap-1" style="font-size: 0.65rem; color: var(--stitch-primary); opacity: 0.8; font-weight: 700;">
+                                            <i class="ri-bar-chart-2-line"></i> VER ESTADÍSTICAS
+                                        </a>
                                     </div>
+                                </div>
+
+                                <div class="text-center px-3">
+                                    <label class="stitch-label mb-1">MIN</label>
+                                    <div class="text-white fw-bold">{% if not row.tolerancia.control.pnp %}{{ row.tolerancia.minimo|default:"0.000" }}{% else %}N/A{% endif %}</div>
+                                </div>
+
+                                <div class="text-center">
+                                    <label class="stitch-label mb-1" style="color: var(--stitch-primary);">INGRESO VALOR</label>
+                                    {% if row.tolerancia.control.pnp %}
+                                        <select name="valorpnp_{{ row.tolerancia.id }}" class="stitch-input text-center fw-bold" style="height: 48px;">
+                                            <option value="" {% if not row.valor %}selected{% endif %}>-</option>
+                                            <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PASA</option>
+                                            <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>FALLA</option>
+                                        </select>
+                                    {% else %}
+                                        <input type="number" step="0.001" name="valor_{{ row.tolerancia.id }}" 
+                                               value="{% if row.valor is not None %}{{ row.valor|floatformat:3 }}{% endif %}" 
+                                               class="stitch-val-input" 
+                                               placeholder="0.000">
                                     {% endif %}
                                 </div>
-                                
-                                <div class="control-card-body">
-                                    <div class="measurement-grid">
-                                        <!-- Min Tolerance -->
-                                        <div class="measurement-col">
-                                            <label class="measurement-label">TOL. MÍN [-]</label>
-                                            <div class="measurement-value-display">
-                                                {% if not row.tolerancia.control.pnp %}
-                                                    {% if row.tolerancia.minimo is not None %}
-                                                        {{ row.tolerancia.minimo }}
-                                                    {% else %}
-                                                        -
-                                                    {% endif %}
-                                                {% else %}
-                                                    -
-                                                {% endif %}
-                                            </div>
-                                        </div>
 
-                                        <!-- Input Value -->
-                                        <div class="measurement-col measurement-col-input">
-                                            <label class="measurement-label">VALOR REAL</label>
-                                            {% if row.tolerancia.control.pnp %}
-                                                <select name="valorpnp_{{ row.tolerancia.id }}" class="form-select measurement-input-select">
-                                                    <option value="" {% if not row.valor %}selected{% endif %}>-</option>
-                                                    <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PASA</option>
-                                                    <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>NO PASA</option>
-                                                </select>
+                                <div class="text-center px-3">
+                                    <label class="stitch-label mb-1">MAX</label>
+                                    <div class="text-white fw-bold">{% if not row.tolerancia.control.pnp %}{{ row.tolerancia.maximo|default:"0.000" }}{% else %}N/A{% endif %}</div>
+                                </div>
+
+                                <div class="text-end">
+                                    <label class="stitch-label mb-2 d-block">ESTADO</label>
+                                    <div class="d-flex align-items-center justify-content-end gap-3">
+                                        <span class="small fw-bold {% if row.status == 'OK' %}text-success{% elif row.status == 'NOK' %}text-danger{% else %}text-muted{% endif %}">
+                                            {% if row.status == 'OK' %}
+                                                <i class="ri-checkbox-circle-fill" style="font-size: 1.2rem;"></i>
+                                            {% elif row.status == 'NOK' %}
+                                                <i class="ri-close-circle-fill" style="font-size: 1.2rem;"></i>
                                             {% else %}
-                                                <input type="number" step="0.01" name="valor_{{ row.tolerancia.id }}" 
-                                                       value="{% if row.valor is not None %}{{ row.valor|floatformat:2 }}{% endif %}" 
-                                                       class="form-control measurement-input" 
-                                                       placeholder="...">
+                                                <i class="ri-subtract-line" style="font-size: 1.2rem;"></i>
                                             {% endif %}
-                                        </div>
-
-                                        <!-- Max Tolerance -->
-                                        <div class="measurement-col">
-                                            <label class="measurement-label">TOL. MÁX [+]</label>
-                                            <div class="measurement-value-display">
-                                                {% if not row.tolerancia.control.pnp %}
-                                                    {% if row.tolerancia.maximo is not None %}
-                                                        {{ row.tolerancia.maximo }}
-                                                    {% else %}
-                                                        -
-                                                    {% endif %}
-                                                {% else %}
-                                                    -
-                                                {% endif %}
-                                            </div>
-                                        </div>
-
-                                        <!-- Status -->
-                                        <div class="measurement-col">
-                                            <label class="measurement-label">ESTADO</label>
-                                            <div class="status-display">
-                                                {% if row.status == 'OK' %}
-                                                    <span class="status-badge status-ok">OK</span>
-                                                {% elif row.status == 'NOK' %}
-                                                    <span class="status-badge status-nok">NOK</span>
-                                                {% else %}
-                                                    <span class="status-badge status-pending">-</span>
-                                                {% endif %}
-                                            </div>
-                                        </div>
+                                        </span>
+                                        <div class="status-flux {% if row.status == 'OK' %}ok{% elif row.status == 'NOK' %}nok{% else %}pending{% endif %}"></div>
                                     </div>
                                 </div>
                             </div>
                             {% endfor %}
-                        {% else %}
-                            <!-- Empty State -->
-                            <div class="empty-state-placeholder">
-                                <i class="ri-list-check-2"></i>
-                                <p>No hay controles definidos para este proceso.</p>
-                            </div>
-                        {% endif %}
-                    </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5" style="border: 1px solid #f9ecec; border-radius: 24px; background: #ffffff; box-shadow: 0 10px 30px rgba(225, 29, 72, 0.03);">
+                            <i class="ri-radar-line animate__animated animate__pulse animate__infinite" style="font-size: 5rem; color: var(--stitch-primary); opacity: 0.15;"></i>
+                            <p class="mt-4 text-muted fw-bold" style="letter-spacing: 0.05em; color: #7f7171 !important;">ESPERANDO DATOS: SIN FLUJO DE SEÑAL</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </form>
 </div>
-
-<style>
-    :root {
-        --primary-blue: #2563eb;
-        --success-green: #10b981;
-        --dark-bg: #0f172a;
-        --border-color: #e2e8f0;
-        --text-muted: #64748b;
-    }
-
-    .premium-page-container { padding: 1.5rem; max-width: 1700px; margin: 0 auto; }
-
-    /* Left Sidebar Styling */
-    .premium-panel-side { position: sticky; top: 1.5rem; }
-    
-    .btn-back-simple { color: #64748b; font-size: 0.85rem; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; background: #f1f5f9; border-radius: 8px; transition: 0.2s; border: 1px solid #e2e8f0; width: fit-content; }
-    .btn-back-simple:hover { background: #e2e8f0; color: #1e293b; }
-
-    .side-title-main { font-size: 1.7rem; font-weight: 800; color: #0f172a; margin-top: 1rem; letter-spacing: -0.02em; }
-    .side-subtitle-main { color: #64748b; font-size: 0.9rem; margin-bottom: 2rem; }
-
-    .config-card { background: white; border-radius: 12px; border: 1px solid var(--border-color); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .config-card-header { padding: 0.85rem 1rem 0.5rem; display: flex; align-items: center; gap: 0.6rem; font-weight: 800; font-size: 0.75rem; letter-spacing: 0.05em; border-bottom: none; }
-    .config-card-body { padding: 0.5rem 1rem 1rem; }
-
-    .input-clean { border-radius: 8px !important; border: 1px solid #cbd5e1 !important; padding: 0.6rem 0.75rem !important; font-size: 0.9rem !important; font-weight: 500 !important; color: #334155 !important; }
-    .input-clean:focus { border-color: var(--primary-blue) !important; box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important; }
-
-    .action-panel-dark { background: #161e2e; border-radius: 12px; padding: 1.5rem; color: white; margin-top: 1rem; }
-    .btn-guardar-estructura { background: white; color: #161e2e; border: none; border-radius: 10px; padding: 0.85rem; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem; transition: 0.2s; }
-    .btn-guardar-estructura:hover { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-
-    /* Right Canvas Styling */
-    .main-canvas-premium { background: white; border-radius: 16px; border: 1px solid var(--border-color); padding: 2rem; min-height: 800px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
-    .canvas-header { margin-bottom: 0.5rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 0.5rem; }
-    .blue-line-indicator { width: 4px; height: 20px; background: var(--primary-blue); border-radius: 4px; }
-    .canvas-title { font-size: 1rem; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: 0.02em; }
-
-    /* Control Measurement Cards */
-    .control-measurement-card {
-        background: #f8fafc;
-        border-radius: 16px;
-        border: 1px solid #e2e8f0;
-        margin-bottom: 1.5rem;
-        overflow: hidden;
-        transition: all 0.2s;
-    }
-    .control-measurement-card:hover {
-        border-color: #cbd5e1;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-
-    .control-card-header {
-        background: white;
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #e2e8f0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .control-name {
-        font-weight: 700;
-        font-size: 0.95rem;
-        color: #1e293b;
-    }
-
-    .instrument-badge {
-        background: #eff6ff;
-        color: #2563eb;
-        padding: 0.4rem 0.8rem;
-        border-radius: 6px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
-
-    .control-card-body {
-        padding: 1.5rem;
-    }
-
-    .measurement-grid {
-        display: grid;
-        grid-template-columns: 1fr 2fr 1fr 1fr;
-        gap: 1.5rem;
-        align-items: end;
-    }
-
-    .measurement-col {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .measurement-col-input {
-        grid-column: span 1;
-    }
-
-    .measurement-label {
-        font-size: 0.65rem;
-        font-weight: 800;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin: 0;
-    }
-
-    .measurement-value-display {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 0.75rem;
-        text-align: center;
-        font-weight: 600;
-        color: #64748b;
-        font-family: 'Courier New', monospace;
-    }
-
-    .measurement-input {
-        border-radius: 8px !important;
-        border: 2px solid #2563eb !important;
-        padding: 0.75rem !important;
-        text-align: center !important;
-        font-weight: 700 !important;
-        font-size: 1.1rem !important;
-        color: #2563eb !important;
-        background: white !important;
-    }
-
-    .measurement-input:focus {
-        border-color: #1d4ed8 !important;
-        box-shadow: 0 0 0 4px rgba(37,99,235,0.1) !important;
-    }
-
-    .measurement-input-select {
-        border-radius: 8px !important;
-        border: 2px solid #2563eb !important;
-        padding: 0.75rem !important;
-        text-align: center !important;
-        font-weight: 700 !important;
-        color: #2563eb !important;
-        background: white !important;
-    }
-
-    .status-display {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .status-badge {
-        padding: 0.6rem 1.2rem;
-        border-radius: 8px;
-        font-weight: 800;
-        font-size: 0.85rem;
-        text-align: center;
-        width: 100%;
-    }
-
-    .status-ok {
-        background: #d1fae5;
-        color: #065f46;
-        border: 1px solid #10b981;
-    }
-
-    .status-nok {
-        background: #ef4444;
-        color: #ffffff;
-        border: 1px solid #dc2626;
-    }
-
-    .status-pending {
-        background: #f1f5f9;
-        color: #94a3b8;
-        border: 1px solid #cbd5e1;
-    }
-
-    .empty-state-placeholder { text-align: center; padding: 8rem 2rem; color: #cbd5e1; }
-    .empty-state-placeholder i { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
-    .empty-state-placeholder p { font-weight: 600; font-size: 0.95rem; }
-
-    /* Responsive adjustments */
-    @media (max-width: 992px) {
-        .measurement-grid {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-        
-        .measurement-col-input {
-            grid-column: span 1;
-        }
-    }
-</style>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 {% endblock %}
+
 

@@ -113,9 +113,10 @@ class SPCAnalyzer:
                         'rule': 2,
                         'point': i + 8,
                         'severity': 'warning',
-                        'title': 'Racha detected (9 puntos)',
+                        'title': 'Racha detectada (9+ puntos)',
                         'desc': '9 o más puntos consecutivos en el mismo lado del promedio.'
                     })
+                    break
 
         # Rule 3: 6 or more points in a row are all increasing or all decreasing
         if len(data) >= 6:
@@ -127,9 +128,10 @@ class SPCAnalyzer:
                         'rule': 3,
                         'point': i + 5,
                         'severity': 'warning',
-                        'title': 'Tendencia detectada (6 puntos)',
+                        'title': 'Tendencia detectada (6+ puntos)',
                         'desc': '6 o más puntos seguidos en una dirección constante (creciente/decreciente).'
                     })
+                    break
 
         # Rule 4: 14 or more points in a row alternate in direction, increasing then decreasing
         if len(data) >= 14:
@@ -146,6 +148,7 @@ class SPCAnalyzer:
                         'title': 'Variabilidad Inestable',
                         'desc': '14 puntos consecutivos alternando arriba y abajo. Indica inestabilidad sistemática.'
                     })
+                    break
 
         return alerts
 

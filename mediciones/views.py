@@ -2391,6 +2391,45 @@ def importar_datos_ocr(request):
             elemento_id = data.get('elemento_id')
             cliente_id = data.get('cliente_id')
             
+            # --- Auto-crear o buscar si no vienen desde el UI selector ---
+            from .models import Proceso, Articulo, Elemento, Cliente
+            
+            cliente_nombre = header.get('cliente', '').strip()
+            if not cliente_id and cliente_nombre:
+                c = Cliente.objects.filter(nombre__iexact=cliente_nombre).first()
+                if not c:
+                    c = Cliente.objects.filter(nombre__icontains=cliente_nombre[:15]).first()
+                if not c:
+                    c = Cliente.objects.create(nombre=cliente_nombre)
+                cliente_id = c.id
+
+            articulo_nombre = header.get('articulo', '').strip()
+            if not articulo_id and articulo_nombre:
+                a = Articulo.objects.filter(nombre__iexact=articulo_nombre).first()
+                if not a:
+                    a = Articulo.objects.filter(nombre__icontains=articulo_nombre[:15]).first()
+                if not a:
+                    a = Articulo.objects.create(nombre=articulo_nombre)
+                articulo_id = a.id
+
+            proceso_nombre = header.get('denominacion', '').replace('"', '').strip()
+            if not proceso_id and proceso_nombre:
+                p = Proceso.objects.filter(nombre__iexact=proceso_nombre).first()
+                if not p:
+                    p = Proceso.objects.filter(nombre__icontains=proceso_nombre[:15]).first()
+                if not p:
+                    p = Proceso.objects.create(nombre=proceso_nombre)
+                proceso_id = p.id
+
+            elemento_nombre = header.get('operacion', '').replace('°', '').strip()
+            if not elemento_id and elemento_nombre:
+                e = Elemento.objects.filter(nombre__iexact=elemento_nombre).first()
+                if not e:
+                    e = Elemento.objects.filter(nombre__icontains=elemento_nombre[:10]).first()
+                if not e:
+                    e = Elemento.objects.create(nombre=elemento_nombre)
+                elemento_id = e.id
+            
             # FIX: First try to find by OP only to allow updating existing records even if Project name slightly changed in OCR
             planilla = PlanillaMedicion.objects.filter(num_op=op_numero).first()
             created = False
@@ -2644,4 +2683,16 @@ def configuracion_sistema(request):
         messages.success(request, 'Preferencias guardadas exitosamente.')
         return redirect('configuracion_sistema')
     
-    return render(request, 'mediciones/configuracion.html')
+    tema_choices = [
+        ('LIGHT', 'Claro (Clásico)'),
+        ('DARK', 'Oscuro (Luna)'),
+        ('BENTO', 'Bento Modern Industrial'),
+        ('GLASS', 'Frosted Aurora (Cristal)'),
+        ('NEU', 'Neumorphic Soft Pro'),
+        ('CYBER', 'Cyberpunk / Midnight Neon'),
+        ('STUDIO', 'Minimalist Studio (Ink)')
+    ]
+    
+    return render(request, 'mediciones/configuracion.html', {
+        'tema_choices': tema_choices
+    })

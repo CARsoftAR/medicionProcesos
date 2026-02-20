@@ -12,7 +12,15 @@ class Profile(models.Model):
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='OPERADOR')
     gemini_api_key = models.CharField(max_length=255, blank=True, null=True, verbose_name="Gemini API Key")
     alerta_calibracion_dias = models.IntegerField(default=15, verbose_name="Días anticipación alerta")
-    tema_preferido = models.CharField(max_length=10, choices=[('LIGHT', 'Claro'), ('DARK', 'Oscuro')], default='LIGHT')
+    tema_preferido = models.CharField(max_length=20, choices=[
+        ('LIGHT', 'Claro (Clásico)'),
+        ('DARK', 'Oscuro (Luna)'),
+        ('BENTO', 'Bento Modern Industrial'),
+        ('GLASS', 'Frosted Aurora (Cristal)'),
+        ('NEU', 'Neumorphic Soft Pro'),
+        ('CYBER', 'Cyberpunk / Midnight Neon'),
+        ('STUDIO', 'Minimalist Studio (Ink)')
+    ], default='LIGHT')
 
     class Meta:
         db_table = 'USER_PROFILES'

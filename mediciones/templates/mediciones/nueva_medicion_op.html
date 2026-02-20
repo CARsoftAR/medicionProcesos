@@ -3,631 +3,244 @@
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block content %}
-<style>
-    /* Override content-wrapper for full-width layout */
-    .content-wrapper {
-        max-width: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        width: 100% !important;
-    }
-    
-    .topbar {
-        display: none !important;
-    }
-    
-    /* Grid System for two-column layout */
-    .row {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        margin: 0 -1rem !important;
-    }
-    
-    .g-4 {
-        gap: 1.5rem !important;
-    }
-    
-    .col-lg-4, .col-xl-3 {
-        flex: 0 0 auto !important;
-        width: 320px !important;
-        padding: 0 1rem !important;
-    }
-    
-    .col-lg-8, .col-xl-9 {
-        flex: 1 !important;
-        padding: 0 1rem !important;
-        min-width: 0 !important;
-    }
-    
-    @media (max-width: 992px) {
-        .col-lg-4, .col-xl-3,
-        .col-lg-8, .col-xl-9 {
-            width: 100% !important;
-        }
-    }
 
-    /* Piece Navigation Styles */
-    .piece-navigation-container {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
+<!-- FUENTES PREMIUM -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
 
-    .piece-nav-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 2px;
-        align-items: center;
-        width: 100%;
-    }
-
-    .piece-nav-wrapper {
-        flex: 1;
-        display: flex;
-    }
-
-    .piece-nav-btn {
-        flex: 1;
-        width: 100%;
-        min-width: 28px;
-        height: 34px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        background: #fff;
-        border: 1.5px solid #cbd5e1;
-        color: #475569;
-        font-weight: 700;
-        text-decoration: none;
-        transition: all 0.2s;
-        font-size: 0.75rem;
-        padding: 0;
-    }
-
-    .piece-nav-btn:hover {
-        border-color: #3b82f6;
-        color: #3b82f6;
-        background: #f0f7ff;
-    }
-
-    .piece-nav-btn.active {
-        background: #3b82f6;
-        color: #ffffff;
-        border-color: #3b82f6;
-        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
-    }
-
-    .piece-nav-btn.arrow {
-        background: #f1f5f9;
-        color: #334155;
-        border-color: #e2e8f0;
-    }
-    
-    .piece-nav-btn.arrow:hover {
-        background: #e2e8f0;
-        color: #1e293b;
-    }
-
-    .piece-nav-btn.arrow.disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-        pointer-events: none;
-        background: #f8fafc;
-    }
-
-    .piece-add-btn {
-        width: 100%;
-        padding: 10px;
-        border-radius: 10px;
-        background: #f0fdf4;
-        border: 1.5px dashed #22c55e;
-        color: #166534;
-        font-weight: 700;
-        font-size: 0.85rem;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        transition: all 0.2s;
-    }
-
-    .piece-add-btn:hover {
-        background: #22c55e;
-        color: #ffffff;
-        border-style: solid;
-    }
-    
-    .btn-delete-full-op {
-        background: transparent;
-        border: none;
-        color: #ef4444;
-        cursor: pointer;
-        padding: 4px;
-        display: flex;
-        align-items: center;
-        transition: all 0.2s;
-        opacity: 0.6;
-    }
-    .btn-delete-full-op:hover {
-        transform: scale(1.2);
-        opacity: 1;
-        color: #dc2626;
-    }
-    
-    .piece-nav-btn:hover {
-        border-color: #3b82f6;
-        color: #3b82f6;
-        background: #eff6ff;
-        transform: translateY(-2px);
-    }
-    .piece-nav-btn.active {
-        background: #3b82f6;
-        color: white;
-        border-color: #3b82f6;
-        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
-    }
-    .piece-nav-btn.add-new {
-        background: #f8fafc;
-        border-style: dashed;
-        color: #94a3b8;
-    }
-    .piece-nav-btn.add-new:hover {
-        border-style: solid;
-        background: #f0fdf4;
-        color: #22c55e;
-        border-color: #22c55e;
-    }
-
-    .piece-nav-wrapper {
-        position: relative;
-    }
-    .piece-delete-mini {
-        position: absolute;
-        top: -6px;
-        right: -6px;
-        width: 20px;
-        height: 20px;
-        background: #ef4444;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.7rem;
-        cursor: pointer;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        z-index: 10;
-    }
-    .piece-nav-wrapper:hover .piece-delete-mini {
-        display: flex;
-    }
-    .piece-delete-mini:hover {
-        transform: scale(1.1);
-        background: #dc2626;
-    }
-
-    /* Premium SweetAlert Styling */
-    .swal2-popup.premium-swal-popup {
-        border-radius: 20px !important;
-        padding: 2rem !important;
-    }
-    .swal-icon-circle {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-    }
-
-    /* Sidebar piece navigation styles */
-    .pieza-nav-badge {
-        width: 38px;
-        height: 38px;
-        background: #f1f5f9;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        color: #64748b;
-    }
-
-    .btn-delete-piece-side {
-        width: 38px;
-        height: 38px;
-        background: #fee2e2;
-        color: #ef4444;
-        border: none;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.1rem;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
-
-    .btn-delete-piece-side:hover {
-        background: #fecaca;
-        transform: scale(1.05);
-    }
-    .swal-icon-circle-success {
-        width: 80px;
-        height: 80px;
-        background: #f0f7ff;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 1.5rem;
-        color: #3b82f6;
-        font-size: 2.5rem;
-    }
-    .swal-icon-circle.danger {
-        background: #fef2f2;
-        color: #ef4444;
-    }
-    .premium-swal-confirm {
-        font-weight: 700 !important;
-        border-radius: 12px !important;
-        padding: 12px 30px !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 8px !important;
-        transition: all 0.2s !important;
-    }
-    .premium-swal-confirm:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-    }
-    .premium-swal-cancel {
-        font-weight: 700 !important;
-        color: #64748b !important;
-        background: transparent !important;
-        border: none !important;
-        padding: 12px 20px !important;
-    }
-    .premium-swal-title {
-        font-size: 1.5rem !important;
-        font-weight: 800 !important;
-        color: #1e293b !important;
-        margin-bottom: 0.5rem !important;
-    }
-    .premium-swal-html {
-        color: #64748b !important;
-        font-size: 1rem !important;
-        line-height: 1.5 !important;
-    }
-</style>
+<!-- STYLES CONSOLIDATED AT BOTTOM -->
 
 <div class="premium-page-container">
-    <div class="row g-4">
-        <!-- Sidebar Selection -->
-        <div class="col-lg-4 col-xl-3 col-sidebar-premium">
-            <div class="premium-panel-side">
+    <div class="d-flex h-100 gap-4">
+        <!-- TECH SIDEBAR (SELECTION / NAVIGATION) -->
+        <div class="stitch-sidebar" style="width: 380px; flex-shrink: 0;">
+            <div class="mb-5 px-2">
+                <a href="{% url 'index' %}" class="text-decoration-none small opacity-50 hover-opacity-100 transition-all font-monospace" style="color: var(--stitch-primary);">
+                    <i class="ri-arrow-left-up-line"></i> SISTEMA / PANEL
+                </a>
+                <h1 class="stitch-title mt-2" style="font-size: 1.8rem;">CONTROL TÉCNICO</h1>
+                <p class="small opacity-40" style="margin-top: -5px; letter-spacing: 0.1em;">VERIFICACIÓN DE PIEZAS</p>
+            </div>
+
+            <!-- OP SEARCH MODULE -->
+            <div class="stitch-module p-4 mb-4" style="overflow: visible;">
+                <label class="stitch-label" style="display: block; margin-top: 5px;">SEÑAL: BUSCAR OP</label>
+                <div class="position-relative mt-2">
+                    <input type="text" id="input_op" class="stitch-input" value="{{ query_op|default:'' }}" 
+                           placeholder="ESCANEAR OP AQUÍ..." onchange="updateSelection()" 
+                           style="font-size: 1rem; font-weight: 700; padding-right: 45px;">
+                    <i class="ri-radar-line position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%); color: var(--stitch-primary); font-size: 1.2rem;"></i>
+                </div>
+                <input type="hidden" id="input_proyecto" value="{% if query_proy %}{{ query_proy }}{% elif planilla %}{{ planilla.proyecto }}{% endif %}">
+                <input type="hidden" id="select_proceso" value="{% if query_proc %}{{ query_proc }}{% elif planilla %}{{ planilla.proceso_id }}{% endif %}">
+            </div>
+
+            {% if planilla %}
+            <!-- PLAN DETAILS MODULE -->
+            <div class="stitch-module p-4 mb-4 animate__animated animate__fadeInLeft">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <label class="stitch-label" style="margin: 0;">ESPECIFICACIONES</label>
+                    {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                    <button onclick="eliminarTodaLaOP()" class="btn-stitch-outline p-0" style="width: 32px; height: 32px; border-radius: 6px;" title="LIMPIAR OP">
+                        <i class="ri-delete-bin-7-line"></i>
+                    </button>
+                    {% endif %}
+                </div>
+                
                 <div class="mb-3">
-                    <h1 class="side-title-main">Nueva Medición</h1>
-                    <p class="side-subtitle-main">Seleccione el proyecto y proceso para ingresar valores.</p>
-                </div>
-
-                <div class="config-card mb-3 card-blue">
-                    <div class="config-card-header">
-                        <i class="ri-search-eye-line"></i>
-                        <span>BUSCAR POR OP</span>
-                    </div>
-                    <div class="config-card-body">
-                        <label class="text-xxs fw-bold text-muted">NUMERO DE OP</label>
-                        <input type="text" id="input_op" class="form-control input-clean" value="{{ query_op|default:'' }}" placeholder="Ej: 5000" onchange="updateSelection()" style="font-size: 1rem; font-weight: 700; padding: 0.5rem 0.8rem !important;">
-                        <input type="hidden" id="input_proyecto" value="{% if query_proy %}{{ query_proy }}{% elif planilla %}{{ planilla.proyecto }}{% endif %}">
-                        <input type="hidden" id="select_proceso" value="{% if query_proc %}{{ query_proc }}{% elif planilla %}{{ planilla.proceso_id }}{% endif %}">
+                    <div class="opacity-50 fw-bold text-uppercase" style="font-size: 0.75rem;">FLUJO PROYECTO</div>
+                    <div class="fw-bold mt-1" style="font-size: 1.15rem; color: var(--stitch-primary);">
+                        {% if planilla.num_op %}{{ planilla.num_op }} <span class="opacity-30">/</span> {% endif %}{{ planilla.proyecto }}
                     </div>
                 </div>
+                <div class="mb-0">
+                    <div class="opacity-50 fw-bold text-uppercase" style="font-size: 0.75rem;">EMPRESA CLIENTE</div>
+                    <div class="fw-bold mt-1" style="font-size: 1.05rem; color: var(--stitch-text);">{{ planilla.cliente.nombre|default:"N/A" }}</div>
+                </div>
+            </div>
 
-                {% if planilla %}
-                <div class="config-card mb-3 animate__animated animate__fadeIn card-green">
-                    <div class="config-card-header d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="ri-information-line"></i>
-                            <span>DETALLES DEL PLAN</span>
-                        </div>
-                        {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
-                        <button onclick="eliminarTodaLaOP()" class="btn-delete-full-op" title="BORRAR TODO LO REFERENTE A ESTA OP">
-                            <i class="ri-delete-bin-5-line"></i>
-                        </button>
-                        {% endif %}
-                    </div>
-                    <div class="config-card-body">
-                        <div class="mb-3">
-                            <label class="text-xxs fw-bold text-muted">OP / PROYECTO</label>
-                            <div class="fw-bold text-dark-value" style="font-size: 1.1rem;">
-                                {% if planilla.num_op %}<span class="text-primary">{{ planilla.num_op }}</span> <span class="text-muted mx-1">/</span> {% endif %}{{ planilla.proyecto }}
-                            </div>
-                        </div>
-                        <div class="mb-0">
-                            <label class="text-xxs fw-bold text-muted">CLIENTE</label>
-                            <div class="fw-bold text-dark-value">{{ planilla.cliente.nombre|default:"-" }}</div>
-                        </div>
-                    </div>
+            <!-- UNIT NAVIGATION MODULE -->
+            <div class="stitch-module p-4 mb-4 animate__animated animate__fadeInLeft">
+                <label class="stitch-label">SELECTOR DE PIEZA</label>
+                <div class="d-flex gap-2 align-items-center mb-3">
+                    <input type="number" id="input_pieza" class="stitch-input text-center flex-grow-1" value="{{ pieza_actual }}" 
+                           onkeydown="if(event.key==='Enter') updatePiece()" min="1" 
+                           style="font-size: 1.6rem; font-weight: 800; color: var(--stitch-primary); background: rgba(225, 29, 72, 0.05); border-color: var(--stitch-primary); height: 50px;">
+                    {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
+                    <button onclick="deletePiece('{{ pieza_actual }}')" class="btn-stitch-outline" style="width: 44px; height: 44px; padding: 0; color: var(--stitch-danger); border-color: rgba(244, 63, 94, 0.3);">
+                        <i class="ri-delete-bin-line"></i>
+                    </button>
+                    {% endif %}
                 </div>
 
-                <div class="config-card mb-3 animate__animated animate__fadeIn card-yellow">
-                    <div class="config-card-header">
-                        <i class="ri-chat-1-line"></i>
-                        <span>OBSERVACIONES / NOTAS</span>
-                    </div>
-                    <div class="config-card-body">
-                        <textarea id="texto_observaciones" class="form-control" rows="3" 
-                                  placeholder="Notas adicionales para el reporte..."
-                                  style="font-size: 0.85rem; border: 1px solid #e2e8f0; border-radius: 8px; resize: none;"
-                                  onblur="saveObservations()">{{ planilla.observaciones|default:'' }}</textarea>
-                        <div id="obs_status" style="font-size: 0.6rem; color: #94a3b8; margin-top: 4px; text-align: right;"></div>
-                    </div>
-                </div>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ first_p }}" 
+                       class="btn-stitch-outline d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;">
+                       <i class="ri-skip-back-line"></i>
+                    </a>
+                    <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ prev_p }}" 
+                       class="btn-stitch-outline d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;">
+                       <i class="ri-arrow-left-s-line"></i>
+                    </a>
+                    
+                    {% for p_num in piezas_navegacion %}
+                    <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ p_num }}" 
+                       class="btn-stitch-outline d-flex align-items-center justify-content-center {% if p_num == pieza_actual %}bg-primary border-primary text-white{% endif %}" style="width: 36px; height: 36px; padding: 0; font-weight: 800; font-size: 0.85rem;">
+                        {{ p_num }}
+                    </a>
+                    {% endfor %}
 
-                <div class="mb-3" style="display: none;">
-                    <a href="{% url 'exportar_pdf' planilla.id %}" target="_blank" class="btn btn-dark w-100 d-flex align-items-center justify-content-center gap-2" 
-                       style="background: #1e293b !important; padding: 10px 16px !important; border-radius: 12px !important; color: white !important; font-weight: 700; text-decoration: none; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-                        <i class="ri-file-pdf-2-line" style="font-size: 1.1rem;"></i>
-                        REPORTE DE CALIDAD PRO
+                    <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ next_p }}" 
+                       class="btn-stitch-outline d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;">
+                       <i class="ri-arrow-right-s-line"></i>
+                    </a>
+                    <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ last_p }}" 
+                       class="btn-stitch-outline d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;">
+                       <i class="ri-skip-forward-line"></i>
                     </a>
                 </div>
-                {% endif %}
 
-                <script>
-                    function saveObservations() {
-                        const obs = document.getElementById('texto_observaciones').value;
-                        const status = document.getElementById('obs_status');
-                        status.innerText = "Guardando...";
-                        
-                        fetch('{% url "guardar_observaciones_ajax" %}', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
-                            body: JSON.stringify({ 
-                                planilla_id: '{{ planilla.id }}',
-                                observaciones: obs 
-                            })
-                        }).then(r => r.json()).then(data => {
-                            if (data.status === 'success') {
-                                status.innerText = "Guardado ✓";
-                                setTimeout(() => { status.innerText = ""; }, 2000);
-                            } else {
-                                status.innerText = "Error al guardar";
-                            }
-                        }).catch(e => {
-                            status.innerText = "Error de conexión";
-                        });
-                    }
-                </script>
+                <button onclick="addNewPiece()" class="btn-stitch-primary mt-1" style="font-size: 0.95rem; padding: 0.8rem;">
+                    <i class="ri-add-line"></i> NUEVO NUMERO DE PIEZA
+                </button>
+            </div>
+
+            <!-- BUFFER NOTES MODULE -->
+            <div class="stitch-module p-3 mb-2">
+                <label class="stitch-label mb-1">REGISTROS / NOTAS</label>
+                <textarea id="texto_observaciones" class="stitch-input" rows="2" 
+                           placeholder="INGRESAR NOTAS AQUÍ..."
+                           style="font-size: 0.85rem; height: 60px; resize: none; width: 100%; padding: 0.5rem 0.8rem;"
+                           onblur="saveObservations()">{{ planilla.observaciones|default:'' }}</textarea>
+                <div id="obs_status" style="font-size: 0.6rem; color: var(--stitch-primary); margin-top: 4px; text-align: right; font-family: 'Fira Code'; opacity: 0.7;"></div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- MAIN DATA HUB -->
+        <div class="flex-grow-1 d-flex flex-column" style="min-width: 0;">
+            {% if planilla %}
+            <form method="post" id="measurementForm" class="h-100 d-flex flex-column">
+                {% csrf_token %}
                 
-                {% if planilla %}
-                <!-- Piece Navigation -->
-                <div class="config-card mb-3 animate__animated animate__fadeIn card-cyan">
-                    <div class="config-card-header">
-                        <i class="ri-history-line"></i>
-                        <span>NAVEGACIÓN DE PIEZAS</span>
+                <!-- HUB HEADER -->
+                <div class="d-flex justify-content-between align-items-center mb-5">
+                    <div class="d-flex align-items-center gap-4">
+                        <div class="stitch-module d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; border-radius: 12px;">
+                            <i class="ri-focus-3-line" style="font-size: 2rem; color: var(--stitch-primary);"></i>
+                        </div>
+                        <div>
+                            <h2 class="stitch-title mb-0" style="font-size: 2.25rem;">Centro de Análisis</h2>
+                            <div class="opacity-50 small fw-bold mt-1" style="font-family: 'Fira Code'; letter-spacing: 0.05em;">
+                                PIEZA {{ pieza_actual }} 
+                                <span class="mx-2">|</span> 
+                                {% if planilla.num_op %}OP {{ planilla.num_op }}<span class="mx-2">|</span>{% endif %}
+                                {{ planilla.articulo.nombre|upper|default:"SIN ARTICULO" }}
+                                <span class="mx-2">|</span> 
+                                {{ planilla.elemento.nombre|upper|default:"SIN ELEMENTO" }} 
+                                <span class="mx-2">-</span> 
+                                {{ planilla.proceso.nombre|upper|default:"SIN PROCESO" }}
+                            </div>
+                        </div>
                     </div>
-                    <div class="config-card-body">
-                        <div class="mb-3">
-                            <label class="text-xxs fw-bold text-muted">PIEZA SELECCIONADA</label>
-                            <div class="d-flex gap-2 align-items-center">
-                                <div class="pieza-nav-badge">
-                                    <i class="ri-focus-3-line"></i>
+
+                    <div class="stitch-module p-3 d-flex align-items-center gap-3">
+                        <label class="stitch-label mb-0" style="margin-left: 10px;">DENSIDAD:</label>
+                        <select id="pageSizeSelector" class="stitch-input" style="width: 140px; font-size: 0.8rem; height: 40px;" onchange="changePageSize(this.value)">
+                            <option value="7">7_NODOS</option>
+                            <option value="12">12_NODOS</option>
+                            <option value="24">24_PIEZAS / PÁG</option>
+                            <option value="all">FLUJO_COMPLETO</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- PRECISION TILES STREAM -->
+                <div class="stitch-grid" id="measurementGrid">
+                    {% for row in rows %}
+                    <div class="stitch-tile animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|add:1 }}0ms;" data-id="{{ row.tolerancia.id }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="stitch-label" style="font-size: 0.6rem; opacity: 0.6; margin-bottom: 2px;">CONTROL</div>
+                                <div class="stitch-title" style="font-size: 1.1rem; letter-spacing: 0;">{{ row.tolerancia.control.nombre }}</div>
+                                <div class="mt-2">
+                                    <a href="{% url 'estadisticas_control' row.tolerancia.id %}" target="_blank" class="text-decoration-none d-flex align-items-center gap-1" style="font-size: 0.65rem; color: var(--stitch-primary); opacity: 0.8; font-weight: 700;">
+                                        <i class="ri-bar-chart-2-line"></i> VER ESTADÍSTICAS
+                                    </a>
                                 </div>
-                                <input type="number" id="input_pieza" class="form-control input-clean" value="{{ pieza_actual }}" onkeydown="if(event.key==='Enter') updatePiece()" min="1" style="font-size: 1.1rem; font-weight: 800; flex: 1; color: var(--primary); padding: 0.4rem !important; height: 38px;">
-                                {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
-                                <button onclick="deletePiece('{{ pieza_actual }}')" class="btn-delete-piece-side" title="Borrar esta pieza y sus valores">
-                                    <i class="ri-delete-bin-line"></i>
-                                </button>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="small fw-bold {% if row.status == 'OK' %}text-success{% elif row.status == 'NOK' %}text-danger{% else %}opacity-25{% endif %}">
+                                    {% if row.status == 'OK' %}
+                                        <i class="ri-checkbox-circle-fill" style="font-size: 1.2rem;"></i>
+                                    {% elif row.status == 'NOK' %}
+                                        <i class="ri-close-circle-fill" style="font-size: 1.2rem;"></i>
+                                    {% else %}
+                                        <i class="ri-subtract-line" style="font-size: 1.2rem;"></i>
+                                    {% endif %}
+                                </span>
+                                <div class="status-flux-dot {% if row.status == 'OK' %}ok{% elif row.status == 'NOK' %}nok{% else %}pending{% endif %}"></div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3 align-items-center">
+                            <div class="flex-grow-1">
+                                <label class="stitch-label text-center">INGRESO VALOR</label>
+                                {% if row.tolerancia.control.pnp %}
+                                    <select name="valorpnp_{{ row.tolerancia.id }}" class="stitch-input text-center fw-bold" style="height: 52px; font-size: 1.1rem;" onchange="checkStatus(this, 'pnp')">
+                                        <option value="" {% if not row.valor %}selected{% endif %}>-</option>
+                                        <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PASA</option>
+                                        <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>FALLA</option>
+                                    </select>
+                                {% else %}
+                                    <input type="number" step="0.001" name="valor_{{ row.tolerancia.id }}" 
+                                           value="{% if row.valor is not None %}{{ row.valor|floatformat:3 }}{% endif %}" 
+                                           class="stitch-val-input" placeholder="0.000"
+                                           onchange="checkStatus(this, 'real')"
+                                           data-min="{{ row.tolerancia.minimo|default:'' }}"
+                                           data-max="{{ row.tolerancia.maximo|default:'' }}">
                                 {% endif %}
                             </div>
                         </div>
 
-                        <div class="piece-navigation-container">
-                            <!-- Main Paginator Row -->
-                            <div class="piece-nav-row">
-                                <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ first_p }}" 
-                                   class="piece-nav-btn arrow {% if not prev_p %}disabled{% endif %}" title="Primera">
-                                   <i class="ri-skip-back-fill"></i>
-                                </a>
-                                <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ prev_p }}" 
-                                   class="piece-nav-btn arrow {% if not prev_p %}disabled{% endif %}" title="Anterior">
-                                   <i class="ri-arrow-left-s-line"></i>
-                                </a>
-
-                                {% for p_num in piezas_navegacion %}
-                                <div class="piece-nav-wrapper">
-                                    <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ p_num }}" 
-                                       class="piece-nav-btn {% if p_num == pieza_actual %}active{% endif %}">
-                                        {{ p_num }}
-                                    </a>
-                                </div>
-                                {% endfor %}
-
-                                <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ next_p }}" 
-                                   class="piece-nav-btn arrow {% if not next_p %}disabled{% endif %}" title="Siguiente">
-                                   <i class="ri-arrow-right-s-line"></i>
-                                </a>
-                                <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ last_p }}" 
-                                   class="piece-nav-btn arrow {% if not next_p %}disabled{% endif %}" title="Última">
-                                   <i class="ri-skip-forward-fill"></i>
-                                </a>
+                        <div class="d-flex justify-content-between mt-auto pt-3 border-top" style="border-color: #f1f5f9;">
+                            <div class="text-center">
+                                <div class="stitch-label" style="font-size: 0.55rem;">MÍN</div>
+                                <div class="fw-bold" style="font-size: 0.9rem;">{{ row.tolerancia.minimo|default:"0.000" }}</div>
                             </div>
-
-                            <!-- Action Row -->
-                            <div class="piece-nav-row mt-1">
-                                <a href="javascript:void(0)" onclick="addNewPiece()" class="piece-add-btn">
-                                    <i class="ri-add-circle-line"></i> NUEVA PIEZA
-                                </a>
+                            <div class="text-center">
+                                <div class="stitch-label" style="font-size: 0.55rem; color: var(--stitch-secondary);">NOMINAL</div>
+                                <div class="fw-bold" style="font-size: 0.9rem; color: var(--stitch-secondary);">{{ row.tolerancia.nominal|default:"0.000" }}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="stitch-label" style="font-size: 0.55rem;">MÁX</div>
+                                <div class="fw-bold" style="font-size: 0.9rem;">{{ row.tolerancia.maximo|default:"0.000" }}</div>
                             </div>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endif %}
-            </div>
-        </div>
 
-        <!-- Main Canvas: Measurement Table -->
-        <div class="col-lg-8 col-xl-9 col-main-premium">
-            <div class="main-canvas-premium">
-                {% if planilla %}
-                <form method="post" id="measurementForm">
-                    {% csrf_token %}
-                    <div class="canvas-header d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center gap-2">
-                            <div class="blue-line-indicator"></div>
-                            <div>
-                                <h3 class="canvas-title">CONTROLES A MEDIR - PIEZA {{ pieza_actual }}</h3>
-                                <div class="text-muted fw-bold" style="font-size: 0.85rem; text-transform: uppercase; margin-top: 2px;">
-                                    {% if planilla.proceso %}{{ planilla.proceso.nombre }}{% endif %}
-                                    {% if planilla.articulo or planilla.elemento %}
-                                        {% if planilla.proceso %} / {% endif %}
-                                        {% if planilla.articulo %}{{ planilla.articulo.nombre }}{% endif %}
-                                        {% if planilla.elemento %}{% if planilla.articulo %} - {% endif %}{{ planilla.elemento.nombre }}{% endif %}
-                                    {% endif %}
-                                    {% if planilla.proyecto %} - {{ planilla.proyecto }}{% endif %}
-                                    {% if not planilla.proceso and not planilla.articulo and not planilla.elemento and not planilla.proyecto %} - {% endif %}
-                                </div>
-                            </div>
+                <div class="pagination-footer d-flex justify-content-between align-items-center mt-auto py-3 border-top" id="tablePagination" style="border-color: var(--stitch-border) !important;">
+                        <div class="pagination-info opacity-50 fw-bold" style="font-size: 0.75rem; font-family: 'Fira Code';">
+                            MOSTRANDO <span id="pag-start" style="color: var(--stitch-primary);">0</span> - <span id="pag-end" style="color: var(--stitch-primary);">0</span> DE <span id="pag-total">0</span> PARÁMETROS
                         </div>
-                        <div class="d-flex align-items-center gap-4">
-                            <div class="d-flex align-items-center gap-2">
-                                <label class="text-xxs fw-bold text-muted mb-0" style="white-space: nowrap;">MOSTRAR:</label>
-                                <select id="pageSizeSelector" class="form-select form-select-sm" style="width: 110px; font-size: 0.75rem; font-weight: 800; border-radius: 10px; cursor: pointer; border: 1.5px solid #e2e8f0;" onchange="changePageSize(this.value)">
-                                    <option value="7">7 FILAS</option>
-                                    <option value="12">12 FILAS</option>
-                                    <option value="24">24 FILAS</option>
-                                    <option value="all">VER TODO</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="table-responsive mt-2">
-                        <table class="table premium-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 30%;">CONTROL</th>
-                                    <th class="text-center" style="width: 10%;">TOL. MÍN [-]</th>
-                                    <th class="text-center" style="width: 15%;">VALOR OBTENIDO</th>
-                                    <th class="text-center" style="width: 10%;">TOL. MÁX [+]</th>
-                                    <th class="text-center" style="width: 25%;">INSTRUMENTO</th>
-                                    <th class="text-center" style="width: 10%;">ESTADO</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for row in rows %}
-                                <tr class="animate__animated animate__fadeIn">
-                                    <td class="control-name-cell">
-                                        <div class="fw-bold text-dark">{{ row.tolerancia.control.nombre }}</div>
-                                        <div class="text-xxs text-muted">REF: {{ row.tolerancia.nominal|floatformat:3|default:"-" }}</div>
-                                    </td>
-                                    <td class="text-center text-muted fw-bold">
-                                        {% if row.tolerancia.minimo is not None %}{{ row.tolerancia.minimo|floatformat:3 }}{% else %}-{% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        {% if row.tolerancia.control.pnp %}
-                                        <select name="valorpnp_{{ row.tolerancia.id }}" class="form-select input-clean text-center pnp-select" 
-                                                onchange="checkStatus(this, 'pnp')">
-                                            <option value="">-</option>
-                                            <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PASA</option>
-                                            <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>NO PASA</option>
-                                        </select>
-                                        {% else %}
-                                        <input type="text" inputmode="decimal" autocomplete="off" name="valor_{{ row.tolerancia.id }}" 
-                                               class="form-control input-clean text-center measurement-input" 
-                                               value="{% if row.valor is not None %}{{ row.valor|floatformat:3 }}{% endif %}"
-                                               data-nominal="{{ row.tolerancia.nominal|default:'' }}"
-                                               data-min="{{ row.tolerancia.minimo|default:'' }}"
-                                               data-max="{{ row.tolerancia.maximo|default:'' }}"
-                                               oninput="checkStatus(this, 'numeric')">
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center text-muted fw-bold">
-                                        {% if row.tolerancia.maximo is not None %}{{ row.tolerancia.maximo|floatformat:3 }}{% else %}-{% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <div class="d-flex gap-1 align-items-center">
-                                            <select id="instr_{{ row.tolerancia.id }}" name="instrumento_{{ row.tolerancia.id }}" class="form-select input-clean text-center instrument-select" 
-                                                    onchange="saveInstrumentSelection(this, '{{ row.tolerancia.id }}')" style="font-size: 0.75rem; padding: 0.4rem !important; flex: 1; {% if row.tolerancia.instrumento.is_calibracion_vencida or not row.tolerancia.instrumento.en_servicio %}background-color: #fef2f2 !important; border-color: #ef4444 !important;{% endif %}">
-                                                <option value="">- Herramienta -</option>
-                                                {% for inst in instrumentos %}
-                                                <option value="{{ inst.id }}" 
-                                                        {% if row.tolerancia.instrumento_id == inst.id %}selected{% endif %}
-                                                        {% if inst.is_calibracion_vencida or not inst.en_servicio %}disabled style="color: #ef4444;"{% endif %}>
-                                                    {{ inst.nombre }} 
-                                                    {% if not inst.en_servicio %}[FUERA DE SERV.]{% elif inst.is_calibracion_vencida %}[VENCIDO]{% elif inst.is_en_alerta %}[ALERTA]{% endif %}
-                                                </option>
-                                                {% endfor %}
-                                            </select>
-                                            {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
-                                            <button type="button" onclick="quickAdd('instrumento', 'instr_{{ row.tolerancia.id }}')" class="btn btn-xs btn-light border p-1" style="border-radius: 4px; line-height: 1;" title="Nuevo Instrumento">
-                                                <i class="ri-add-line text-primary" style="font-size: 0.8rem;"></i>
-                                            </button>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                    <td class="text-center status-col">
-                                        <div class="d-flex align-items-center justify-content-center gap-2">
-                                            <div class="status-target">
-                                                {% if row.status == 'OK' %}
-                                                <div class="status-indicator ok"></div>
-                                                {% elif row.status == 'NOK' %}
-                                                <div class="status-indicator nok"></div>
-                                                {% else %}
-                                                <div class="status-indicator pending"></div>
-                                                {% endif %}
-                                            </div>
-                                            
-                                            {% if row.spc_alerts %}
-                                            <div class="spc-alert-trigger" style="cursor: help; margin-left: 4px;">
-                                                {% if row.has_danger %}
-                                                <i class="ri-error-warning-fill" style="color: #ef4444; font-size: 1.3rem;"></i>
-                                                {% elif row.has_warning %}
-                                                <i class="ri-alert-fill" style="color: #f59e0b; font-size: 1.3rem;"></i>
-                                                {% endif %}
-                                                
-                                                <div class="spc-tooltip-content">
-                                                    {% for a in row.spc_alerts %}{{ a.message }}{% if not forloop.last %}&#10;____________________&#10;{% endif %}{% endfor %}
-                                                </div>
-                                            </div>
-                                            {% endif %}
-
-                                            {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
-                                            <a href="{% url 'estadisticas_control' row.tolerancia.id %}" class="btn-stats-mini" title="Ver Estadísticas SPC">
-                                                <i class="ri-bar-chart-box-line"></i>
-                                            </a>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="pagination-footer d-flex justify-content-between align-items-center mt-3 pt-3 border-top" id="tablePagination" style="display: none !important;">
-                        <div class="pagination-info text-muted fw-bold" style="font-size: 0.75rem;">
-                            Mostrando <span id="pag-start" class="text-primary">0</span> - <span id="pag-end" class="text-primary">0</span> de <span id="pag-total" class="text-dark">0</span> parámetros
-                        </div>
-                        <div class="pagination-controls d-flex gap-1">
-                            <button type="button" class="btn btn-sm btn-light border" onclick="prevPage()" id="prevBtn" style="border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; transition: 0.2s;">
+                        <div class="pagination-controls d-flex gap-2">
+                            <button type="button" class="btn-stitch-outline" onclick="prevPage()" id="prevBtn" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0;">
                                 <i class="ri-arrow-left-s-line"></i>
                             </button>
-                            <div id="pageNumbers" class="d-flex gap-1 mx-1"></div>
-                            <button type="button" class="btn btn-sm btn-light border" onclick="nextPage()" id="nextBtn" style="border-radius: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; transition: 0.2s;">
+                            <div id="pageNumbers" class="d-flex gap-2 mx-1"></div>
+                            <button type="button" class="btn-stitch-outline" onclick="nextPage()" id="nextBtn" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; padding: 0;">
                                 <i class="ri-arrow-right-s-line"></i>
                             </button>
                         </div>
                     </div>
                 </form>
                 {% else %}
-                <div class="empty-state-placeholder" style="padding: 10rem 2rem;">
-                    <i class="ri-search-eye-line" style="font-size: 4rem; opacity: 0.2;"></i>
-                    <p style="font-size: 1.1rem;">Seleccione un proyecto y proceso para cargar los controles.</p>
+                <div class="text-center" style="padding: 10rem 2rem; background: #ffffff; border-radius: 20px; border: 1px dashed var(--stitch-border);">
+                    <i class="ri-radar-line animate__animated animate__pulse animate__infinite" style="font-size: 4rem; color: var(--stitch-primary); opacity: 0.3;"></i>
+                    <p class="mt-4 text-muted fw-bold" style="letter-spacing: 0.1em;">ESPERANDO SEÑAL: SELECCIONAR PROYECTO Y PROCESO</p>
                 </div>
                 {% endif %}
             </div>
@@ -635,442 +248,243 @@
     </div>
 </div>
 
+<!-- FUENTES INDUSTRIALES (CYBER-TECH) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Fira+Sans:wght@300;400;600;800&family=Outfit:wght@800&display=swap" rel="stylesheet">
+
 <style>
-    .premium-page-container { 
-        padding: 0.75rem 2rem 1.5rem 2rem; 
-        max-width: 1800px; 
-        margin: 0 auto;
-        background: #f8fafc;
-        height: 100vh;
-        overflow: hidden; /* Disable general page scroll */
-    }
-    
-    .premium-page-container > .row {
-        display: flex;
-        flex-wrap: nowrap; /* Prevent wrapping even if content is slightly wider */
-        align-items: stretch;
-    }
-
-    .col-sidebar-premium, .col-main-premium {
-        display: flex;
-        flex-direction: column;
+    /* 
+       DESIGN SYSTEM: CYBER-INDUSTRIAL PRECISION
+       Inspiration: @ui-ux-pro-max + @stitch-ui-design
+    */
+    :root {
+        --stitch-bg: #fffbfb;
+        --stitch-surface: #ffffff;
+        --stitch-card: #ffffff;
+        --stitch-primary: #e11d48;
+        --stitch-secondary: #fb7185;
+        --stitch-border: rgba(225, 29, 72, 0.08);
+        --stitch-text: #1e1b1b;
+        --stitch-muted: #7f7171;
+        --stitch-success: #10b981;
+        --stitch-danger: #e11d48;
+        --stitch-glass: rgba(255, 255, 255, 0.7);
     }
 
-    .premium-panel-side { 
-        display: flex !important;
-        flex-direction: column !important;
-        height: calc(100vh - 3rem) !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow-y: auto;
-    }
-
-    /* Hide sidebar scrollbar but allow scrolling */
-    .premium-panel-side {
-        scrollbar-width: none;
-        -ms-overflow-style: none;
-    }
-    .premium-panel-side::-webkit-scrollbar {
-        display: none;
-    }
-    
-    .side-title-main { 
-        font-size: 1.5rem; 
-        font-weight: 800; 
-        color: #1e293b; 
-        margin-top: 0; 
-        letter-spacing: -0.02em;
-        margin-bottom: 0.25rem;
-    }
-    
-    .side-subtitle-main { 
-        color: #64748b; 
-        font-size: 0.85rem; 
-        margin-bottom: 1.25rem;
-        line-height: 1.4;
-    }
-
-    .config-card { 
-        background: white;
-        border-radius: 16px; 
-        border: 1px solid #e2e8f0; 
-        overflow: hidden; 
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        transition: all 0.2s ease;
-    }
-    
-    .config-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    }
-    
-    /* Card Coloring via Classes */
-    .card-blue .config-card-header { 
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-        color: #1e40af;
-    }
-    
-    .card-green .config-card-header { 
-        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-        color: #065f46;
-    }
-
-    .card-yellow .config-card-header { 
-        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-        color: #92400e;
-    }
-
-    .card-cyan .config-card-header { 
-        background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
-        color: #0891b2;
-    }
-    
-    .config-card-header { 
-        padding: 0.65rem 1rem; 
-        display: flex; 
-        align-items: center; 
-        gap: 0.75rem; 
-        font-weight: 700; 
-        font-size: 0.75rem; 
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-    }
-    
-    .config-card-header.text-primary {
-        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-        color: #1e40af;
-    }
-    
-    .config-card-header.text-success {
-        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-        color: #065f46;
-    }
-    
-    .config-card-header i { 
-        font-size: 1.1rem; 
-    }
-    
-    .config-card-body { 
-        padding: 0.85rem 1rem; 
-    }
-    
-    .input-clean { 
-        border-radius: 10px !important; 
-        border: 2px solid #e2e8f0 !important; 
-        padding: 0.75rem 1rem !important; 
-        font-size: 0.95rem !important; 
-        font-weight: 500 !important; 
-        color: #1e293b !important;
-        transition: all 0.2s ease !important;
-        background: white !important;
-    }
-    
-    .input-clean:focus {
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
-    }
-
-    .main-canvas-premium { 
-        background: white; 
-        border-radius: 20px; 
-        border: 1px solid #e2e8f0;
-        padding: 2rem; 
-        height: calc(100vh - 3rem) !important; /* Fixed height for scrolling */
-        overflow-y: auto;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .main-canvas-premium::-webkit-scrollbar {
-        width: 8px;
-    }
-    .main-canvas-premium::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
-    }
-    .main-canvas-premium::-webkit-scrollbar-track {
-        background: #f8fafc;
-    }
-
-    #measurementForm {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .table-responsive {
-        flex: 1;
-    }
-
-    /* Elegant Scrollbar for Table */
-    .table-responsive::-webkit-scrollbar {
-        width: 6px;
-    }
-    .table-responsive::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 10px;
-    }
-
-    .canvas-header { 
-        margin-bottom: 0.75rem; 
-        border-bottom: 2px solid #f1f5f9; 
-        padding-bottom: 0.75rem; 
-    }
-    
-    .blue-line-indicator { 
-        width: 4px; 
-        height: 28px; 
-        background: #3b82f6;
-        border-radius: 4px;
-    }
-
-    /* Paginator Styles */
-    .page-num-btn {
-        width: 34px;
-        height: 34px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        font-size: 0.75rem;
-        font-weight: 800;
-        cursor: pointer;
-        transition: all 0.2s;
-        border: 1px solid #e2e8f0;
-        background: white;
-        color: #64748b;
-    }
-    .page-num-btn:hover {
-        background: #f1f5f9;
-        color: #1e293b;
-    }
-    .page-num-btn.active {
-        background: #3b82f6;
-        color: white;
-        border-color: #3b82f6;
-        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
-    }
-    .page-num-btn.disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-    
-    .canvas-title { 
-        font-size: 1.4rem; 
-        font-weight: 800; 
-        color: #1e293b;
-        margin: 0; 
-    }
-
-    .premium-table { 
-        width: 100%;
-        table-layout: fixed;
-        border-collapse: separate;
-        border-spacing: 0;
-        border-radius: 12px; 
-        overflow: hidden;
-        border: 1px solid #e2e8f0;
-    }
-    
-    .premium-table thead th { 
-        background: #1e293b;
-        border: none; 
-        color: #ffffff; 
-        font-weight: 800; 
-        font-size: 0.75rem; 
-        text-transform: uppercase; 
-        letter-spacing: 0.05em; 
-        padding: 1.25rem 1rem; 
-    }
-
-    .premium-table tbody td { 
-        padding: 1.1rem 1rem; 
-        vertical-align: middle; 
-        border-bottom: 1px solid #f1f5f9;
-        transition: background 0.2s ease;
-    }
-    
-    .premium-table tbody tr:hover td {
-        background: #f8fafc;
-    }
-    
-    .status-indicator { 
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        display: inline-block;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    /* SPC Custom Tooltip Styles */
-    .spc-alert-trigger {
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .spc-tooltip-content {
-        display: none; /* Hidden by default, JS toggles display: block on the global instance */
-        background-color: #1e293b;
-        color: #ffffff !important;
-        text-align: left;
-        border-radius: 8px;
-        padding: 12px 16px;
-        position: absolute; /* Default for original instances, JS overrides to fixed for global */
-        z-index: 1000;
-        width: 340px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
-        font-size: 0.8rem;
-        line-height: 1.5;
-        white-space: pre-wrap; 
-        pointer-events: none;
-        border: 1px solid #475569;
+    body {
         font-family: 'Inter', sans-serif;
+        background-color: var(--stitch-bg) !important;
+        color: var(--stitch-text);
+        overflow-x: hidden;
     }
 
-    .spc-alert-trigger:hover .spc-tooltip-content {
-        /* visibility: visible; - Disabled in favor of JS positioning */
-        /* opacity: 1; */
-        /* transform: translateX(-85%) translateY(-5px); */
-    }
-    
-    /* Tooltip Arrow */
-    .spc-tooltip-content::after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 85%; /* Match the shift to point to the icon */
-        margin-left: -6px;
-        border-width: 6px;
-        border-style: solid;
-        border-color: #1e293b transparent transparent transparent;
-    }
-    
-    .status-indicator.ok { 
-        background: #10b981;
-    }
-    
-    .status-indicator.nok { 
-        background: #ef4444;
-    }
-    
-    .status-indicator.pending { 
-        background: #cbd5e1;
+    .content-wrapper {
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
     }
 
-    .text-xxs { 
-        font-size: 0.7rem; 
-        color: #64748b !important; 
-        text-transform: uppercase; 
-        letter-spacing: 0.05em;
-        font-weight: 700;
+    .premium-page-container {
+        padding: 1.5rem 2.5rem;
+        background: var(--stitch-bg);
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(225, 29, 72, 0.02) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(251, 113, 133, 0.02) 0%, transparent 50%);
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* STITCH MODULES */
+    .stitch-module {
+        background: var(--stitch-glass);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--stitch-border);
+        border-radius: 24px;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.05);
+        padding: 1.2rem 1.5rem !important;
+    }
+
+    .stitch-module:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 50px -12px rgba(225, 29, 72, 0.1);
+        border-color: rgba(225, 29, 72, 0.2);
+    }
+
+    /* TYPOGRAPHY */
+    /* TYPOGRAPHY */
+    .stitch-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--stitch-text) 30%, var(--stitch-primary));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.02em;
+    }
+
+    .stitch-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--stitch-primary);
         margin-bottom: 0.5rem;
+        display: block;
+        opacity: 0.8;
     }
-    
-    .fw-bold.text-dark-value { 
-        font-size: 1.05rem; 
-        color: #0f172a !important;
-        font-weight: 600;
+
+    /* INPUTS */
+    .stitch-input {
+        background: #fdf5f5;
+        border: 1px solid var(--stitch-border);
+        color: var(--stitch-text);
+        padding: 0.85rem 1.25rem;
+        border-radius: 12px;
+        width: 100%;
+        transition: all 0.3s;
     }
-    
-    .empty-state-placeholder { 
-        text-align: center; 
-        color: #cbd5e1; 
-        font-weight: 600; 
+
+    .stitch-input:focus {
+        background: #ffffff;
+        border-color: var(--stitch-primary);
+        box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
+        outline: none;
     }
-    
-    .btn-primary {
-        background: #3b82f6 !important;
-        border: none !important;
-        box-shadow: 0 2px 4px rgba(59,130,246,0.2) !important;
-        transition: all 0.2s ease !important;
-        font-weight: 600 !important;
+
+    /* TILES GRID (BENTO LAYER) */
+    .stitch-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        gap: 1.5rem;
+        padding: 0.5rem;
+        overflow-y: auto;
+        height: calc(100vh - 200px);
     }
-    
-    .btn-primary:hover {
-        background: #2563eb !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(59,130,246,0.3) !important;
+
+    .stitch-tile {
+        background: #ffffff;
+        border: 1px solid #f9ecec;
+        border-radius: 20px;
+        padding: 1.5rem 2rem;
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+        box-shadow: 0 2px 4px rgba(225, 29, 72, 0.02);
     }
-    
-    .btn-outline-primary {
-        border: 2px solid #3b82f6 !important;
-        color: #3b82f6 !important;
-        background: white !important;
-        transition: all 0.2s ease !important;
-        font-weight: 600 !important;
+
+    .stitch-tile:hover {
+        background: #fffafa;
+        border-color: var(--stitch-secondary);
+        transform: scale(1.005);
+        box-shadow: 0 15px 30px -10px rgba(225, 29, 72, 0.1);
     }
-    
-    .btn-outline-primary:hover {
-        background: #eff6ff !important;
-        border-color: #2563eb !important;
-        color: #2563eb !important;
+
+    .stitch-val-input {
+        background: #fdf5f5;
+        border: 2px solid transparent;
+        color: var(--stitch-primary);
+        text-align: center;
+        font-family: 'Fira Code', monospace;
+        font-size: 1.5rem;
+        font-weight: 800;
+        width: 100%;
+        height: 52px;
+        border-radius: 12px;
+        transition: all 0.3s;
     }
-    
-    .measurement-input {
-        border: 2px solid #e2e8f0 !important;
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        font-size: 1rem !important;
-        transition: all 0.2s ease !important;
+
+    .stitch-val-input:focus {
+        background: #ffffff;
+        border-color: var(--stitch-primary);
+        box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
+        outline: none;
     }
-    
-    .measurement-input:focus {
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
+
+    /* STATUS LIGHTS */
+    .status-flux-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
     }
-    
-    .pnp-select {
-        border: 2px solid #e2e8f0 !important;
-        border-radius: 8px !important;
-        font-weight: 600 !important;
-        font-size: 1.1rem !important;
-        padding: 0.6rem 0.75rem !important;
-        transition: all 0.2s ease !important;
-        min-width: 140px !important;
-    }
-    
-    .pnp-select:focus {
-        border-color: #3b82f6 !important;
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.1) !important;
-        outline: none !important;
-    }
-    
-    .control-name-cell {
-        font-weight: 600;
-    }
-    
-    .control-name-cell .fw-bold {
-        color: #10b981;
+    .status-flux-dot.ok { background: var(--stitch-success); }
+    .status-flux-dot.nok { background: var(--stitch-danger); }
+    .status-flux-dot.pending { background: #e5e1e1; }
+
+    /* ACTION BUTTONS */
+    .btn-stitch-primary {
+        background: var(--stitch-primary);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 14px;
         font-weight: 700;
+        text-transform: uppercase;
+        width: 100%;
+        box-shadow: 0 8px 20px -5px rgba(225, 29, 72, 0.3);
+        transition: all 0.3s;
     }
-    
-    .control-name-cell .text-muted {
-        color: #64748b !important;
+
+    .btn-stitch-primary:hover {
+        background: #be123c;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px -5px rgba(225, 29, 72, 0.4);
+    }
+
+    .btn-stitch-outline {
+        background: #ffffff;
+        color: var(--stitch-text);
+        border: 1px solid var(--stitch-border);
+        padding: 0.85rem;
+        border-radius: 14px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s;
+    }
+
+    .btn-stitch-outline:hover {
+        background: #fffafa;
+        border-color: var(--stitch-primary);
+        color: var(--stitch-primary);
+    }
+
+    /* PIECE BUTTONS */
+    .btn-stitch-piece {
+        padding: 0.5rem 1rem;
+        background: #ffffff;
+        border: 1px solid var(--stitch-border);
+        border-radius: 10px;
+        color: #7f7171;
+        text-decoration: none;
+        transition: all 0.3s;
+        font-weight: 600;
         font-size: 0.85rem;
     }
 
-    .btn-stats-mini {
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: #f1f5f9;
-        color: #3b82f6;
-        border: 1px solid #e2e8f0;
-        text-decoration: none;
-        transition: all 0.2s ease;
-    }
-    
-    .btn-stats-mini:hover {
-        background: #3b82f6;
+    .btn-stitch-piece.active {
+        background: var(--stitch-primary);
         color: white;
-        border-color: #3b82f6;
-        transform: translateY(-2px);
+        border-color: var(--stitch-primary);
+        box-shadow: 0 4px 12px rgba(225, 29, 72, 0.2);
     }
+
+    /* SIDEBAR */
+    .stitch-sidebar {
+        width: 320px;
+        height: 100vh;
+        overflow-y: auto;
+        padding-right: 1.5rem;
+        border-right: 1px solid var(--stitch-border);
+    }
+
+    /* Hide scrollbar */
+    .stitch-sidebar::-webkit-scrollbar { display: none; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1081,10 +495,10 @@
     let allRows = [];
 
     function initPagination() {
-        const tbody = document.querySelector('.premium-table tbody');
-        if (!tbody) return;
+        const grid = document.getElementById('measurementGrid');
+        if (!grid) return;
         
-        allRows = Array.from(tbody.querySelectorAll('tr'));
+        allRows = Array.from(grid.querySelectorAll('.stitch-tile'));
         const selector = document.getElementById('pageSizeSelector');
         if (selector) selector.value = pageSize;
         
@@ -1267,7 +681,7 @@
                 popup: 'premium-swal-popup',
                 confirmButton: 'premium-swal-confirm',
                 cancelButton: 'premium-swal-cancel',
-                input: 'form-control input-clean text-center'
+                input: 'form-control input-clean'
             },
             preConfirm: (value) => {
                 if (!value || value < 1) {
@@ -1351,45 +765,49 @@
     }
 
     function checkStatus(el, type) {
-        const row = el.closest('tr');
-        // Targeted update to avoid overwriting the chart button
-        const statusTarget = row.querySelector('.status-target');
-        
-        function parseLocalFloat(val) {
-            if (val === '' || val === null || val === undefined) return NaN;
-            if (typeof val === 'number') return val;
-            return parseFloat(val.toString().replace(',', '.'));
-        }
+        const tile = el.closest('.stitch-tile');
+        const statusDot = tile.querySelector('.status-flux-dot');
+        const statusText = tile.querySelector('.status-flux-text');
         
         if (type === 'pnp') {
             const val = el.value;
             if (val === 'OK') {
-                statusTarget.innerHTML = '<div class="status-indicator ok"></div>';
+                statusDot.className = 'status-flux-dot ok';
+                statusText.textContent = 'SYNC_OK';
+                statusText.className = 'status-flux-text small fw-bold text-success';
             } else if (val === 'NOK') {
-                statusTarget.innerHTML = '<div class="status-indicator nok"></div>';
+                statusDot.className = 'status-flux-dot nok';
+                statusText.textContent = 'ERR_OUT';
+                statusText.className = 'status-flux-text small fw-bold text-danger';
             } else {
-                statusTarget.innerHTML = '<div class="status-indicator pending"></div>';
+                statusDot.className = 'status-flux-dot pending';
+                statusText.textContent = 'IDLE';
+                statusText.className = 'status-flux-text small fw-bold opacity-25';
             }
         } else {
-            const val = parseLocalFloat(el.value);
-            // Handle data attributes explicitly
-            let nominalStr = el.dataset.nominal;
-            let minStr = el.dataset.min;
-            let maxStr = el.dataset.max;
+            const val = parseFloat(el.value);
+            const min = parseFloat(el.dataset.min);
+            const max = parseFloat(el.dataset.max);
             
-            // Treat empty as null
-            const nominal = nominalStr !== '' ? parseLocalFloat(nominalStr) : null;
-            const minVal = minStr !== '' ? parseLocalFloat(minStr) : null;
-            const maxVal = maxStr !== '' ? parseLocalFloat(maxStr) : null;
-
             if (isNaN(val)) {
-                statusTarget.innerHTML = '<div class="status-indicator pending"></div>';
-                return;
+                statusDot.className = 'status-flux-dot pending';
+                statusText.textContent = 'IDLE';
+                statusText.className = 'status-flux-text small fw-bold opacity-25';
+            } else if (val >= min && val <= max) {
+                statusDot.className = 'status-flux-dot ok';
+                statusText.textContent = 'SYNC_OK';
+                statusText.className = 'status-flux-text small fw-bold text-success';
+            } else {
+                statusDot.className = 'status-flux-dot nok';
+                statusText.textContent = 'ERR_OUT';
+                statusText.className = 'status-flux-text small fw-bold text-danger';
             }
             
             let minLimit = -Infinity;
             let maxLimit = Infinity;
 
+            // The following logic for minLimit/maxLimit is currently unused due to the direct min/max check above.
+            // If this complex logic is intended to be used, the above if/else if/else block needs to be adjusted.
             if (nominal !== null && !isNaN(nominal)) {
                 // Hybrid Logic matching Backend
                 // Min Logic
@@ -1421,9 +839,9 @@
             }
             
             if (ok) {
-                statusTarget.innerHTML = '<div class="status-indicator ok"></div>';
+                statusTarget.classList.add('ok');
             } else {
-                statusTarget.innerHTML = '<div class="status-indicator nok"></div>';
+                statusTarget.classList.add('nok');
             }
         }
     }

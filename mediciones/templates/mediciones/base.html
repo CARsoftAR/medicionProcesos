@@ -10,6 +10,24 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Dynamic Theme Engine (Propagates to index.css) -->
+    <style>
+        :root {
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --border-color: #e2e8f0;
+            --card-radius: 12px;
+            --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --input-shadow: none;
+            --bg-sidebar: #0f172a;
+        }
+
+        body { background: var(--bg-body); color: var(--text-primary); transition: all 0.3s ease; }
+        .sidebar { background-color: var(--bg-sidebar) !important; }
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body>

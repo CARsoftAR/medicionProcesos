@@ -4,12 +4,12 @@
 
 {% block content %}
 <div class="row animate__animated animate__fadeIn">
-    <!-- Header -->
+    <!-- Header --> -->
     <div class="col-12 mb-4">
         <h1 class="page-title" style="font-size: 1.8rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">
             <i class="ri-settings-3-line text-primary me-2"></i>Configuración del Sistema
         </h1>
-        <p class="text-muted">Administre las claves y preferencias de su entorno de trabajo.</p>
+        <p class="text-muted">Administre las claves y preferencias de su entorno de trabajo.</p> -->
     <!-- </div> -->
 
     <!-- API Keys Section -->
@@ -52,16 +52,6 @@
                                 </div>
                                 <div class="form-text mt-1">Días antes del vencimiento para avisar calibraciones.</div>
                             </div>
-                            
-                            <!-- Tema -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold" style="font-size: 0.9rem;">Tema de la Interfaz</label>
-                                <select name="tema" class="form-select">
-                                    <option value="LIGHT" {% if user.profile.tema_preferido == 'LIGHT' %}selected{% endif %}>Claro (Light Mode)</option>
-                                    <option value="DARK" {% if user.profile.tema_preferido == 'DARK' %}selected{% endif %}>Oscuro (Dark Mode)</option>
-                                </select>
-                                <div class="form-text mt-1">Seleccione la apariencia visual del sistema.</div>
-                            </div>
                         </div>
                     </div>
 
@@ -74,7 +64,8 @@
             </div>
         </div>
     </div>
+    </div>
+</div>
 
-</div>
-</div>
+
 {% endblock %}
