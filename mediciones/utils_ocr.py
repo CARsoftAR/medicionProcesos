@@ -128,7 +128,7 @@ def parse_ocr_data(pdf_file, filename, api_key=None):
                 matrix = []
                 for i, row in enumerate(ai_data.get('matrix', [])):
                     matrix.append({
-                        'control': f"{i+1}. {row.get('control', 'Control')}",
+                        'control': row.get('control', 'Control'),
                         'nominal': str(row.get('nominal', '0')),
                         'tolerancia': row.get('tolerancia', '± 0.0'),
                         'instrumento': row.get('instrumento', '-'),
@@ -186,7 +186,7 @@ def _generate_mock_row(idx, det, nom, tol, piezas, rng):
     # REMOVED RANDOM OFFSET to prevent "Largo Total 149.68" when nominal is 150
     # Now it returns cleaner data if we ever fall back to this
     row = {
-        'control': f"{idx}. {det}",
+        'control': det,
         'nominal': f"{nom:.2f}",
         'tolerancia': f"± {tol:.2f}" if tol > 0 else "MAX",
         'instrumento': f"{'MIC' if 'Exterior' in det else 'CAP'}",
@@ -199,7 +199,7 @@ def _generate_mock_row(idx, det, nom, tol, piezas, rng):
 
 def _generate_row(idx, det, nom, tol, piezas, preset_vals, inst):
     row = {
-        'control': f"{idx}. {det} {nom:.2f}",
+        'control': det,
         'nominal': f"{nom:.2f}",
         'tolerancia': f"± {tol:.2f}",
         'instrumento': inst,

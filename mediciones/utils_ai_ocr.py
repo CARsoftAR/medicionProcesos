@@ -34,34 +34,37 @@ def extract_data_with_gemini(pdf_path, mime_type="application/pdf", api_key=None
 
         prompt = """
         Eres un sistema experto en extracción de datos de Planillas de Inspección de ABBAMAT.
-        Tu objetivo es extraer con precisión quirúrgica los datos técnicos de la imagen adjunta.
+        Tu objetivo es extraer con PRECISION QUIRÚRGICA los datos técnicos de la imagen adjunta. 
         
+        REGLAS DE ORO:
+        - **NÚMEROS DE PIEZAS REALES**: Extrae los números de piezas EXACTOS que aparecen en la fila 'NÚMERO DE PIEZAS' (ej: 18, 20, 22...). NUNCA inventes una secuencia 1, 2, 3... si no está en el papel.
+        - **ALINEACIÓN FILA/COLUMNA**: Asegúrate de que cada medición (valor) corresponda exactamente a la columna de su número de pieza.
+        - **MÚLTIPLES SECCIONES**: Este formulario puede tener la tabla dividida en dos o más bloques. Debes concatenar los resultados. Por ejemplo, si el control "Ancho" aparece arriba para las piezas 1-10 y abajo para las piezas 11-20, el resultado debe ser un único control "Ancho" con los 20 valores.
+        - **VALORES VACÍOS**: Si una celda está vacía, devuelve un string vacío "". No asumas valores previos.
+        - **COTA vs DETALLE**: Ignora la columna COTA. Extrae el nombre del control solo de DETALLE.
+        - **VALORES CUALITATIVOS**: Captura "OK", "NOK", "PASA", "FALLA" exactamente.
+
         INSTRUCCIONES DE EXTRACCIÓN:
-        1. HEADER: Extrae Nro OP (ej: 46676), Proyecto (ej: 25-069), Cliente, Artículo y Denominación.
-        2. PIEZAS: Identifica todos los números de piezas únicos en la fila de 'NÚMERO DE PIEZAS'.
-        3. MATRIX (MERGE OBLIGATORIO):
-           - Si la planilla tiene dos partes o secciones que repiten los mismos CONTROLES para piezas diferentes, DEBES UNIRLOS en una sola fila.
-           - El campo "valores" debe contener todas las mediciones de todas las piezas identificadas para ese control, en orden.
-           - NO repitas controles. Si el control "Ø Exterior" aparece dos veces, agrupa todos sus valores en un solo objeto.
-        4. Si un valor está borroneado, usa el corregido.
-        5. TOLERANCIAS (CRÍTICO - LEER CON ATENCIÓN):
-           - El formato "-0,20-0,50" NO es un rango, son dos límites NEGATIVOS. 
-           - Significa: Límite Superior = -0.20 y Límite Inferior = -0.50.
-           - Igualmente "-0,20-0,10" -> "-0.20 / -0.10".
-           - El segundo guion es un signo negativo, no un separador.
-           - Formatea la salida "tolerancia" siempre como "LimSup / LimInf" (ej: "-0.20 / -0.50").
+        1. HEADER: Extrae Nro OP (ej: 85480), Proyecto (ej: 240+40), Cliente, Artículo, Denominación y Operación.
+        2. PIEZAS: Crea una lista única y ordenada de todos los números de piezas identificados en todas las secciones ('NÚMERO DE PIEZAS').
+        3. MATRIX:
+           - "control": Nombre limpio (sin números de índice).
+           - "nominal": Valor numérico o "S/N".
+           - "tolerancia": "+0.10 / -0.20" o "± 0.05".
+           - "valores": Una lista de strings que coincida EN ORDEN con la lista global de 'piezas'.
+        4. Si un valor está corregido a mano, prioriza el valor escrito a mano.
 
         Responde ÚNICAMENTE con este JSON:
         {
           "header": {"op": "", "proyecto": "", "cliente": "", "articulo": "", "denominacion": "", "operacion": ""},
-          "piezas": [205, 215, ...],
+          "piezas": [18, 20, 22, 27, 40, ...], 
           "matrix": [
             {
-              "control": "Ø Exterior",
-              "nominal": "52.00",
-              "tolerancia": "-0.20 / -0.50",
-              "instrumento": "MIC 8",
-              "valores": ["51.96", "51.95", ...]
+              "control": "Nombre del Control",
+              "nominal": "0.00",
+              "tolerancia": "+0.00 / -0.00",
+              "instrumento": "MIC / CAP / ...",
+              "valores": ["4.05", "4.05", "4.06", ...] 
             }
           ]
         }
@@ -80,7 +83,10 @@ def extract_data_with_gemini(pdf_path, mime_type="application/pdf", api_key=None
         
         try:
             print(f"[AI-OCR] Intentando modelo primario: {primary_model}...")
-            model = genai.GenerativeModel(primary_model)
+            model = genai.GenerativeModel(
+                model_name=primary_model,
+                generation_config={"temperature": 0.1, "top_p": 0.95, "top_k": 0}
+            )
             response = model.generate_content([prompt, doc_part])
             if response and response.text:
                  # ÉXITO DIRECTO
@@ -125,7 +131,10 @@ def extract_data_with_gemini(pdf_path, mime_type="application/pdf", api_key=None
                 
                 try:
                     print(f"[AI-OCR] Intentando fallback con: {m_obj.name}...")
-                    model = genai.GenerativeModel(m_obj.name)
+                    model = genai.GenerativeModel(
+                        model_name=m_obj.name,
+                        generation_config={"temperature": 0.1, "top_p": 0.95, "top_k": 0}
+                    )
                     response = model.generate_content([prompt, doc_part])
                     
                     if response and response.text:

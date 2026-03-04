@@ -156,70 +156,70 @@
                     </div>
                 </div>
 
-                <!-- PRECISION TILES STREAM -->
-                <div class="stitch-grid" id="measurementGrid">
-                    {% for row in rows %}
-                    <div class="stitch-tile animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|add:1 }}0ms;" data-id="{{ row.tolerancia.id }}">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="stitch-label" style="font-size: 0.6rem; opacity: 0.6; margin-bottom: 2px;">CONTROL</div>
-                                <div class="stitch-title" style="font-size: 1.1rem; letter-spacing: 0;">{{ row.tolerancia.control.nombre }}</div>
-                                <div class="mt-2">
-                                    <a href="{% url 'estadisticas_control' row.tolerancia.id %}" target="_blank" class="text-decoration-none d-flex align-items-center gap-1" style="font-size: 0.65rem; color: var(--stitch-primary); opacity: 0.8; font-weight: 700;">
-                                        <i class="ri-bar-chart-2-line"></i> VER ESTADÍSTICAS
-                                    </a>
-                                </div>
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="small fw-bold {% if row.status == 'OK' %}text-success{% elif row.status == 'NOK' %}text-danger{% else %}opacity-25{% endif %}">
-                                    {% if row.status == 'OK' %}
-                                        <i class="ri-checkbox-circle-fill" style="font-size: 1.2rem;"></i>
-                                    {% elif row.status == 'NOK' %}
-                                        <i class="ri-close-circle-fill" style="font-size: 1.2rem;"></i>
+                <!-- PRECISION TABLE HUB -->
+                <div class="stitch-table-container animate__animated animate__fadeIn" id="measurementGrid">
+                    <table class="stitch-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>PARÁMETRO / CONTROL</th>
+                                <th class="text-center">NOMINAL</th>
+                                <th class="text-center">TOLERANCIA</th>
+                                <th class="text-center" style="width: 200px;">VALOR</th>
+                                <th class="text-center" style="width: 80px;">ESTADO</th>
+                                <th class="text-center" style="width: 100px;">ANÁLISIS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in rows %}
+                            <tr class="stitch-table-row animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|add:1 }}0ms;" data-id="{{ row.tolerancia.id }}">
+                                <td class="font-monospace opacity-50">{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="fw-bold" style="font-size: 1rem;">{{ row.tolerancia.control.nombre }}</div>
+                                    <div class="small opacity-40 text-uppercase" style="font-size: 0.6rem; letter-spacing: 0.05em;">{{ row.tolerancia.instrumento.nombre|default:"SIN INSTRUMENTO" }}</div>
+                                </td>
+                                <td class="text-center font-monospace fw-bold" style="color: var(--stitch-secondary);">
+                                    {{ row.tolerancia.nominal|default:"0.000" }}
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2 font-monospace small">
+                                        <div class="px-2 py-1 rounded" style="background: #fff1f2; color: #e11d48;">{{ row.tolerancia.minimo|default:"-0.000" }}</div>
+                                        <div class="px-2 py-1 rounded" style="background: #f0fdf4; color: #10b981;">{{ row.tolerancia.maximo|default:"+0.000" }}</div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    {% if row.tolerancia.control.pnp %}
+                                        <select name="valorpnp_{{ row.tolerancia.id }}" class="stitch-input text-center fw-bold pnp-select {% if row.status == 'OK' %}ok{% elif row.status == 'NOK' %}nok{% endif %}" style="height: 42px; font-size: 0.9rem;" onchange="checkStatus(this, 'pnp')">
+                                            <option value="" {% if not row.valor %}selected{% endif %}>-</option>
+                                            <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PASA</option>
+                                            <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>FALLA</option>
+                                        </select>
                                     {% else %}
-                                        <i class="ri-subtract-line" style="font-size: 1.2rem;"></i>
+                                        <input type="number" step="0.001" name="valor_{{ row.tolerancia.id }}" 
+                                               value="{% if row.valor is not None %}{{ row.valor|floatformat:3 }}{% endif %}" 
+                                               class="stitch-table-input measurement-input {% if row.status == 'OK' %}ok{% elif row.status == 'NOK' %}nok{% endif %}" placeholder="0.000"
+                                               onchange="checkStatus(this, 'real')"
+                                               data-min-limit="{{ row.min_limit|default:'' }}"
+                                               data-max-limit="{{ row.max_limit|default:'' }}">
                                     {% endif %}
-                                </span>
-                                <div class="status-flux-dot {% if row.status == 'OK' %}ok{% elif row.status == 'NOK' %}nok{% else %}pending{% endif %}"></div>
-                            </div>
-                        </div>
-
-                        <div class="d-flex gap-3 align-items-center">
-                            <div class="flex-grow-1">
-                                <label class="stitch-label text-center">INGRESO VALOR</label>
-                                {% if row.tolerancia.control.pnp %}
-                                    <select name="valorpnp_{{ row.tolerancia.id }}" class="stitch-input text-center fw-bold" style="height: 52px; font-size: 1.1rem;" onchange="checkStatus(this, 'pnp')">
-                                        <option value="" {% if not row.valor %}selected{% endif %}>-</option>
-                                        <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PASA</option>
-                                        <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>FALLA</option>
-                                    </select>
-                                {% else %}
-                                    <input type="number" step="0.001" name="valor_{{ row.tolerancia.id }}" 
-                                           value="{% if row.valor is not None %}{{ row.valor|floatformat:3 }}{% endif %}" 
-                                           class="stitch-val-input" placeholder="0.000"
-                                           onchange="checkStatus(this, 'real')"
-                                           data-min="{{ row.tolerancia.minimo|default:'' }}"
-                                           data-max="{{ row.tolerancia.maximo|default:'' }}">
-                                {% endif %}
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-auto pt-3 border-top" style="border-color: #f1f5f9;">
-                            <div class="text-center">
-                                <div class="stitch-label" style="font-size: 0.55rem;">MÍN</div>
-                                <div class="fw-bold" style="font-size: 0.9rem;">{{ row.tolerancia.minimo|default:"0.000" }}</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="stitch-label" style="font-size: 0.55rem; color: var(--stitch-secondary);">NOMINAL</div>
-                                <div class="fw-bold" style="font-size: 0.9rem; color: var(--stitch-secondary);">{{ row.tolerancia.nominal|default:"0.000" }}</div>
-                            </div>
-                            <div class="text-center">
-                                <div class="stitch-label" style="font-size: 0.55rem;">MÁX</div>
-                                <div class="fw-bold" style="font-size: 0.9rem;">{{ row.tolerancia.maximo|default:"0.000" }}</div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex flex-column align-items-center gap-1">
+                                        <div class="status-flux-dot {% if row.status == 'OK' %}ok{% elif row.status == 'NOK' %}nok{% else %}pending{% endif %}"></div>
+                                        <div class="status-flux-text small fw-bold {% if row.status == 'OK' %}text-success{% elif row.status == 'NOK' %}text-danger{% else %}opacity-25{% endif %}" style="font-size: 0.55rem;">
+                                            {% if row.status == 'OK' %}SYNC_OK{% elif row.status == 'NOK' %}ERR_OUT{% else %}IDLE{% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <a href="{% url 'estadisticas_control' row.tolerancia.id %}" target="_blank" class="btn-stitch-icon" title="Análisis Estadístico">
+                                        <i class="ri-bar-chart-2-line"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
 
                 <div class="pagination-footer d-flex justify-content-between align-items-center mt-auto py-3 border-top" id="tablePagination" style="border-color: var(--stitch-border) !important;">
@@ -357,65 +357,137 @@
         outline: none;
     }
 
-    /* TILES GRID (BENTO LAYER) */
-    .stitch-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-        gap: 1.5rem;
-        padding: 0.5rem;
-        overflow-y: auto;
-        height: calc(100vh - 200px);
-    }
-
-    .stitch-tile {
+    /* TABLE SYSTEM */
+    .stitch-table-container {
         background: #ffffff;
-        border: 1px solid #f9ecec;
+        border: 1px solid var(--stitch-border);
         border-radius: 20px;
-        padding: 1.5rem 2rem;
-        transition: all 0.3s;
-        display: flex;
-        flex-direction: column;
-        gap: 1.25rem;
-        box-shadow: 0 2px 4px rgba(225, 29, 72, 0.02);
+        overflow-y: auto;
+        max-height: 70vh;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 20px rgba(225, 29, 72, 0.03);
+        scrollbar-width: thin;
+        scrollbar-color: var(--stitch-primary) #fdf5f5;
+        position: relative; /* For sticky child */
     }
 
-    .stitch-tile:hover {
-        background: #fffafa;
-        border-color: var(--stitch-secondary);
-        transform: scale(1.005);
-        box-shadow: 0 15px 30px -10px rgba(225, 29, 72, 0.1);
+    .stitch-table-container::-webkit-scrollbar {
+        width: 8px;
     }
 
-    .stitch-val-input {
+    .stitch-table-container::-webkit-scrollbar-track {
         background: #fdf5f5;
-        border: 2px solid transparent;
+        border-radius: 10px;
+    }
+
+    .stitch-table-container::-webkit-scrollbar-thumb {
+        background-color: var(--stitch-primary);
+        border: 2px solid #fdf5f5; /* Premium gap */
+        border-radius: 10px;
+    }
+
+    .stitch-table-container::-webkit-scrollbar-thumb:hover {
+        background-color: #be123c;
+    }
+
+    .stitch-table {
+        width: 100%;
+        border-collapse: collapse;
+        border-spacing: 0;
+    }
+
+    .stitch-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #fdf5f5; /* Solid color */
+        padding: 1.25rem 1.5rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--stitch-primary);
+        border-bottom: 2px solid var(--stitch-border);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03); /* Header shadow when scrolling */
+    }
+
+    .stitch-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f8fafc;
+        vertical-align: middle;
+        background: white; /* Ensure solid background for items */
+    }
+
+    .stitch-table-row {
+        transition: all 0.2s;
+    }
+
+    .stitch-table-row:hover td {
+        background: #fffafa;
+    }
+
+    .stitch-table-input {
+        background: #fdf5f5;
+        border: 1px solid transparent;
         color: var(--stitch-primary);
         text-align: center;
         font-family: 'Fira Code', monospace;
-        font-size: 1.5rem;
+        font-size: 1.1rem;
         font-weight: 800;
         width: 100%;
-        height: 52px;
-        border-radius: 12px;
-        transition: all 0.3s;
+        height: 42px;
+        border-radius: 10px;
+        transition: all 0.2s;
     }
 
-    .stitch-val-input:focus {
-        background: #ffffff;
-        border-color: var(--stitch-primary);
-        box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
-        outline: none;
+    .stitch-table-input.ok {
+        background: #f0fdf4 !important;
+        color: #166534 !important;
+        border-color: #22c55e !important;
+    }
+
+    .stitch-table-input.nok {
+        background: #fef2f2 !important;
+        color: #991b1b !important;
+        border-color: #ef4444 !important;
+    }
+
+    .btn-stitch-icon {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        border: 1px solid var(--stitch-border);
+        color: var(--stitch-primary);
+        background: white;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-stitch-icon:hover {
+        background: var(--stitch-primary);
+        color: white;
+        transform: translateY(-2px);
     }
 
     /* STATUS LIGHTS */
     .status-flux-dot {
-        width: 10px;
-        height: 10px;
+        width: 8px;
+        height: 8px;
         border-radius: 50%;
+        box-shadow: 0 0 8px transparent;
     }
-    .status-flux-dot.ok { background: var(--stitch-success); }
-    .status-flux-dot.nok { background: var(--stitch-danger); }
-    .status-flux-dot.pending { background: #e5e1e1; }
+    .status-flux-dot.ok { 
+        background: var(--stitch-success); 
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+    .status-flux-dot.nok { 
+        background: var(--stitch-danger); 
+        box-shadow: 0 0 8px rgba(225, 29, 72, 0.4);
+    }
+    .status-flux-dot.pending { background: #e2e8f0; }
 
     /* ACTION BUTTONS */
     .btn-stitch-primary {
@@ -498,9 +570,16 @@
         const grid = document.getElementById('measurementGrid');
         if (!grid) return;
         
-        allRows = Array.from(grid.querySelectorAll('.stitch-tile'));
+        allRows = Array.from(grid.querySelectorAll('.stitch-table-row'));
         const selector = document.getElementById('pageSizeSelector');
-        if (selector) selector.value = pageSize;
+        if (selector) {
+            // Adjust default for table
+            if (!localStorage.getItem('tablePageSize')) {
+                pageSize = "all";
+                localStorage.setItem('tablePageSize', "all");
+            }
+            selector.value = pageSize;
+        }
         
         updateTableDisplay();
     }
@@ -765,20 +844,25 @@
     }
 
     function checkStatus(el, type) {
-        const tile = el.closest('.stitch-tile');
-        const statusDot = tile.querySelector('.status-flux-dot');
-        const statusText = tile.querySelector('.status-flux-text');
+        const row = el.closest('.stitch-table-row');
+        const statusDot = row.querySelector('.status-flux-dot');
+        const statusText = row.querySelector('.status-flux-text');
         
+        // Remove previous status classes from element
+        el.classList.remove('ok', 'nok');
+
         if (type === 'pnp') {
             const val = el.value;
             if (val === 'OK') {
                 statusDot.className = 'status-flux-dot ok';
                 statusText.textContent = 'SYNC_OK';
                 statusText.className = 'status-flux-text small fw-bold text-success';
+                el.classList.add('ok');
             } else if (val === 'NOK') {
                 statusDot.className = 'status-flux-dot nok';
                 statusText.textContent = 'ERR_OUT';
                 statusText.className = 'status-flux-text small fw-bold text-danger';
+                el.classList.add('nok');
             } else {
                 statusDot.className = 'status-flux-dot pending';
                 statusText.textContent = 'IDLE';
@@ -786,62 +870,26 @@
             }
         } else {
             const val = parseFloat(el.value);
-            const min = parseFloat(el.dataset.min);
-            const max = parseFloat(el.dataset.max);
+            const min = parseFloat(el.dataset.minLimit);
+            const max = parseFloat(el.dataset.maxLimit);
             
             if (isNaN(val)) {
                 statusDot.className = 'status-flux-dot pending';
                 statusText.textContent = 'IDLE';
                 statusText.className = 'status-flux-text small fw-bold opacity-25';
-            } else if (val >= min && val <= max) {
-                statusDot.className = 'status-flux-dot ok';
-                statusText.textContent = 'SYNC_OK';
-                statusText.className = 'status-flux-text small fw-bold text-success';
             } else {
-                statusDot.className = 'status-flux-dot nok';
-                statusText.textContent = 'ERR_OUT';
-                statusText.className = 'status-flux-text small fw-bold text-danger';
-            }
-            
-            let minLimit = -Infinity;
-            let maxLimit = Infinity;
-
-            // The following logic for minLimit/maxLimit is currently unused due to the direct min/max check above.
-            // If this complex logic is intended to be used, the above if/else if/else block needs to be adjusted.
-            if (nominal !== null && !isNaN(nominal)) {
-                // Hybrid Logic matching Backend
-                // Min Logic
-                if (minVal !== null && !isNaN(minVal)) {
-                    // Check if Deviation (small relative to nominal) or Absolute (large)
-                    if (Math.abs(minVal) < (Math.abs(nominal) / 2.0)) {
-                        minLimit = nominal - Math.abs(minVal);
-                    } else {
-                        minLimit = minVal;
-                    }
+                const is_ok = (isNaN(min) || val >= min) && (isNaN(max) || val <= max);
+                if (is_ok) {
+                    statusDot.className = 'status-flux-dot ok';
+                    statusText.textContent = 'SYNC_OK';
+                    statusText.className = 'status-flux-text small fw-bold text-success';
+                    el.classList.add('ok');
+                } else {
+                    statusDot.className = 'status-flux-dot nok';
+                    statusText.textContent = 'ERR_OUT';
+                    statusText.className = 'status-flux-text small fw-bold text-danger';
+                    el.classList.add('nok');
                 }
-                // Max Logic
-                if (maxVal !== null && !isNaN(maxVal)) {
-                    if (Math.abs(maxVal) < (Math.abs(nominal) / 2.0)) {
-                        maxLimit = nominal + Math.abs(maxVal);
-                    } else {
-                        maxLimit = maxVal;
-                    }
-                }
-            } else {
-                 // No nominal -> Strictly Absolute Limits
-                 if (minVal !== null && !isNaN(minVal)) minLimit = minVal;
-                 if (maxVal !== null && !isNaN(maxVal)) maxLimit = maxVal;
-            }
-            
-            let ok = true;
-            if (val < minLimit || val > maxLimit) {
-                ok = false;
-            }
-            
-            if (ok) {
-                statusTarget.classList.add('ok');
-            } else {
-                statusTarget.classList.add('nok');
             }
         }
     }

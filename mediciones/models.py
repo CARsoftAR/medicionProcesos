@@ -256,7 +256,9 @@ class Tolerancia(models.Model):
             
             # Min Logic
             if min_val is not None:
-                if abs(min_val) < (abs(nominal_f) / 2.0):
+                # Heuristic: If val <= Nominal, assume it's a deviation
+                # This allows for large tolerances (up to 100% of nominal)
+                if abs(min_val) <= abs(nominal_f):
                     min_limit = nominal_f - abs(min_val)
                 else:
                     min_limit = min_val
@@ -265,7 +267,7 @@ class Tolerancia(models.Model):
 
             # Max Logic
             if max_val is not None:
-                if abs(max_val) < (abs(nominal_f) / 2.0):
+                if abs(max_val) <= abs(nominal_f):
                     max_limit = nominal_f + abs(max_val)
                 else:
                     max_limit = max_val

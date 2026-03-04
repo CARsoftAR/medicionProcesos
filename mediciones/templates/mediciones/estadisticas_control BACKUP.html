@@ -254,9 +254,9 @@
             </p>
         </div>
         <div class="d-flex gap-2">
-            <a href="/mediciones/{{ tolerancia.planilla.id }}/exportar-pdf-pro/" class="btn btn-primary" style="background: var(--premium-blue); border-radius: 10px; font-weight: 700; padding: 0.7rem 1.5rem;">
+            <!-- <a href="/mediciones/{{ tolerancia.planilla.id }}/exportar-pdf-pro/" class="btn btn-primary" style="background: var(--premium-blue); border-radius: 10px; font-weight: 700; padding: 0.7rem 1.5rem;">
                 <i class="ri-printer-line"></i> REPORTE PRO
-            </a>
+            </a> -->
             <button class="btn btn-danger" style="background: var(--premium-red); border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><i class="ri-camera-line"></i></button>
             <button class="btn btn-light border" style="border-radius: 10px; width: 44px; height: 44px;"><i class="ri-fullscreen-line"></i></button>
             <a href="{% url 'nueva_medicion_op' %}?proy={{ tolerancia.planilla.proyecto }}&op={{ tolerancia.planilla.num_op }}&proc={{ tolerancia.planilla.proceso_id }}" class="btn btn-danger" style="background: var(--premium-red); border-radius: 10px; font-weight: 700; padding: 0.7rem 1.5rem;">

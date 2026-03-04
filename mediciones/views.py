@@ -299,7 +299,10 @@ def asignar_tolerancias(request, planilla_id):
             tolerancia.save()
             
         messages.success(request, 'Tolerancias guardadas correctamente.')
-        return redirect(f"{reverse('nueva_medicion_op')}?proy={planilla.proyecto}&op={planilla.num_op}&proc={planilla.proceso.id}")
+        proc_id = planilla.proceso.id if planilla.proceso else ''
+        proy = planilla.proyecto if planilla.proyecto else ''
+        op = planilla.num_op if planilla.num_op else ''
+        return redirect(f"{reverse('nueva_medicion_op')}?proy={proy}&op={op}&proc={proc_id}")
 
     context = {
         'planilla': planilla,
@@ -310,7 +313,10 @@ def asignar_tolerancias(request, planilla_id):
 @login_required
 def ingreso_mediciones(request, planilla_id):
     planilla = get_object_or_404(PlanillaMedicion, id=planilla_id)
-    return redirect(f"{reverse('nueva_medicion_op')}?proy={planilla.proyecto}&op={planilla.num_op}&proc={planilla.proceso.id}")
+    proc_id = planilla.proceso.id if planilla.proceso else ''
+    proy = planilla.proyecto if planilla.proyecto else ''
+    op = planilla.num_op if planilla.num_op else ''
+    return redirect(f"{reverse('nueva_medicion_op')}?proy={proy}&op={op}&proc={proc_id}")
 
 def OLD_ingreso_mediciones(request, planilla_id):
         
@@ -1301,10 +1307,15 @@ def nueva_medicion_op(request):
                             except:
                                 status = 'ERROR'
                 
+                # Get limits for this tolerance (used in Template for JS validation)
+                abs_min, abs_max = tol.get_absolute_limits()
+
                 rows.append({
                     'tolerancia': tol,
                     'valor': current_val,
                     'status': status,
+                    'min_limit': abs_min,
+                    'max_limit': abs_max,
                     'spc_alerts': spc_alerts,
                     'has_warning': any(a['severity'] == 'warning' for a in spc_alerts),
                     'has_danger': any(a['severity'] == 'danger' for a in spc_alerts)
@@ -1586,7 +1597,7 @@ def estadisticas_control(request, tolerancia_id):
     for v in valores_query:
         if v.valor_pieza is not None:
             data_points.append(float(v.valor_pieza))
-            labels.append(f"P{v.pieza}")
+            labels.append(str(v.pieza))
 
     import statistics
     from .utils_spc import SPCAnalyzer
@@ -1637,7 +1648,7 @@ def estadisticas_control(request, tolerancia_id):
 
     # Build advanced stats dictionary
     stats = {
-        'n': len(data_points),
+        'n': max(len(data_points), n_approved + n_rejected),
         'mean': safe_round(analyzer.mean),
         'stdev': safe_round(analyzer.std),
         'min': safe_round(min(data_points)) if data_points else None,
@@ -1710,7 +1721,8 @@ def estadisticas_control(request, tolerancia_id):
         'data_points_json': json.dumps(data_points),
         'labels_json': json.dumps(labels),
         'titulo': f'SPC - {tolerancia.control.nombre}',
-        'is_xr_available': xr_data is not None
+        'is_xr_available': xr_data is not None,
+        'is_pnp': tolerancia.control.pnp
     }
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1722,11 +1734,11 @@ def estadisticas_control(request, tolerancia_id):
             'id': tolerancia.id,
             'planilla_id': tolerancia.planilla.id,
             'is_xr_available': xr_data is not None,
-            'proceso_id': tolerancia.planilla.proceso.id,
-            'proceso_nombre': tolerancia.planilla.proceso.nombre,
+            'proceso_id': tolerancia.planilla.proceso.id if tolerancia.planilla.proceso else '',
+            'proceso_nombre': tolerancia.planilla.proceso.nombre if tolerancia.planilla.proceso else 'S/P',
             'num_op': tolerancia.planilla.num_op,
             'proyecto': tolerancia.planilla.proyecto,
-            'cliente': tolerancia.planilla.cliente.nombre
+            'cliente': tolerancia.planilla.cliente.nombre if tolerancia.planilla.cliente else 'S/C'
         })
 
     return render(request, 'mediciones/estadisticas_control.html', context)
@@ -2278,7 +2290,12 @@ def ocr_lector_planos(request):
             try:
                 # 1. Parsing del Nominal
                 nom_str = str(row['nominal']).replace(',', '.')
-                nom_float = float(re.findall(r"[-+]?\d*\.\d+|\d+", nom_str)[0])
+                # Remove multipliers like (3x) or 2x to avoid picking '3' or '2' as nominal
+                nom_str_clean = re.sub(r'\(?\d+[xX]\)?', '', nom_str).strip()
+                nom_nums = re.findall(r"[-+]?\d*\.\d+|\d+", nom_str_clean)
+                if not nom_nums: # Fallback to original if cleaning removed everything
+                    nom_nums = re.findall(r"[-+]?\d*\.\d+|\d+", nom_str)
+                nom_float = float(nom_nums[0]) if nom_nums else 0.0
                 
                 # 2. Parsing de Tolerancias (+0.20/-0.10 o ±0.05)
                 tol_str = str(row['tolerancia']).replace(',', '.').strip()
@@ -2310,9 +2327,12 @@ def ocr_lector_planos(request):
                 
                 for v in row['valores']:
                     v_str = str(v).strip().upper().replace(',', '.')
-                    if v_str in ['OK', 'ACEPTADO']:
+                    # Detección más flexible de OK (acepta OK, OK., OK!, ACEPTADO, PASA)
+                    is_ok_text = any(v_str.startswith(x) for x in ['OK', 'ACEP', 'PAS']) or v_str == 'P'
+                    
+                    if is_ok_text:
                         processed_vals.append({'val': v, 'ok': True})
-                    elif v_str in ['NOK', 'RECHAZADO']:
+                    elif any(v_str.startswith(x) for x in ['NOK', 'RECH', 'FALL', 'FAIL']) or v_str == 'R':
                         processed_vals.append({'val': v, 'ok': False})
                     else:
                         try:
@@ -2489,7 +2509,8 @@ def importar_datos_ocr(request):
                 has_pnp_values = False
                 for v_item in valores:
                     v_raw = v_item.get('val', v_item) if isinstance(v_item, dict) else v_item
-                    if str(v_raw).strip().upper() in ['OK', 'PASA', 'PASS', 'NOK', 'FALLA', 'FAIL']:
+                    v_str_pnp = str(v_raw).strip().upper()
+                    if any(v_str_pnp.startswith(x) for x in ['OK', 'PAS', 'ACEP', 'NOK', 'FAL', 'FAI']):
                         has_pnp_values = True
                         break
                 
@@ -2499,8 +2520,12 @@ def importar_datos_ocr(request):
 
                 # C. Gestionar Tolerancia (Soporta Asimétricas +0.2/-0.1 y Rangos Negativos -0.20/-0.50)
                 try:
+                    # Normalizar nominal (quitar multiplicadores tipo (3x))
                     nom_str = str(row.get('nominal', '0')).replace(',', '.')
-                    nominal_val = float(re.findall(r"[-+]?\d*\.\d+|\d+", nom_str)[0])
+                    nom_str_clean = re.sub(r'\(?\d+[xX]\)?', '', nom_str).strip()
+                    nom_nums = re.findall(r"[-+]?\d*\.\d+|\d+", nom_str_clean)
+                    if not nom_nums: nom_nums = re.findall(r"[-+]?\d*\.\d+|\d+", nom_str)
+                    nominal_val = float(nom_nums[0]) if nom_nums else 0.0
                     
                     tol_str = str(row.get('tolerancia', '')).replace(',', '.').strip()
                     limit_max = 0.0
@@ -2594,10 +2619,13 @@ def importar_datos_ocr(request):
                         val_upper = str(val_raw).strip().upper()
                         val_clean = val_upper.replace(']', '').replace('[', '').replace('|', '')
                         
-                        if val_clean in ['OK', 'PASA', 'PASS']:
+                        is_ok = any(val_clean.startswith(x) for x in ['OK', 'PAS', 'ACEP']) or val_clean == 'P'
+                        is_nok = any(val_clean.startswith(x) for x in ['NOK', 'FAL', 'FAI', 'RECH']) or val_clean == 'R'
+                        
+                        if is_ok:
                             val_pnp = 'OK'
                             print(f"[OCR IMPORT DEBUG]   Pieza {pieza_num}: PNP=OK")
-                        elif val_clean in ['NOK', 'FALLA', 'FAIL']:
+                        elif is_nok:
                             val_pnp = 'NOK'
                             print(f"[OCR IMPORT DEBUG]   Pieza {pieza_num}: PNP=NOK")
                         else:
