@@ -2,34 +2,60 @@
 
 {% block title %}Estructuras de Medición{% endblock %}
 
-{% block content %}
+{% block extra_head %}
+<!-- FUENTES PREMIUM -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
+    /* 
+       DESIGN SYSTEM: CYBER-GLASSMOPRHISM PREMIUM
+       Matching the rest of the dark analytical console
+    */
     :root {
-        --stitch-primary: #e11d48;     /* Rose 600 */
-        --stitch-secondary: #fda4af;   /* Rose 300 */
-        --stitch-bg: #fdf2f8;          /* Rose 50 */
-        --stitch-text: #1e293b;        /* Slate 800 */
-        --stitch-glass: rgba(255, 255, 255, 0.9);
-        --stitch-border: rgba(225, 29, 72, 0.15);
-        --stitch-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.08);
+        --stitch-bg: #090d16;
+        --stitch-surface: rgba(255, 255, 255, 0.02);
+        --stitch-card: rgba(255, 255, 255, 0.03);
+        --stitch-primary: #c084fc;
+        --stitch-secondary: #a78bfa;
+        --stitch-border: rgba(255, 255, 255, 0.08);
+        --stitch-text: #e2e8f0;
+        --stitch-muted: #94a3b8;
+        --stitch-success: #4ade80;
+        --stitch-danger: #fca5a5;
+        --stitch-glass: rgba(255, 255, 255, 0.03);
     }
     
-    body { 
+    html, body, .main-content {
         background-color: var(--stitch-bg) !important;
-        font-family: 'Inter', sans-serif; 
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.06) 0%, transparent 50%) !important;
+        color: var(--stitch-text);
+        font-family: 'Inter', sans-serif;
+    }
+
+    .premium-page-container {
+        padding: 1.5rem 2.5rem;
+        opacity: 0;
+        transition: opacity 0.18s ease-in-out;
+    }
+    .premium-page-container.loaded {
+        opacity: 1;
     }
 
     .btn-stitch-primary {
-        background: linear-gradient(135deg, var(--stitch-primary), #be123c);
-        color: white;
+        background: #7c3aed !important;
+        color: white !important;
         border: none;
         border-radius: 14px;
         padding: 0.85rem 1.75rem;
-        font-weight: 800;
+        font-weight: 700;
         font-family: 'Outfit', sans-serif;
         letter-spacing: 0.05em;
         transition: all 0.3s;
-        box-shadow: 0 10px 20px -5px rgba(225, 29, 72, 0.4);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3) !important;
         text-transform: uppercase;
         display: inline-flex;
         align-items: center;
@@ -38,18 +64,18 @@
     }
 
     .btn-stitch-primary:hover {
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 15px 30px -5px rgba(225, 29, 72, 0.5);
-        color: white;
+        background: #8b5cf6 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4) !important;
     }
 
     .stitch-module {
-        background: var(--stitch-glass);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--stitch-border);
-        border-radius: 20px;
-        box-shadow: var(--stitch-shadow);
+        background: var(--stitch-glass) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 1px solid var(--stitch-border) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25) !important;
         overflow: hidden;
     }
 
@@ -59,48 +85,53 @@
     }
 
     .data-table thead th {
-        background: rgba(225, 29, 72, 0.03);
-        color: var(--stitch-primary);
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(12px) !important;
+        color: var(--stitch-primary) !important;
         font-family: 'Outfit', sans-serif;
         font-weight: 800;
         text-transform: uppercase;
-        font-size: 0.8rem;
-        letter-spacing: 0.05em;
-        padding: 1rem 1.25rem;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        padding: 1.25rem 1.5rem;
         border-bottom: 2px solid var(--stitch-border);
     }
     
     .data-table tbody tr {
         transition: background 0.2s;
-        border-bottom: 1px dashed var(--stitch-border);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
     }
     
     .data-table tbody tr:hover {
-        background: rgba(225, 29, 72, 0.02) !important;
+        background: rgba(255, 255, 255, 0.01) !important;
+    }
+
+    .data-table td {
+        padding: 1.25rem 1.5rem;
+        vertical-align: middle;
     }
 
     .btn-action-edit {
-        background: rgba(225, 29, 72, 0.05) !important; 
+        background: rgba(255, 255, 255, 0.03) !important; 
         color: var(--stitch-primary) !important; 
         width: 38px; height: 38px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid var(--stitch-border) !important;
         transition: all 0.2s;
     }
     .btn-action-edit:hover {
-        background: rgba(225, 29, 72, 0.1) !important;
-        color: #be123c !important;
+        background: var(--stitch-primary) !important;
+        color: white !important;
         transform: translateY(-2px);
-        border-color: rgba(225, 29, 72, 0.3) !important;
     }
 
     .btn-action-delete {
-        background: rgba(239, 68, 68, 0.1) !important; 
-        color: #ef4444 !important; 
-        width: 38px; height: 38px; border: 1px solid rgba(239, 68, 68, 0.2) !important; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
+        background: rgba(239, 68, 68, 0.08) !important; 
+        color: #fca5a5 !important; 
+        width: 38px; height: 38px; border: 1px solid rgba(239, 68, 68, 0.15) !important; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
         transition: all 0.2s;
     }
     .btn-action-delete:hover {
-        background: rgba(239, 68, 68, 0.2) !important;
-        color: #b91c1c !important;
+        background: #ef4444 !important;
+        color: white !important;
         transform: translateY(-2px);
     }
 
@@ -110,12 +141,14 @@
         box-shadow: none !important;
     }
 </style>
+{% endblock %}
 
-<div class="container-fluid py-4 animate__animated animate__fadeIn" style="max-width: 1400px;">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+{% block content %}
+<div class="premium-page-container container-fluid py-4 animate__animated animate__fadeIn" style="max-width: 1400px;">
+    <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h1 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.8rem; letter-spacing: -0.025em; color: var(--stitch-text); margin: 0;">ESTRUCTURAS DE MEDICIÓN</h1>
-            <p style="color: #64748b; font-weight: 500; font-size: 0.95rem; margin: 0;">Configura las plantillas para OPs y Proyectos referenciados a Clientes.</p>
+            <h1 class="stitch-title" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.25rem; letter-spacing: -0.02em; background: linear-gradient(135deg, #ffffff 30%, var(--stitch-primary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">ESTRUCTURAS DE MEDICIÓN</h1>
+            <p style="color: var(--stitch-muted); font-weight: 500; font-size: 0.95rem; margin: 0; margin-top: 5px;">Configura las plantillas para OPs y Proyectos referenciados a Clientes.</p>
         </div>
         <a href="{% url 'configurar_estructura' %}" class="btn-stitch-primary">
             <i class="ri-add-line" style="font-size: 1.2rem;"></i> NUEVA ESTRUCTURA
@@ -137,20 +170,20 @@
                     <tbody>
                         {% for e in estructuras %}
                         <tr>
-                            <td style="padding: 1.25rem;">
-                                <div style="font-weight: 800; color: var(--stitch-text); font-size: 1.05rem;">
-                                    {% if e.num_op %}{{ e.num_op }} / {% endif %}{{ e.proyecto }}
+                            <td>
+                                <div style="font-weight: 800; color: #ffffff; font-size: 1.1rem; font-family: 'Outfit', sans-serif;">
+                                    {% if e.num_op %}{{ e.num_op }} <span style="opacity: 0.3;">/</span> {% endif %}{{ e.proyecto }}
                                 </div>
                             </td>
                             <td>
-                                <span style="color: #64748b; font-weight: 600;">{{ e.cliente.nombre|default:"-" }}</span>
+                                <span style="color: var(--stitch-muted); font-weight: 600;">{{ e.cliente.nombre|default:"-" }}</span>
                             </td>
                             <td>
-                                <span class="badge" style="background: rgba(225, 29, 72, 0.1); color: var(--stitch-primary); border: 1px solid rgba(225, 29, 72, 0.2); padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: 700;">
+                                <span class="badge" style="background: rgba(192, 132, 252, 0.12); color: var(--stitch-primary); border: 1px solid rgba(192, 132, 252, 0.25); padding: 0.45rem 0.8rem; border-radius: 8px; font-weight: 700; font-family: 'Fira Code', monospace; font-size: 0.8rem;">
                                     {{ e.articulo.nombre|default:"Sin Artículo" }}
                                 </span>
                             </td>
-                            <td class="text-end" style="padding-right: 1.25rem;">
+                            <td class="text-end">
                                 <div class="d-flex gap-2 justify-content-end">
                                     <a href="{% url 'configurar_estructura' %}?op={{ e.num_op|default:'' }}&proy={{ e.proyecto|default:'' }}" 
                                        class="btn-action-edit" 
@@ -168,10 +201,10 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="4" style="padding: 4rem 1rem; text-align: center; color: #94a3b8;">
-                                <i class="ri-layout-grid-fill" style="font-size: 3rem; margin-bottom: 1rem; display: block; opacity: 0.2; color: var(--stitch-primary);"></i>
-                                <div style="font-weight: 600; font-size: 1.1rem;">AÚN NO SE HAN DEFINIDO ESTRUCTURAS</div>
-                                <div style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">Crea tu primera estructura utilizando el botón superior.</div>
+                            <td colspan="4" style="padding: 6rem 1rem; text-align: center; color: var(--stitch-muted);">
+                                <i class="ri-layout-grid-fill animate__animated animate__pulse animate__infinite" style="font-size: 4rem; margin-bottom: 1rem; display: block; opacity: 0.3; color: var(--stitch-primary);"></i>
+                                <div style="font-weight: 800; font-size: 1.2rem; font-family: 'Outfit', sans-serif; color: #ffffff;">AÚN NO SE HAN DEFINIDO ESTRUCTURAS</div>
+                                <div style="font-size: 0.95rem; margin-top: 0.5rem; opacity: 0.7;">Crea tu primera estructura utilizando el botón superior.</div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -184,36 +217,44 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const pageContainer = document.querySelector('.premium-page-container');
+        if (pageContainer) {
+            requestAnimationFrame(() => {
+                pageContainer.classList.add('loaded');
+            });
+        }
+    });
+
     function deleteStructure(proyecto, numOp) {
         Swal.fire({
-            title: '¿Eliminar Estructura?',
-            text: `Se eliminarán todos los controles asociados a ${proyecto} (OP: ${numOp}). Esta acción no se puede deshacer.`,
-            iconHtml: '<div style="width: 80px; height: 80px; background-color: #fef2f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
+            html: `
+                <div class="swal-icon-circle danger">
+                    <i class="ri-delete-bin-line"></i>
+                </div>
+                <div class="premium-swal-title">¿Eliminar Estructura?</div>
+                <div class="premium-swal-html">
+                    Se eliminarán todos los controles asociados a <strong>${proyecto}</strong> (OP: ${numOp}).<br>Esta acción no se puede deshacer.
+                </div>
+            `,
             showCancelButton: true,
-            confirmButtonText: 'Eliminar',
+            confirmButtonColor: '#ef4444',
+            confirmButtonText: '<i class="ri-delete-bin-line"></i> Eliminar',
             cancelButtonText: 'Cancelar',
-            buttonsStyling: false,
+            reverseButtons: true,
             customClass: {
-                popup: 'premium-swal',
-                title: 'premium-title',
-                htmlContainer: 'premium-text',
-                actions: 'premium-actions',
-                confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-danger',
-                cancelButton: 'swal2-cancel premium-cancel-btn',
-                icon: 'no-border'
-            },
-            reverseButtons: false
+                popup: 'premium-swal-popup',
+                confirmButton: 'premium-swal-confirm btn-danger',
+                cancelButton: 'premium-swal-cancel'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
-                // Show loading with consistent style
                 Swal.fire({
                     title: 'Eliminando...',
-                    html: 'Por favor espere',
-                    didOpen: () => Swal.showLoading(),
                     allowOutsideClick: false,
-                    showConfirmButton: false,
+                    didOpen: () => Swal.showLoading(),
                     customClass: {
-                        popup: 'premium-swal'
+                        popup: 'premium-swal-popup'
                     }
                 });
 
@@ -229,17 +270,18 @@
                 .then(data => {
                     if (data.status === 'success') {
                         Swal.fire({
-                            title: '¡Eliminado!',
-                            text: data.message,
-                            iconHtml: '<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;"><svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="45" stroke="#dcfce7" stroke-width="4" fill="white"/><path d="M50 50 L 50 50" stroke="#22c55e" stroke-width="4" stroke-linecap="round"/><path d="M35 50 L 45 60 L 65 40" stroke="#4ade80" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
+                            html: `
+                                <div class="swal-icon-circle">
+                                    <i class="ri-checkbox-circle-line"></i>
+                                </div>
+                                <div class="premium-swal-title">¡Eliminado!</div>
+                                <div class="premium-swal-html">${data.message}</div>
+                            `,
                             confirmButtonText: 'Aceptar',
-                            buttonsStyling: false,
+                            confirmButtonColor: '#3b82f6',
                             customClass: {
-                                popup: 'premium-swal',
-                                title: 'premium-title',
-                                htmlContainer: 'premium-text',
-                                confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-primary',
-                                icon: 'no-border'
+                                popup: 'premium-swal-popup',
+                                confirmButton: 'premium-swal-confirm'
                             }
                         }).then(() => {
                             location.reload();
@@ -250,12 +292,10 @@
                             text: data.message,
                             icon: 'error',
                             confirmButtonText: 'Aceptar',
-                            buttonsStyling: false,
+                            confirmButtonColor: '#ef4444',
                             customClass: {
-                                popup: 'premium-swal',
-                                title: 'premium-title',
-                                htmlContainer: 'premium-text',
-                                confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-danger'
+                                popup: 'premium-swal-popup',
+                                confirmButton: 'premium-swal-confirm'
                             }
                         });
                     }
@@ -266,12 +306,10 @@
                         text: 'Ocurrió un error al procesar la solicitud.',
                         icon: 'error',
                         confirmButtonText: 'Cerrar',
-                        buttonsStyling: false,
+                        confirmButtonColor: '#ef4444',
                         customClass: {
-                            popup: 'premium-swal',
-                            title: 'premium-title',
-                            htmlContainer: 'premium-text',
-                            confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-danger'
+                            popup: 'premium-swal-popup',
+                            confirmButton: 'premium-swal-confirm'
                         }
                     });
                 });
