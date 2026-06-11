@@ -3,16 +3,37 @@
 
 {% block title %}Lector OCR de Planos{% endblock %}
 
+{% block extra_head %}
+<!-- FUENTES PREMIUM -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+    /* Critical dark background variables to prevent unstyled flashes */
+    html, body, .main-content {
+        background-color: #090d16 !important;
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 50%) !important;
+        color: #e2e8f0 !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <style>
     :root {
-        --stitch-primary: #e11d48;     /* Rose 600 */
-        --stitch-secondary: #fda4af;   /* Rose 300 */
-        --stitch-bg: #fdf2f8;          /* Rose 50 */
-        --stitch-text: #1e293b;        /* Slate 800 */
-        --stitch-glass: rgba(255, 255, 255, 0.9);
-        --stitch-border: rgba(225, 29, 72, 0.15);
-        --stitch-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.08);
+        --stitch-bg: #090d16;
+        --stitch-surface: rgba(255, 255, 255, 0.02);
+        --stitch-card: rgba(255, 255, 255, 0.03);
+        --stitch-primary: #c084fc;       /* Neon purple/violet */
+        --stitch-secondary: #a78bfa;     /* Secondary purple */
+        --stitch-border: rgba(255, 255, 255, 0.08);
+        --stitch-text: #e2e8f0;          /* Light slate/white */
+        --stitch-muted: #94a3b8;
+        --stitch-glass: rgba(255, 255, 255, 0.03);
+        --stitch-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
     
     body { font-family: 'Inter', sans-serif; }
@@ -24,6 +45,9 @@
         margin: 0 !important;
         width: 100% !important;
         background: var(--stitch-bg);
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 50%) !important;
         min-height: 100vh;
     }
     
@@ -37,50 +61,56 @@
     /* Sidebar Izquierdo */
     .sidebar-ocr {
         width: 280px;
-        background: var(--stitch-glass);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background: rgba(15, 23, 42, 0.3) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
         padding: 2rem 1.5rem;
         border-right: 1px solid var(--stitch-border);
         display: flex;
         flex-direction: column;
         gap: 2rem;
         flex-shrink: 0;
-        box-shadow: 4px 0 15px rgba(225, 29, 72, 0.03);
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
     }
 
     .sidebar-title {
         font-family: 'Outfit', sans-serif;
         font-size: 1.5rem;
         font-weight: 800;
-        color: var(--stitch-text);
+        color: var(--stitch-primary);
+        text-shadow: 0 0 15px rgba(192, 132, 252, 0.2);
         letter-spacing: -0.02em;
         text-transform: uppercase;
     }
 
     .upload-box {
-        border: 2px dashed rgba(225, 29, 72, 0.3);
-        background: rgba(225, 29, 72, 0.02);
+        border: 2px dashed rgba(192, 132, 252, 0.3);
+        background: rgba(192, 132, 252, 0.02);
         border-radius: 16px;
         padding: 2rem 1rem;
         text-align: center;
         cursor: pointer;
         transition: all 0.2s;
     }
-    .upload-box:hover { background: rgba(225, 29, 72, 0.06); border-color: var(--stitch-primary); transform: translateY(-2px); }
+    .upload-box:hover { 
+        background: rgba(192, 132, 252, 0.06); 
+        border-color: var(--stitch-primary); 
+        transform: translateY(-2px); 
+        box-shadow: 0 0 15px rgba(192, 132, 252, 0.1);
+    }
     .upload-box i { font-size: 2.5rem; color: var(--stitch-primary); margin-bottom: 0.5rem; }
     .upload-box span { display: block; font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--stitch-primary); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .upload-box small { color: #64748b; font-size: 0.75rem; font-weight: 500; }
+    .upload-box small { color: var(--stitch-muted); font-size: 0.75rem; font-weight: 500; }
 
     .status-card {
-        background: var(--stitch-glass);
+        background: rgba(255, 255, 255, 0.02);
         border: 1px solid var(--stitch-border);
         box-shadow: var(--stitch-shadow);
         border-radius: 16px;
         padding: 1.5rem;
     }
-    .status-label { font-size: 0.65rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
-    .status-value-op { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--stitch-primary); margin-bottom: 1rem; }
+    .status-label { font-size: 0.65rem; font-weight: 800; color: var(--stitch-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .status-value-op { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--stitch-primary); margin-bottom: 1rem; text-shadow: 0 0 10px rgba(192, 132, 252, 0.2); }
     .status-group { margin-bottom: 1rem; }
     .status-group:last-child { margin-bottom: 0; }
     .status-value-small { font-size: 0.9rem; font-weight: 700; color: var(--stitch-text); line-height: 1.2; }
@@ -102,9 +132,9 @@
 
     .btn-descartar {
         background: transparent;
-        border: 1px dashed #cbd5e1;
+        border: 1px dashed var(--stitch-border);
         border-radius: 12px;
-        color: #64748b;
+        color: var(--stitch-muted);
         font-family: 'Outfit', sans-serif;
         font-weight: 800;
         text-transform: uppercase;
@@ -113,10 +143,10 @@
         transition: all 0.2s;
         cursor: pointer;
     }
-    .btn-descartar:hover { color: #1e293b; border-color: #64748b; background: rgba(0,0,0,0.02); }
+    .btn-descartar:hover { color: var(--stitch-text); border-color: var(--stitch-muted); background: rgba(255,255,255,0.02); }
 
     .btn-confirmar {
-        background: linear-gradient(135deg, var(--stitch-primary), #be123c);
+        background: linear-gradient(135deg, #7c3aed, #c084fc);
         color: white;
         border: none;
         border-radius: 14px;
@@ -126,17 +156,17 @@
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-size: 0.9rem;
-        box-shadow: 0 10px 20px -5px rgba(225, 29, 72, 0.4);
+        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
         transition: all 0.3s;
         cursor: pointer;
     }
-    .btn-confirmar:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 15px 30px -5px rgba(225, 29, 72, 0.5); }
+    .btn-confirmar:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 25px rgba(124, 58, 237, 0.5); }
 
     /* Panel de Verificación (Selectores) */
     .verification-bar {
-        background: var(--stitch-glass);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid var(--stitch-border);
         box-shadow: var(--stitch-shadow);
         border-radius: 20px;
@@ -149,7 +179,7 @@
     .selector-group { display: flex; flex-direction: column; gap: 0.4rem; }
     .selector-label { font-size: 0.65rem; font-weight: 800; color: var(--stitch-primary); text-transform: uppercase; letter-spacing: 0.05em; }
     .selector-select {
-        background: white;
+        background: rgba(15, 23, 42, 0.6);
         border: 1px solid var(--stitch-border);
         border-radius: 12px;
         padding: 0.5rem 0.8rem;
@@ -158,20 +188,24 @@
         color: var(--stitch-text);
         transition: all 0.2s;
     }
+    .selector-select option {
+        background: #090d16;
+        color: var(--stitch-text);
+    }
     .selector-select:focus {
         border-color: var(--stitch-primary);
-        box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1);
+        box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.15);
         outline: none;
     }
 
-    .ok-text { color: #10b981 !important; }
-    .nok-text { color: #ef4444 !important; }
+    .ok-text { color: #4ade80 !important; }
+    .nok-text { color: #fca5a5 !important; }
 
     /* Matriz de Control */
     .matrix-card {
-        background: var(--stitch-glass);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
         border-radius: 24px;
         border: 1px solid var(--stitch-border);
         box-shadow: var(--stitch-shadow);
@@ -187,14 +221,14 @@
     }
     .matrix-title { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--stitch-primary); text-transform: uppercase; margin: 0; }
     .matrix-badge {
-        background: rgba(225, 29, 72, 0.1);
+        background: rgba(192, 132, 252, 0.1);
         color: var(--stitch-primary);
         font-size: 0.7rem;
         font-weight: 800;
         padding: 0.4rem 0.8rem;
         border-radius: 8px;
         text-transform: uppercase;
-        border: 1px solid rgba(225, 29, 72, 0.2);
+        border: 1px solid rgba(192, 132, 252, 0.2);
     }
 
     .table-ocr {
@@ -202,28 +236,29 @@
         border-collapse: collapse;
     }
     .table-ocr th {
-        background: #f8fafc;
+        background: rgba(15, 23, 42, 0.85) !important;
+        backdrop-filter: blur(12px);
         text-align: left;
-        padding: 0.4rem 0.6rem;
-        font-size: 0.6rem;
+        padding: 0.8rem 0.6rem;
+        font-size: 0.65rem;
         font-weight: 800;
-        color: #94a3b8;
+        color: var(--stitch-primary);
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        border-bottom: 2px solid #e2e8f0;
+        border-bottom: 2px solid var(--stitch-border);
     }
     .table-ocr td {
-        padding: 0.6rem 0.6rem;
-        border-bottom: 1px solid #f1f5f9;
+        padding: 0.8rem 0.6rem;
+        border-bottom: 1px solid var(--stitch-border);
         font-size: 0.85rem;
         font-weight: 500;
-        color: #334155;
+        color: var(--stitch-text);
     }
     .table-ocr tr:last-child td { border-bottom: none; }
 
     .instr-badge {
-        background: #1e293b;
-        color: white;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--stitch-text);
         font-size: 0.6rem;
         font-weight: 700;
         padding: 0.2rem 0.5rem;
@@ -232,8 +267,8 @@
         white-space: nowrap;
     }
 
-    .val-text { font-weight: 800; color: #10b981; }
-    .val-text.nok { color: #ef4444; }
+    .val-text { font-weight: 800; color: #4ade80; }
+    .val-text.nok { color: #fca5a5; }
 
     /* Paginación y Visibilidad - DESHABILITADO */
     
@@ -241,14 +276,14 @@
         display: flex;
         align-items: center;
         gap: 0.4rem;
-        background: #f1f5f9;
+        background: rgba(255,255,255,0.02);
         padding: 0.2rem;
         border-radius: 8px;
     }
     .btn-page {
-        border: 1px solid #cbd5e1;
-        background: white;
-        color: #1e293b;
+        border: 1px solid var(--stitch-border);
+        background: rgba(15, 23, 42, 0.6);
+        color: var(--stitch-text);
         font-size: 0.75rem;
         font-weight: 800;
         padding: 0.3rem 0.6rem;
@@ -256,7 +291,7 @@
         cursor: pointer;
         transition: all 0.2s;
     }
-    .btn-page:hover:not(:disabled) { background: #f8fafc; border-color: #cbd5e1; }
+    .btn-page:hover:not(:disabled) { background: rgba(255,255,255,0.05); border-color: var(--stitch-muted); }
     .btn-page:disabled { opacity: 0.3; cursor: not-allowed; }
 
     @media (max-width: 1200px) {
@@ -279,13 +314,13 @@
         outline: none;
     }
     .ocr-input-edit:hover {
-        background: rgba(59, 130, 246, 0.05);
-        border-color: #cbd5e1;
+        background: rgba(255, 255, 255, 0.03);
+        border-color: var(--stitch-border);
     }
     .ocr-input-edit:focus {
-        background: white;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        background: rgba(15, 23, 42, 0.8);
+        border-color: var(--stitch-primary);
+        box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.25);
     }
     .val-input {
         width: 65px;
@@ -309,6 +344,8 @@
         border: 1px solid var(--stitch-border) !important;
         padding: 2rem !important;
         font-family: 'Inter', sans-serif !important;
+        background: #090d16 !important;
+        color: var(--stitch-text) !important;
     }
     .swal-success-container {
         text-align: center;
@@ -316,9 +353,9 @@
     }
     .swal-success-icon {
         font-size: 5rem;
-        color: #10b981;
+        color: #4ade80;
         margin-bottom: 1.5rem;
-        filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.3));
+        filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.3));
     }
     .swal-success-title {
         font-family: 'Outfit', sans-serif;
@@ -330,7 +367,7 @@
     }
     .swal-success-text {
         font-size: 1.1rem;
-        color: #64748b;
+        color: var(--stitch-muted);
         margin-bottom: 2rem;
     }
     .swal-success-footer {
@@ -367,13 +404,13 @@
             <div id="processing-loader" style="display: none;" class="px-5 py-5 animate__animated animate__fadeIn">
                 <style>
                     @keyframes neon-pulse {
-                        0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
-                        50% { transform: scale(1.05); opacity: 0.9; box-shadow: 0 0 0 25px rgba(220, 38, 38, 0); text-shadow: 0 0 10px #dc2626; }
-                        100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+                        0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.7); }
+                        50% { transform: scale(1.05); opacity: 0.9; box-shadow: 0 0 0 25px rgba(192, 132, 252, 0); text-shadow: 0 0 10px #c084fc; }
+                        100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(192, 132, 252, 0); }
                     }
                     .scan-pulse-icon {
                         font-size: 5rem;
-                        color: #dc2626; /* Rojo intenso */
+                        color: #c084fc; /* Neon purple */
                         animation: neon-pulse 1.5s infinite ease-out;
                         border-radius: 10%; /* Cuadrado redondeado para simular escaner */
                         padding: 10px;
@@ -385,13 +422,13 @@
                     <i class="ri-scan-2-line scan-pulse-icon"></i>
                 </div>
                 
-                <h4 class="text-danger fw-bold text-center mb-3">Digitalizando Plano...</h4>
-                <p class="text-muted text-center mb-0" style="font-size: 1.1rem;">
+                <h4 class="fw-bold text-center mb-3" style="color: var(--stitch-primary); text-shadow: 0 0 10px rgba(192, 132, 252, 0.3);">Digitalizando Plano...</h4>
+                <p class="text-muted text-center mb-0" style="font-size: 1.1rem; color: var(--stitch-muted) !important;">
                     El sistema está extrayendo y verificando las mediciones. <br>
-                    <span class="text-dark fw-bold">Aguarde un momento mientras se completa la lectura.</span>
+                    <span class="fw-bold" style="color: var(--stitch-text);">Aguarde un momento mientras se completa la lectura.</span>
                 </p>
                 <div class="text-center mt-3">
-                    <div class="spinner-border text-danger" role="status">
+                    <div class="spinner-border" style="color: var(--stitch-primary);" role="status">
                         <span class="visually-hidden">Procesando...</span>
                     </div>
                 </div>
@@ -527,29 +564,29 @@
             <div class="matrix-header">
                 <div>
                     <h3 class="matrix-title">Panel de Resultados OCR</h3>
-                    <div style="font-size: 0.75rem; color: #64748b; font-weight: 700;">{{ matrix|length }} Controles Detectados / {{ piezas|length }} Piezas Auditadas</div>
+                    <div style="font-size: 0.75rem; color: var(--stitch-muted); font-weight: 700;">{{ matrix|length }} Controles Detectados / {{ piezas|length }} Piezas Auditadas</div>
                 </div>
                 
             </div>
             
-            <div class="table-responsive" style="overflow-x: auto; background: white;">
+            <div class="table-responsive" style="overflow-x: auto; background: transparent;">
                 <table class="table-ocr" id="tabla-ocr-resultados" style="width: 100%; border-collapse: separate; border-spacing: 0;">
                     <thead>
                         <tr>
                             <!-- 1. Control (Sticky 0) -->
-                            <th style="width: 280px; min-width: 280px; background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; left: 0; z-index: 30; box-shadow: 2px 0 5px rgba(0,0,0,0.05);" class="ps-4">Control Detectado</th>
+                            <th style="width: 280px; min-width: 280px; background: rgba(15, 23, 42, 0.95); border-bottom: 2px solid var(--stitch-border); position: sticky; left: 0; z-index: 30; box-shadow: 2px 0 5px rgba(0,0,0,0.2);" class="ps-4">Control Detectado</th>
                             
                             <!-- 2. Nominal (Sticky 280) -->
-                            <th class="text-center" style="width: 120px; min-width: 120px; background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; left: 280px; z-index: 30;">Nominal</th>
+                            <th class="text-center" style="width: 120px; min-width: 120px; background: rgba(15, 23, 42, 0.95); border-bottom: 2px solid var(--stitch-border); position: sticky; left: 280px; z-index: 30;">Nominal</th>
                             
                             <!-- 3. Tol (Sticky 400) -->
-                             <th class="text-center" style="width: 160px; min-width: 160px; background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; left: 400px; z-index: 30;">Tol.</th>
+                             <th class="text-center" style="width: 160px; min-width: 160px; background: rgba(15, 23, 42, 0.95); border-bottom: 2px solid var(--stitch-border); position: sticky; left: 400px; z-index: 30;">Tol.</th>
                             
                             <!-- 4. Instr (Sticky 560) -->
-                            <th class="text-center" style="width: 90px; min-width: 90px; background: #f8fafc; border-bottom: 2px solid #cbd5e1; position: sticky; left: 560px; z-index: 30; border-right: 2px solid #e2e8f0; box-shadow: 2px 0 5px rgba(0,0,0,0.05);">Instr.</th>
+                            <th class="text-center" style="width: 90px; min-width: 90px; background: rgba(15, 23, 42, 0.95); border-bottom: 2px solid var(--stitch-border); position: sticky; left: 560px; z-index: 30; border-right: 2px solid var(--stitch-border); box-shadow: 2px 0 5px rgba(0,0,0,0.2);">Instr.</th>
                             
                             {% for p in piezas %}
-                            <th class="text-center" style="width: 85px; min-width: 85px; color: #3b82f6; font-size: 0.8rem; font-weight: 800; padding: 0.5rem 0; border-bottom: 2px solid #e2e8f0; background: #fff;">
+                            <th class="text-center" style="width: 85px; min-width: 85px; color: var(--stitch-primary); font-size: 0.8rem; font-weight: 800; padding: 0.5rem 0; border-bottom: 2px solid var(--stitch-border); background: rgba(15, 23, 42, 0.85);">
                                 {{ p }}
                             </th>
                             {% endfor %}
@@ -557,31 +594,31 @@
                     </thead>
                     <tbody>
                         {% for row in matrix %}
-                        <tr class="ocr-row" style="border-bottom: 1px solid #f1f5f9;">
+                        <tr class="ocr-row" style="border-bottom: 1px solid var(--stitch-border);">
                             <!-- 1. Control -->
-                            <td class="fw-bold ps-4" style="position: sticky; left: 0; z-index: 20; background: #ffffff; border-right: 1px solid #f1f5f9; white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.05);">
-                                <input type="text" class="ocr-input-edit text-start edit-control" value="{{ row.control }}" style="font-weight: 700; width: 250px; color: #475569; font-size: 0.8rem;">
+                            <td class="fw-bold ps-4" style="position: sticky; left: 0; z-index: 20; background: #0f172a; border-right: 1px solid var(--stitch-border); white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.2);">
+                                <input type="text" class="ocr-input-edit text-start edit-control" value="{{ row.control }}" style="font-weight: 700; width: 250px; color: var(--stitch-text); font-size: 0.8rem;">
                             </td>
                             
                             <!-- 2. Nominal -->
-                            <td class="text-center" style="position: sticky; left: 280px; z-index: 20; background: #ffffff; white-space: nowrap;">
-                                <input type="text" class="ocr-input-edit text-center edit-nominal" value="{{ row.nominal }}" style="color: #2563eb; font-weight: 800; width: 100px; font-size: 0.9rem;">
+                            <td class="text-center" style="position: sticky; left: 280px; z-index: 20; background: #0f172a; white-space: nowrap;">
+                                <input type="text" class="ocr-input-edit text-center edit-nominal" value="{{ row.nominal }}" style="color: var(--stitch-primary); font-weight: 800; width: 100px; font-size: 0.9rem;">
                             </td>
                             
                             <!-- 3. Tol -->
-                            <td class="text-center" style="position: sticky; left: 400px; z-index: 20; background: #ffffff; border-right: 1px solid #f1f5f9; white-space: nowrap;">
+                            <td class="text-center" style="position: sticky; left: 400px; z-index: 20; background: #0f172a; border-right: 1px solid var(--stitch-border); white-space: nowrap;">
                                 <div class="d-flex align-items-center justify-content-center">
-                                    <input type="text" class="ocr-input-edit text-center edit-tol" value="{{ row.tolerancia }}" style="color: #475569; font-weight: 700; width: 140px; font-size: 0.85rem;">
+                                    <input type="text" class="ocr-input-edit text-center edit-tol" value="{{ row.tolerancia }}" style="color: var(--stitch-text); font-weight: 700; width: 140px; font-size: 0.85rem;">
                                 </div>
                             </td>
                             
                             <!-- 4. Instr -->
-                            <td class="text-center" style="position: sticky; left: 560px; z-index: 20; background: #ffffff; border-right: 2px solid #e2e8f0; white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.05);">
-                                <input type="text" class="ocr-input-edit text-center edit-instr" value="{{ row.instrumento }}" style="font-size: 0.75rem; font-weight: 800; color: #1e293b; background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 4px; width: 70px;">
+                            <td class="text-center" style="position: sticky; left: 560px; z-index: 20; background: #0f172a; border-right: 2px solid var(--stitch-border); white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.2);">
+                                <input type="text" class="ocr-input-edit text-center edit-instr" value="{{ row.instrumento }}" style="font-size: 0.75rem; font-weight: 800; color: var(--stitch-text); background: rgba(255,255,255,0.05); padding: 0.2rem 0.4rem; border-radius: 4px; width: 70px;">
                             </td>
                             
                             {% for item in row.valores %}
-                            <td class="text-center" style="padding: 0.6rem 0.4rem; border-right: 1px solid #f8fafc; background: #fff;">
+                            <td class="text-center" style="padding: 0.6rem 0.4rem; border-right: 1px solid var(--stitch-border); background: transparent;">
                                 <input type="text" 
                                        class="ocr-input-edit text-center val-input edit-val {% if item.ok == False %}nok-text{% else %}ok-text{% endif %}" 
                                        value="{% if item.val is not None %}{{ item.val }}{% elif item.get and item.get.val is not None %}{{ item.get.val }}{% else %}{{ item }}{% endif %}"
@@ -596,10 +633,10 @@
         </div>
         {% else %}
         <!-- ESTADO VACÍO -->
-        <div class="text-center py-5 opacity-50" style="margin-top: 5rem;">
-            <i class="ri-file-pdf-line" style="font-size: 8rem; color: var(--stitch-primary); opacity: 0.5;"></i>
+        <div class="text-center py-5" style="margin-top: 5rem; opacity: 0.75;">
+            <i class="ri-file-pdf-line" style="font-size: 8rem; color: var(--stitch-primary); opacity: 0.5; filter: drop-shadow(0 0 15px rgba(192, 132, 252, 0.3));"></i>
             <h2 class="mt-4" style="font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--stitch-text); text-transform: uppercase;">Esperando Documento...</h2>
-            <p style="font-weight: 500; color: #64748b;">Suba un archivo PDF para comenzar el proceso de digitalización inteligente.</p>
+            <p style="font-weight: 500; color: var(--stitch-muted);">Suba un archivo PDF para comenzar el proceso de digitalización inteligente.</p>
         </div>
         {% endif %}
 
