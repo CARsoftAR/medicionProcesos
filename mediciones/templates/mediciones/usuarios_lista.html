@@ -2,96 +2,244 @@
 
 {% block title %}Gestión de Usuarios{% endblock %}
 
-{% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div class="d-flex align-items-center gap-4">
-        <div class="brand-icon" style="background: var(--bg-card); color: var(--primary); border: 1px solid var(--border-color); width: 54px; height: 54px; border-radius: 16px;">
-            <i class="ri-group-line"></i>
-        </div>
-        <div>
-            <h3 style="margin:0; font-weight: 800; color: var(--text-primary); letter-spacing: -0.01em;">Directorio de Usuarios</h3>
-            <p class="text-muted" style="margin:0; font-size: 0.95rem; opacity: 0.8;">Controle el acceso y roles del personal del sistema QM.</p>
-        </div>
-    </div>
-    <a href="{% url 'crear_usuario' %}" class="btn btn-primary">
-        <i class="ri-user-add-line"></i> Nuevo Usuario
-    </a>
-</div>
+{% block extra_head %}
+<!-- FUENTES PREMIUM -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
 
-<div class="card">
-    <div class="card-body p-0">
-        <div style="overflow-x: auto;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th style="padding-left: 2rem;">USUARIO</th>
-                        <th>NOMBRE COMPLETO</th>
-                        <th>CORREO</th>
-                        <th>ROL</th>
-                        <th class="text-end" style="padding-right: 2rem;">ACCIONES</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for u in usuarios %}
-                    <tr>
-                        <td style="padding-left: 2rem;">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="user-avatar" style="width: 35px; height: 35px; font-size: 1rem; background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border-light);">
-                                    <i class="ri-user-3-line"></i>
-                                </div>
-                                <span style="font-weight: 700; color: var(--text-primary);">@{{ u.username }}</span>
+<style>
+    /* Critical dark background variables to prevent unstyled flashes */
+    html, body, .main-content {
+        background-color: #090d16 !important;
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 50%) !important;
+        color: #e2e8f0 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --stitch-bg: #090d16;
+        --stitch-surface: rgba(255, 255, 255, 0.02);
+        --stitch-card: rgba(255, 255, 255, 0.03);
+        --stitch-primary: #c084fc;       /* Neon purple/violet */
+        --stitch-secondary: #a78bfa;     /* Secondary purple */
+        --stitch-border: rgba(255, 255, 255, 0.08);
+        --stitch-text: #e2e8f0;          /* Light slate/white */
+        --stitch-muted: #94a3b8;
+        --stitch-glass: rgba(255, 255, 255, 0.03);
+        --stitch-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
+    
+    body { font-family: 'Inter', sans-serif; background-color: var(--stitch-bg); }
+
+    .stitch-module {
+        background: var(--stitch-glass) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 1px solid var(--stitch-border) !important;
+        border-radius: 24px !important;
+        padding: 2.5rem;
+        box-shadow: var(--stitch-shadow) !important;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .stitch-header { margin-bottom: 2rem; }
+    .stitch-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--stitch-text);
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+    }
+    .stitch-subtitle { color: var(--stitch-muted); font-size: 0.9rem; margin-top: 0.2rem; font-weight: 500; }
+
+    .btn-stitch-primary {
+        background: linear-gradient(135deg, #7c3aed, #c084fc);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+    }
+    .btn-stitch-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.45);
+        color: white;
+    }
+
+    .table-stitch { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 1.5rem; }
+    .table-stitch th {
+        background: transparent;
+        color: var(--stitch-primary);
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.75rem;
+        padding: 1rem;
+        border-bottom: 2px dashed var(--stitch-border);
+        text-align: left !important;
+    }
+    .table-stitch td {
+        padding: 1.2rem 1rem;
+        border-bottom: 1px solid var(--stitch-border);
+        color: var(--stitch-text);
+        font-size: 0.95rem;
+        vertical-align: middle;
+        transition: background-color 0.2s;
+    }
+    .table-stitch tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
+
+    .btn-action-soft {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--stitch-primary);
+        border: 1px solid var(--stitch-border);
+        border-radius: 8px;
+        padding: 0.4rem 0.8rem;
+        font-weight: 700;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.75rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .btn-action-soft:hover {
+        background: var(--stitch-primary);
+        color: white;
+        border-color: var(--stitch-primary);
+        transform: translateY(-1px);
+    }
+    .btn-action-delete-custom {
+        background: rgba(239, 68, 68, 0.1);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .btn-action-delete-custom:hover {
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
+    }
+
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--stitch-primary);
+        border: 1px solid var(--stitch-border);
+    }
+</style>
+
+<div class="stitch-module animate__animated animate__fadeIn">
+    <div class="stitch-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="stitch-title">Directorio de Usuarios</h2>
+            <div class="stitch-subtitle">Controle el acceso y roles del personal del sistema QM.</div>
+        </div>
+        <a href="{% url 'crear_usuario' %}" class="btn-stitch-primary">
+            <i class="ri-user-add-line"></i> Nuevo Usuario
+        </a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-stitch">
+            <thead>
+                <tr>
+                    <th class="text-start" style="padding-left: 1rem;">USUARIO</th>
+                    <th class="text-start">NOMBRE COMPLETO</th>
+                    <th class="text-start">CORREO</th>
+                    <th class="text-start" style="width: 250px;">ROL</th>
+                    <th class="text-start" style="width: 150px;">ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                <tr>
+                    <td class="text-start" style="padding-left: 1rem;">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="user-avatar">
+                                <i class="ri-user-3-line"></i>
                             </div>
-                        </td>
-                        <td>{{ u.get_full_name|default:"-" }}</td>
-                        <td>{{ u.email|default:"-" }}</td>
-                        <td>
-                            <span class="badge" 
-                                  style="padding: 0.4rem 0.8rem; border-radius: 8px; {% if u.profile.role == 'CALIDAD' or u.is_superuser %}background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2);{% else %}background: rgba(59, 130, 246, 0.1); color: var(--primary); border: 1px solid rgba(59, 130, 246, 0.2);{% endif %}">
+                            <span style="font-weight: 700; color: var(--stitch-text);">@{{ u.username }}</span>
+                        </div>
+                    </td>
+                    <td class="text-start fw-bold" style="letter-spacing: -0.01em;">{{ u.get_full_name|default:"-" }}</td>
+                    <td class="text-start" style="color: var(--stitch-muted);">{{ u.email|default:"-" }}</td>
+                    <td class="text-start">
+                        {% if u.profile.role == 'CALIDAD' or u.is_superuser %}
+                            <span class="badge" style="background: rgba(74, 222, 128, 0.1); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.2); font-weight: 700; padding: 0.35em 0.65em;">
                                 {{ u.profile.get_role_display|default:"Sin Rol" }}
                             </span>
-                        </td>
-                        <td class="text-end" style="padding-right: 2rem;">
-                            <div class="d-flex gap-2 justify-content-end">
-                                <a href="{% url 'editar_usuario' u.id %}" class="btn-action-edit" title="Editar Usuario"
-                                   style="background: rgba(255,255,255,0.05); color: var(--text-secondary); width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid var(--border-light);">
-                                    <i class="ri-edit-line"></i>
-                                </a>
-                                {% if u != user %}
-                                <a href="javascript:void(0)" onclick="confirmDelete('{{ u.id }}', '{{ u.username }}')" class="btn-action-delete" title="Eliminar Usuario"
-                                   style="background: rgba(239, 68, 68, 0.1); color: #ef4444; width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid rgba(239, 68, 68, 0.2);">
-                                    <i class="ri-delete-bin-line"></i>
-                                </a>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                        {% else %}
+                            <span class="badge" style="background: rgba(192, 132, 252, 0.1); color: var(--stitch-primary); border: 1px solid rgba(192, 132, 252, 0.2); font-weight: 700; padding: 0.35em 0.65em;">
+                                {{ u.profile.get_role_display|default:"Sin Rol" }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-start">
+                        <div class="d-flex gap-2 justify-content-start">
+                            <a href="{% url 'editar_usuario' u.id %}" class="btn-action-soft" title="Editar Usuario">
+                                <i class="ri-edit-line"></i> Editar
+                            </a>
+                            {% if u != user %}
+                            <a href="javascript:void(0)" onclick="confirmDelete('{{ u.id }}', '{{ u.username }}')" class="btn-action-soft btn-action-delete-custom" title="Eliminar Usuario">
+                                <i class="ri-delete-bin-line"></i> Borrar
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function confirmDelete(id, username) {
         Swal.fire({
-            html: `
-                <div class="swal-icon-circle danger">
-                    <i class="ri-user-unfollow-line"></i>
-                </div>
-                <div class="premium-swal-title">¿Eliminar Usuario?</div>
-                <div class="premium-swal-html">Está por eliminar a <b>@${username}</b> del sistema.<br>Esta acción revocará su acceso de inmediato.</div>
-            `,
+            title: '¿Eliminar Usuario?',
+            text: `Está por eliminar a @${username} del sistema. Esta acción revocará su acceso de inmediato.`,
+            iconHtml: '<i class="ri-user-unfollow-line" style="font-size: 3rem; color: #ef4444;"></i>',
             showCancelButton: true,
-            confirmButtonColor: '#ef4444',
-            confirmButtonText: '<i class="ri-delete-bin-line"></i> Sí, eliminar',
+            confirmButtonText: 'Sí, eliminar',
             cancelButtonText: 'Cancelar',
+            buttonsStyling: false,
             customClass: {
-                popup: 'premium-swal-popup',
-                confirmButton: 'premium-swal-confirm',
-                cancelButton: 'premium-swal-cancel'
-            },
-            reverseButtons: true
+                popup: 'premium-swal',
+                title: 'premium-title',
+                htmlContainer: 'premium-text',
+                actions: 'premium-actions',
+                confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-danger',
+                cancelButton: 'swal2-cancel premium-cancel-btn',
+                icon: 'premium-icon-warning-box'
+            }
         }).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = `/usuarios/${id}/eliminar/`;
@@ -99,9 +247,4 @@
         });
     }
 </script>
-
-<style>
-    .btn-action-edit:hover { background: #e2e8f0 !important; color: #1e293b !important; transform: scale(1.05); }
-    .btn-action-delete:hover { background: #fecaca !important; color: #dc2626 !important; transform: scale(1.05); }
-</style>
 {% endblock %}
