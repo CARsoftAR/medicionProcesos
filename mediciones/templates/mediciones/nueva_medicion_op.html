@@ -58,7 +58,7 @@
                 <label class="stitch-label" style="display: block; margin-top: 5px;">SEÑAL: BUSCAR OP</label>
                 <div class="position-relative mt-2">
                     <input type="text" id="input_op" class="stitch-input" value="{{ query_op|default:'' }}" 
-                           placeholder="ESCANEAR OP AQUÍ..." onchange="updateSelection()" 
+                           placeholder="INGRESAR LA OP AQUÍ..." onchange="updateSelection()" 
                            style="font-size: 1rem; font-weight: 700; padding-right: 45px;">
                     <i class="ri-radar-line position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%); color: var(--stitch-primary); font-size: 1.2rem;"></i>
                 </div>
@@ -207,7 +207,6 @@
                                 <td class="font-monospace opacity-50">{{ forloop.counter }}</td>
                                 <td>
                                     <div class="fw-bold" style="font-size: 1rem;">{{ row.tolerancia.control.nombre }}</div>
-                                    <div class="small opacity-40 text-uppercase" style="font-size: 0.6rem; letter-spacing: 0.05em;">{{ row.tolerancia.instrumento.nombre|default:"SIN INSTRUMENTO" }}</div>
                                 </td>
                                 <td class="text-center font-monospace fw-bold" style="color: var(--stitch-secondary);">
                                     {{ row.tolerancia.nominal|default:"0.000" }}
@@ -271,7 +270,7 @@
                 {% else %}
                 <div class="text-center" style="padding: 10rem 2rem; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-radius: 20px; border: 1px dashed rgba(255, 255, 255, 0.15); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);">
                     <i class="ri-qr-code-line animate__animated animate__pulse animate__infinite" style="font-size: 4rem; color: var(--stitch-primary); opacity: 0.5; text-shadow: 0 0 15px rgba(192, 132, 252, 0.5);"></i>
-                    <p class="mt-4 fw-bold" style="letter-spacing: 0.1em; color: #cbd5e1;">POR FAVOR, ESCANEE O INGRESE UNA OP PARA COMENZAR</p>
+                    <p class="mt-4 fw-bold" style="letter-spacing: 0.1em; color: #cbd5e1;">POR FAVOR, INGRESE UNA OP PARA COMENZAR</p>
                 </div>
                 {% endif %}
             </div>
@@ -801,7 +800,6 @@
                         const tdParam = document.createElement('td');
                         tdParam.innerHTML = `
                             <div class="fw-bold" style="font-size: 1rem;">${row.control_nombre}</div>
-                            <div class="small opacity-40 text-uppercase" style="font-size: 0.6rem; letter-spacing: 0.05em;">${row.instrumento_nombre}</div>
                         `;
                         tr.appendChild(tdParam);
 

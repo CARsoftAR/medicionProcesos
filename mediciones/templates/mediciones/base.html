@@ -80,12 +80,14 @@
                                          <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.6em; letter-spacing: 0;"></span>
                                      </a>
                                  </li>
+                                 {% comment %}
                                  <li>
                                      <a href="#" class="active-indigo">
                                          Sistema de NCR
                                          <span class="badge bg-secondary opacity-50 rounded-pill ms-2" style="font-size: 0.55em; letter-spacing: 0;">PRÓXIMAMENTE</span>
                                      </a>
                                  </li>
+                                 {% endcomment %}
                             </ul>
                         </li>
                         
@@ -128,6 +130,7 @@
                             </ul>
                         </li>
 
+                        {% comment %}
                         <li class="nav-item-group">
                             <a href="#" class="nav-link active-teal group-trigger {% if 'instrumento' in request.path or 'calibracion' in request.path or 'dashboard' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
                                 <i class="ri-equalizer-fill"></i>
@@ -158,6 +161,7 @@
                                 </li>
                             </ul>
                         </li>
+                        {% endcomment %}
                         {% endif %}
                     </ul>
                 </div>

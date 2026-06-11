@@ -240,7 +240,7 @@
     <!-- KPI CARDS GRID -->
     <div class="row g-4 mb-5">
         <!-- Total OPs -->
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="kpi-card animate__animated animate__fadeInUp" style="--delay: 0.1s;">
                 <div class="kpi-icon" style="background: rgba(192, 132, 252, 0.1); color: var(--stitch-primary);">
                     <i class="ri-rocket-2-line"></i>
@@ -253,7 +253,7 @@
             </div>
         </div>
         <!-- Mediciones 30d -->
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="kpi-card animate__animated animate__fadeInUp" style="--delay: 0.2s;">
                 <div class="kpi-icon" style="background: rgba(167, 139, 250, 0.1); color: var(--stitch-secondary);">
                     <i class="ri-focus-3-line"></i>
@@ -266,7 +266,7 @@
             </div>
         </div>
         <!-- Tasa de Calidad -->
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="kpi-card animate__animated animate__fadeInUp" style="--delay: 0.3s;">
                 <div class="kpi-icon" style="background: rgba(74, 222, 128, 0.1); color: var(--stitch-success);">
                     <i class="ri-checkbox-circle-line"></i>
@@ -281,19 +281,6 @@
                         {% endif %}
                     </h3>
                     <div class="kpi-subtext">Cumplimiento global</div>
-                </div>
-            </div>
-        </div>
-        <!-- Alertas -->
-        <div class="col-md-3">
-            <div onclick="window.location='{% url 'lista_instrumentos' %}?filter=alertas';" class="kpi-card animate__animated animate__fadeInUp" style="{% if total_vencidos_alerta > 0 %}border: 1px solid rgba(239, 68, 68, 0.35) !important; background: rgba(239, 68, 68, 0.02) !important;{% endif %} --delay: 0.4s; cursor: pointer;">
-                <div class="kpi-icon" style="background: rgba(252, 165, 165, 0.1); color: var(--stitch-danger);">
-                    <i class="ri-alarm-warning-line"></i>
-                </div>
-                <div class="kpi-data">
-                    <span class="kpi-label">Alertas Instrumentos</span>
-                    <h3 class="kpi-value {% if total_vencidos_alerta > 0 %}text-danger{% endif %}" style="{% if total_vencidos_alerta > 0 %}color:#fca5a5 !important;{% endif %}">{{ total_vencidos_alerta }}</h3>
-                    <div class="kpi-subtext">Vencimientos próximos</div>
                 </div>
             </div>
         </div>
