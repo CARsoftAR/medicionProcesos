@@ -2,28 +2,49 @@
 
 {% block title %}Maestro de Clientes{% endblock %}
 
+{% block extra_head %}
+<!-- FUENTES PREMIUM -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+    /* Critical dark background variables to prevent unstyled flashes */
+    html, body, .main-content {
+        background-color: #090d16 !important;
+        background-image: 
+            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
+            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 50%) !important;
+        color: #e2e8f0 !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <style>
     :root {
-        --stitch-primary: #e11d48;     /* Rose 600 */
-        --stitch-secondary: #fda4af;   /* Rose 300 */
-        --stitch-bg: #fdf2f8;          /* Rose 50 */
-        --stitch-text: #1e293b;        /* Slate 800 */
-        --stitch-glass: rgba(255, 255, 255, 0.9);
-        --stitch-border: rgba(225, 29, 72, 0.15);
-        --stitch-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.08);
+        --stitch-bg: #090d16;
+        --stitch-surface: rgba(255, 255, 255, 0.02);
+        --stitch-card: rgba(255, 255, 255, 0.03);
+        --stitch-primary: #c084fc;       /* Neon purple/violet */
+        --stitch-secondary: #a78bfa;     /* Secondary purple */
+        --stitch-border: rgba(255, 255, 255, 0.08);
+        --stitch-text: #e2e8f0;          /* Light slate/white */
+        --stitch-muted: #94a3b8;
+        --stitch-glass: rgba(255, 255, 255, 0.03);
+        --stitch-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
     
     body { font-family: 'Inter', sans-serif; background-color: var(--stitch-bg); }
 
     .stitch-module {
-        background: var(--stitch-glass);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid var(--stitch-border);
-        border-radius: 24px;
+        background: var(--stitch-glass) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border: 1px solid var(--stitch-border) !important;
+        border-radius: 24px !important;
         padding: 2.5rem;
-        box-shadow: var(--stitch-shadow);
+        box-shadow: var(--stitch-shadow) !important;
         transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -37,10 +58,10 @@
         text-transform: uppercase;
         letter-spacing: -0.02em;
     }
-    .stitch-subtitle { color: #64748b; font-size: 0.9rem; margin-top: 0.2rem; font-weight: 500; }
+    .stitch-subtitle { color: var(--stitch-muted); font-size: 0.9rem; margin-top: 0.2rem; font-weight: 500; }
 
     .btn-stitch-primary {
-        background: linear-gradient(135deg, var(--stitch-primary), #be123c);
+        background: linear-gradient(135deg, #7c3aed, #c084fc);
         color: white;
         border: none;
         border-radius: 12px;
@@ -55,11 +76,11 @@
         gap: 0.5rem;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
-        box-shadow: 0 4px 15px rgba(225, 29, 72, 0.3);
+        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
     }
     .btn-stitch-primary:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(225, 29, 72, 0.4);
+        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.45);
         color: white;
     }
 
@@ -77,18 +98,18 @@
     }
     .table-stitch td {
         padding: 1.2rem 1rem;
-        border-bottom: 1px solid rgba(225, 29, 72, 0.05);
+        border-bottom: 1px solid var(--stitch-border);
         color: var(--stitch-text);
         font-size: 0.95rem;
         vertical-align: middle;
         transition: background-color 0.2s;
     }
-    .table-stitch tr:hover td { background-color: rgba(225, 29, 72, 0.02); }
+    .table-stitch tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
 
     .btn-action-soft {
-        background: rgba(225, 29, 72, 0.04);
+        background: rgba(255, 255, 255, 0.03);
         color: var(--stitch-primary);
-        border: 1px solid rgba(225, 29, 72, 0.1);
+        border: 1px solid var(--stitch-border);
         border-radius: 8px;
         padding: 0.4rem 0.8rem;
         font-weight: 700;
@@ -112,8 +133,8 @@
     .pagination-stitch { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--stitch-border); padding-top: 1.5rem; }
     .pager-controls { display: flex; gap: 0.5rem; align-items: center; }
     .pager-btn {
-        background: white;
-        border: 1px solid rgba(225, 29, 72, 0.15);
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid var(--stitch-border);
         border-radius: 8px;
         width: 36px;
         height: 36px;
@@ -131,8 +152,8 @@
     .pager-btn.disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
 
     .per-page-input-stitch {
-        background: transparent;
-        border: 1px dashed rgba(225, 29, 72, 0.3);
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px dashed var(--stitch-border);
         border-radius: 8px;
         padding: 0.4rem;
         width: 60px;
@@ -188,10 +209,10 @@
                 {% empty %}
                 <tr>
                     <td colspan="3" class="text-center py-5">
-                        <div style="opacity: 0.4;">
-                            <i class="ri-user-smile-line" style="font-size: 4rem; color: var(--stitch-primary);"></i>
+                        <div style="opacity: 0.75;">
+                            <i class="ri-user-smile-line" style="font-size: 4rem; color: var(--stitch-primary); filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.3));"></i>
                             <h4 class="mt-3" style="font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--stitch-text); text-transform: uppercase;">Sin Clientes</h4>
-                            <p style="color: #64748b; font-weight: 500;">Comienza registrando tu primer cliente en el sistema.</p>
+                            <p style="color: var(--stitch-muted); font-weight: 500;">Comienza registrando tu primer cliente en el sistema.</p>
                         </div>
                     </td>
                 </tr>
@@ -203,7 +224,7 @@
     <!-- Pagination and Per Page Selector -->
     <div class="pagination-stitch">
         <div class="d-flex align-items-center gap-2">
-            <span style="font-size: 0.8rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Registros p/pág:</span>
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--stitch-muted); text-transform: uppercase; letter-spacing: 0.05em;">Registros p/pág:</span>
             <input type="number" class="per-page-input-stitch" value="{{ per_page }}" min="1" max="100" 
                    onchange="changePerPage(this.value)"
                    onkeydown="if(event.key==='Enter') changePerPage(this.value)">
