@@ -1418,6 +1418,40 @@ def nueva_medicion_op(request):
         'instrumentos': Instrumento.objects.all(),
         'titulo': 'Ingreso de Mediciones'
     }
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.GET.get('format') == 'json':
+        serializable_rows = []
+        for r in rows:
+            serializable_rows.append({
+                'tolerancia_id': r['tolerancia'].id,
+                'control_nombre': r['tolerancia'].control.nombre,
+                'instrumento_id': r['tolerancia'].instrumento.id if r['tolerancia'].instrumento else '',
+                'instrumento_nombre': r['tolerancia'].instrumento.nombre if r['tolerancia'].instrumento else 'SIN INSTRUMENTO',
+                'nominal': float(r['tolerancia'].nominal) if r['tolerancia'].nominal is not None else 0.000,
+                'minimo': float(r['tolerancia'].minimo) if r['tolerancia'].minimo is not None else 0.000,
+                'maximo': float(r['tolerancia'].maximo) if r['tolerancia'].maximo is not None else 0.000,
+                'valor': r['valor'] if (r['tolerancia'].control.pnp or r['valor'] is None) else float(r['valor']),
+                'status': r['status'],
+                'min_limit': float(r['min_limit']) if r['min_limit'] is not None else None,
+                'max_limit': float(r['max_limit']) if r['max_limit'] is not None else None,
+                'spc_alerts': r['spc_alerts'],
+                'has_warning': r['has_warning'],
+                'has_danger': r['has_danger'],
+                'is_pnp': r['tolerancia'].control.pnp
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'pieza_actual': pieza_actual,
+            'piezas_medidas': list(piezas_medidas) if planilla else [],
+            'piezas_navegacion': piezas_mostrar if planilla else [],
+            'first_p': first_p,
+            'last_p': last_p,
+            'prev_p': prev_p,
+            'next_p': next_p,
+            'rows': serializable_rows,
+            'observaciones': planilla.observaciones if planilla else ''
+        })
+
     return render(request, 'mediciones/nueva_medicion_op.html', context)
 @csrf_exempt
 @login_required

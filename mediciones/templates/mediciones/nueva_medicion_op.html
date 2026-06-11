@@ -104,7 +104,7 @@
                     {% endif %}
                 </div>
 
-                <div class="d-flex flex-wrap gap-2 mb-3">
+                <div class="d-flex flex-wrap gap-2 mb-3" id="pieza-navigation-container">
                     <a href="?proy={{ query_proy }}&op={{ query_op }}&proc={{ query_proc }}&pieza={{ first_p }}" 
                        class="btn-stitch-outline d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;">
                        <i class="ri-skip-back-line"></i>
@@ -162,7 +162,7 @@
                         </div>
                         <div>
                             <h2 class="stitch-title mb-0" style="font-size: 2.25rem;">Centro de Análisis</h2>
-                            <div class="opacity-50 small fw-bold mt-1" style="font-family: 'Fira Code'; letter-spacing: 0.05em;">
+                            <div class="opacity-50 small fw-bold mt-1" style="font-family: 'Fira Code'; letter-spacing: 0.05em;" id="main-data-hub-header">
                                 PIEZA {{ pieza_actual }} 
                                 <span class="mx-2">|</span> 
                                 {% if planilla.num_op %}OP {{ planilla.num_op }}<span class="mx-2">|</span>{% endif %}
@@ -201,7 +201,7 @@
                                 <th class="text-center" style="width: 100px;">ANÁLISIS</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="measurement-table-body">
                             {% for row in rows %}
                             <tr class="stitch-table-row animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|add:1 }}0ms;" data-id="{{ row.tolerancia.id }}">
                                 <td class="font-monospace opacity-50">{{ forloop.counter }}</td>
@@ -755,6 +755,214 @@
         }
     }
 
+    function loadPieceAJAX(piece) {
+        triggerTransition();
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('pieza', piece);
+        
+        const fetchUrl = new URL(currentUrl.toString());
+        fetchUrl.searchParams.set('format', 'json');
+
+        fetch(fetchUrl.toString(), {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                window.history.pushState({}, '', currentUrl.toString());
+
+                const inputPieza = document.getElementById('input_pieza');
+                if (inputPieza) inputPieza.value = data.pieza_actual;
+
+                const headerDiv = document.getElementById('main-data-hub-header');
+                if (headerDiv) {
+                    headerDiv.innerHTML = headerDiv.innerHTML.replace(/PIEZA\s+\d+/i, `PIEZA ${data.pieza_actual}`);
+                }
+
+                const tbody = document.getElementById('measurement-table-body');
+                if (tbody) {
+                    tbody.innerHTML = '';
+                    data.rows.forEach((row, index) => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'stitch-table-row animate__animated animate__fadeInUp';
+                        tr.style.animationDelay = `${index + 1}0ms`;
+                        tr.dataset.id = row.tolerancia_id;
+
+                        const tdIndex = document.createElement('td');
+                        tdIndex.className = 'font-monospace opacity-50';
+                        tdIndex.textContent = index + 1;
+                        tr.appendChild(tdIndex);
+
+                        const tdParam = document.createElement('td');
+                        tdParam.innerHTML = `
+                            <div class="fw-bold" style="font-size: 1rem;">${row.control_nombre}</div>
+                            <div class="small opacity-40 text-uppercase" style="font-size: 0.6rem; letter-spacing: 0.05em;">${row.instrumento_nombre}</div>
+                        `;
+                        tr.appendChild(tdParam);
+
+                        const tdNom = document.createElement('td');
+                        tdNom.className = 'text-center font-monospace fw-bold';
+                        tdNom.style.color = 'var(--stitch-secondary)';
+                        tdNom.textContent = row.nominal !== null ? row.nominal.toFixed(3) : '0.000';
+                        tr.appendChild(tdNom);
+
+                        const tdTol = document.createElement('td');
+                        tdTol.className = 'text-center';
+                        tdTol.innerHTML = `
+                            <div class="d-flex justify-content-center gap-2 font-monospace small">
+                                <div class="px-2 py-1 rounded" style="background: rgba(239, 68, 68, 0.12); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.25);">${row.minimo !== null ? row.minimo.toFixed(3) : '-0.000'}</div>
+                                <div class="px-2 py-1 rounded" style="background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.25);">${row.maximo !== null ? (row.maximo >= 0 ? '+' : '') + row.maximo.toFixed(3) : '+0.000'}</div>
+                            </div>
+                        `;
+                        tr.appendChild(tdTol);
+
+                        const tdVal = document.createElement('td');
+                        tdVal.className = 'text-center';
+                        if (row.is_pnp) {
+                            const sel = document.createElement('select');
+                            sel.name = `valorpnp_${row.tolerancia_id}`;
+                            sel.className = `stitch-input text-center fw-bold pnp-select ${row.status === 'OK' ? 'ok' : (row.status === 'NOK' ? 'nok' : '')}`;
+                            sel.style.cssText = 'height: 42px; font-size: 0.82rem; padding: 0.4rem 0.5rem;';
+                            sel.onchange = function() { checkStatus(this, 'pnp'); };
+                            
+                            const optEmpty = new Option('-', '');
+                            if (!row.valor) optEmpty.selected = true;
+                            sel.add(optEmpty);
+                            
+                            const optOk = new Option('PASA', 'OK');
+                            if (row.valor === 'OK') optOk.selected = true;
+                            sel.add(optOk);
+                            
+                            const optNok = new Option('NO PASA', 'NOK');
+                            if (row.valor === 'NOK') optNok.selected = true;
+                            sel.add(optNok);
+                            
+                            tdVal.appendChild(sel);
+                        } else {
+                            const inp = document.createElement('input');
+                            inp.type = 'number';
+                            inp.step = '0.001';
+                            inp.name = `valor_${row.tolerancia_id}`;
+                            inp.value = row.valor !== null ? row.valor.toFixed(3) : '';
+                            inp.className = `stitch-table-input measurement-input ${row.status === 'OK' ? 'ok' : (row.status === 'NOK' ? 'nok' : '')}`;
+                            inp.placeholder = '0.000';
+                            inp.onchange = function() { checkStatus(this, 'real'); };
+                            inp.dataset.minLimit = row.min_limit !== null ? row.min_limit : '';
+                            inp.dataset.maxLimit = row.max_limit !== null ? row.max_limit : '';
+                            tdVal.appendChild(inp);
+                        }
+                        tr.appendChild(tdVal);
+
+                        const tdStatus = document.createElement('td');
+                        tdStatus.className = 'text-center';
+                        let dotClass = 'pending';
+                        let fluxText = 'IDLE';
+                        let textClass = 'opacity-25';
+                        if (row.status === 'OK') {
+                            dotClass = 'ok';
+                            fluxText = 'SYNC_OK';
+                            textClass = 'text-success';
+                        } else if (row.status === 'NOK') {
+                            dotClass = 'nok';
+                            fluxText = 'ERR_OUT';
+                            textClass = 'text-danger';
+                        }
+                        tdStatus.innerHTML = `
+                            <div class="d-flex flex-column align-items-center gap-1">
+                                <div class="status-flux-dot ${dotClass}"></div>
+                                <div class="status-flux-text small fw-bold ${textClass}" style="font-size: 0.55rem;">
+                                    ${fluxText}
+                                </div>
+                            </div>
+                        `;
+                        tr.appendChild(tdStatus);
+
+                        const tdAnalysis = document.createElement('td');
+                        tdAnalysis.className = 'text-center';
+                        tdAnalysis.innerHTML = `
+                            <a href="/mediciones/estadisticas/${row.tolerancia_id}/" class="btn-stitch-icon" title="Análisis Estadístico">
+                                <i class="ri-bar-chart-2-line"></i>
+                            </a>
+                        `;
+                        tr.appendChild(tdAnalysis);
+
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                const navContainer = document.getElementById('pieza-navigation-container');
+                if (navContainer) {
+                    navContainer.innerHTML = '';
+                    const proy = currentUrl.searchParams.get('proy') || '';
+                    const op = currentUrl.searchParams.get('op') || '';
+                    const proc = currentUrl.searchParams.get('proc') || '';
+
+                    const createNavBtn = (targetPiece, iconClass, disabled) => {
+                        const a = document.createElement('a');
+                        a.href = `?proy=${proy}&op=${op}&proc=${proc}&pieza=${targetPiece}`;
+                        a.className = 'btn-stitch-outline d-flex align-items-center justify-content-center';
+                        a.style.cssText = 'width: 36px; height: 36px; padding: 0;';
+                        a.innerHTML = `<i class="${iconClass}"></i>`;
+                        if (disabled) {
+                            a.style.opacity = '0.3';
+                            a.style.pointerEvents = 'none';
+                        } else {
+                            a.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                loadPieceAJAX(targetPiece);
+                            });
+                        }
+                        return a;
+                    };
+
+                    navContainer.appendChild(createNavBtn(data.first_p, 'ri-skip-back-line', !data.first_p || data.pieza_actual == data.first_p));
+                    navContainer.appendChild(createNavBtn(data.prev_p, 'ri-arrow-left-s-line', !data.prev_p));
+
+                    data.piezas_navegacion.forEach(pNum => {
+                        const a = document.createElement('a');
+                        a.href = `?proy=${proy}&op=${op}&proc=${proc}&pieza=${pNum}`;
+                        a.className = `btn-stitch-outline d-flex align-items-center justify-content-center ${pNum == data.pieza_actual ? 'bg-primary border-primary text-white' : ''}`;
+                        a.style.cssText = 'width: 36px; height: 36px; padding: 0; font-weight: 800; font-size: 0.85rem;';
+                        a.textContent = pNum;
+                        a.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            loadPieceAJAX(pNum);
+                        });
+                        navContainer.appendChild(a);
+                    });
+
+                    navContainer.appendChild(createNavBtn(data.next_p, 'ri-arrow-right-s-line', !data.next_p));
+                    navContainer.appendChild(createNavBtn(data.last_p, 'ri-skip-forward-line', !data.last_p || data.pieza_actual == data.last_p));
+                }
+
+                const deleteBtn = document.querySelector('button[onclick^="deletePiece"]');
+                if (deleteBtn) {
+                    deleteBtn.setAttribute('onclick', `deletePiece('${data.pieza_actual}')`);
+                }
+
+                const txtObs = document.getElementById('texto_observaciones');
+                if (txtObs) txtObs.value = data.observaciones;
+
+                initMeasurementInputs();
+                initPagination();
+            }
+        })
+        .catch(err => {
+            console.error('Error in AJAX piece navigation:', err);
+        })
+        .finally(() => {
+            const target = document.querySelector('.content-transition-target');
+            if (target) {
+                target.classList.remove('is-changing');
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         initPagination();
     });
@@ -1083,47 +1291,49 @@
         }
     }
 
-    // Auto-focus next input and SAVE on Enter
-    document.querySelectorAll('.measurement-input, .pnp-select').forEach((input, idx, list) => {
-        // Handle ENTER key
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                
-                // SAVE
-                saveMeasurement(input);
-                // formatValue moved to async success callback
-
-                // FOCUS NEXT
-                const next = list[idx + 1];
-                if (next) {
-                    next.focus();
-                } else {
-                    // Last input -> Focus "PIEZA #" for new cycle
-                    const piezaInput = document.getElementById('input_pieza');
-                    if (piezaInput) {
-                        piezaInput.focus();
-                        piezaInput.select();
+    // Auto-focus next input and SAVE on Enter (wrapped for AJAX updates)
+    function initMeasurementInputs() {
+        document.querySelectorAll('.measurement-input, .pnp-select').forEach((input, idx, list) => {
+            // Handle ENTER key
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    
+                    // SAVE
+                    saveMeasurement(input);
+                    // formatValue moved to async success callback
+    
+                    // FOCUS NEXT
+                    const next = list[idx + 1];
+                    if (next) {
+                        next.focus();
+                    } else {
+                        // Last input -> Focus "PIEZA #" for new cycle
+                        const piezaInput = document.getElementById('input_pieza');
+                        if (piezaInput) {
+                            piezaInput.focus();
+                            piezaInput.select();
+                        }
                     }
                 }
+            });
+    
+            // Also save numeric inputs on blur (tabbing out)
+            if (input.classList.contains('measurement-input')) {
+                input.addEventListener('blur', () => {
+                    formatValue(input);
+                    saveMeasurement(input);
+                });
+            }
+    
+            // Save select inputs on change
+            if (input.classList.contains('pnp-select')) {
+                input.addEventListener('change', () => {
+                    saveMeasurement(input);
+                });
             }
         });
-
-        // Also save numeric inputs on blur (tabbing out)
-        if (input.classList.contains('measurement-input')) {
-            input.addEventListener('blur', () => {
-                formatValue(input);
-                saveMeasurement(input);
-            });
-        }
-
-        // Save select inputs on change
-        if (input.classList.contains('pnp-select')) {
-            input.addEventListener('change', () => {
-                saveMeasurement(input);
-            });
-        }
-    });
+    }
 
     async function quickAdd(model, selectId) {
         const { value: name } = await Swal.fire({
@@ -1283,6 +1493,9 @@
             });
         }
 
+        // Initialize table measurement inputs
+        initMeasurementInputs();
+
         // Autofocus logic
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('autofocus')) {
@@ -1297,7 +1510,20 @@
         document.querySelectorAll('a[href^="?"]').forEach(link => {
             link.addEventListener('click', (e) => {
                 if (!e.ctrlKey && !e.shiftKey && !e.metaKey && !e.defaultPrevented) {
-                    triggerTransition();
+                    const url = new URL(link.href, window.location.origin + window.location.pathname);
+                    const currentUrl = new URL(window.location.href);
+                    
+                    const sameProy = url.searchParams.get('proy') === currentUrl.searchParams.get('proy');
+                    const sameOp = url.searchParams.get('op') === currentUrl.searchParams.get('op');
+                    const sameProc = url.searchParams.get('proc') === currentUrl.searchParams.get('proc');
+                    const newPiece = url.searchParams.get('pieza');
+                    
+                    if (sameProy && sameOp && sameProc && newPiece) {
+                        e.preventDefault();
+                        loadPieceAJAX(newPiece);
+                    } else {
+                        triggerTransition();
+                    }
                 }
             });
         });
