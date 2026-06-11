@@ -33,38 +33,30 @@ def extract_data_with_gemini(pdf_path, mime_type="application/pdf", api_key=None
             doc_base64 = base64.b64encode(doc_data).decode('utf-8')
 
         prompt = """
-        Eres un sistema experto en extracción de datos de Planillas de Inspección de ABBAMAT.
-        Tu objetivo es extraer con PRECISION QUIRÚRGICA los datos técnicos de la imagen adjunta. 
+        Eres un sistema experto en lectura de Planillas de Inspección de ABBAMAT.
+        Tu objetivo es extraer la tabla de controles técnicos con precisión quirúrgica.
         
-        REGLAS DE ORO:
-        - **NÚMEROS DE PIEZAS REALES**: Extrae los números de piezas EXACTOS que aparecen en la fila 'NÚMERO DE PIEZAS' (ej: 18, 20, 22...). NUNCA inventes una secuencia 1, 2, 3... si no está en el papel.
-        - **ALINEACIÓN FILA/COLUMNA**: Asegúrate de que cada medición (valor) corresponda exactamente a la columna de su número de pieza.
-        - **MÚLTIPLES SECCIONES**: Este formulario puede tener la tabla dividida en dos o más bloques. Debes concatenar los resultados. Por ejemplo, si el control "Ancho" aparece arriba para las piezas 1-10 y abajo para las piezas 11-20, el resultado debe ser un único control "Ancho" con los 20 valores.
-        - **VALORES VACÍOS**: Si una celda está vacía, devuelve un string vacío "". No asumas valores previos.
-        - **COTA vs DETALLE**: Ignora la columna COTA. Extrae el nombre del control solo de DETALLE.
-        - **VALORES CUALITATIVOS**: Captura "OK", "NOK", "PASA", "FALLA" exactamente.
+        INSTRUCCIONES OBLIGATORIAS:
+        1. La tabla tiene estas columnas: COTA | DETALLE | SOLICITADO | TOL. | FREC. | INSTRUMENTO | [valores por pieza]
+        2. La columna COTA contiene un número correlativo (1, 2, 3, 4, ...). Es OBLIGATORIO extraer este número.
+        3. SOLO extrae filas donde la columna COTA tenga un número entero (1, 2, 3...). 
+           - Filas como "Reporte Equal", "FECHA", "OPERARIO", "SUPERVISOR", "CONTROL CALIDAD" NO tienen cota numérica. IGNÓRALAS.
+           - Anotaciones del dibujo como "E/ Aguj.", "Aguj. Inclin." NO pertenecen a la tabla. IGNÓRALAS.
+        4. Si el PDF tiene varias páginas con la misma tabla, NO repitas filas. Cada número de COTA aparece UNA SOLA VEZ.
+        5. Extrae los valores numéricos de cada pieza tal como están escritos.
 
-        INSTRUCCIONES DE EXTRACCIÓN:
-        1. HEADER: Extrae Nro OP (ej: 85480), Proyecto (ej: 240+40), Cliente, Artículo, Denominación y Operación.
-        2. PIEZAS: Crea una lista única y ordenada de todos los números de piezas identificados en todas las secciones ('NÚMERO DE PIEZAS').
-        3. MATRIX:
-           - "control": Nombre limpio (sin números de índice).
-           - "nominal": Valor numérico o "S/N".
-           - "tolerancia": "+0.10 / -0.20" o "± 0.05".
-           - "valores": Una lista de strings que coincida EN ORDEN con la lista global de 'piezas'.
-        4. Si un valor está corregido a mano, prioriza el valor escrito a mano.
-
-        Responde ÚNICAMENTE con este JSON:
+        Responde ÚNICAMENTE este JSON:
         {
           "header": {"op": "", "proyecto": "", "cliente": "", "articulo": "", "denominacion": "", "operacion": ""},
-          "piezas": [18, 20, 22, 27, 40, ...], 
+          "piezas": [1, 2, 5, 7, 8, 11, 14, 17, 20, 23],
           "matrix": [
             {
-              "control": "Nombre del Control",
-              "nominal": "0.00",
-              "tolerancia": "+0.00 / -0.00",
-              "instrumento": "MIC / CAP / ...",
-              "valores": ["4.05", "4.05", "4.06", ...] 
+              "cota": "1",
+              "control": "Ø EXTERIOR",
+              "nominal": "20.80",
+              "tolerancia": "±0.10",
+              "instrumento": "CAD 40",
+              "valores": ["20.79", "20.80", "20.80", ...]
             }
           ]
         }
@@ -167,22 +159,93 @@ def process_gemini_response(response):
     if json_match:
         data = json.loads(json_match.group(0))
         
-        # POST-PROCESAMIENTO
-        def normalize_name(n):
-            return re.sub(r'^\d+[\.\)\-\s]+', '', str(n)).strip().upper()
+        def clean_value(v):
+            if v is None: return ""
+            if isinstance(v, dict):
+                v = v.get('valor') or v.get('val') or v.get('value') or ""
+            s = str(v).strip().replace(',', '.')
+            if s.lower() in ['none', 'null', 'nan', 'undefined', 'n/a', '-']: return ""
+            # Si contiene basura como "{'val':...", intentar limpiar
+            if '{' in s: return ""
+            return s
 
         merged_matrix = {}
+        target_size = len(data.get('piezas', []))
+        draw_noise = ["E/AGUJ", "AGUJINCLIN", "COTAS", "PLANOS", "REPORTE", "EQUAL", "FIRMA", "ACLARACION"]
+
         for row in data.get('matrix', []):
-            raw_name = row.get('control', '')
-            norm_name = normalize_name(raw_name)
-            if not norm_name: continue
-            if norm_name not in merged_matrix:
-                merged_matrix[norm_name] = row
+            # Normalización de Cota
+            raw_cota = str(row.get('cota', '')).strip().replace('.', '').replace(')', '')
+            raw_name = str(row.get('control', '')).upper()
+            nominal = str(row.get('nominal', '0')).replace(',', '.')
+            
+            # Limpiar nombre para filtros
+            clean_name = re.sub(r'[^A-ZØ]', '', raw_name)
+            
+            # Filtro de ruido: Ignorar si es término de dibujo o si el nombre está vacío
+            if any(noise in clean_name for noise in draw_noise) or len(clean_name) < 2:
+                continue
+            
+            # REGLA ESTRICTA: Si no hay cota numérica, la fila es ruido. Se descarta.
+            if not raw_cota.isdigit():
+                continue
+
+            key = f"COTA_{raw_cota}"
+
+            # Procesar valores
+            raw_vals = row.get('valores', [])
+            cleaned_vals = [clean_value(v) for v in raw_vals]
+
+            if key not in merged_matrix:
+                row['valores'] = cleaned_vals
+                merged_matrix[key] = row
             else:
-                new_vals = row.get('valores', [])
-                merged_matrix[norm_name]['valores'].extend(new_vals)
-        
-        data['matrix'] = list(merged_matrix.values())
+                # Si la cota ya existe (misma tabla en otra página), nos quedamos con la que tenga más datos
+                existing = merged_matrix[key]
+                count_existing = len([v for v in existing['valores'] if v])
+                count_new = len([v for v in cleaned_vals if v])
+                
+                if count_new > count_existing:
+                    row['valores'] = cleaned_vals
+                    merged_matrix[key] = row
+                else:
+                    # Completar huecos
+                    for i in range(min(len(existing['valores']), len(cleaned_vals), target_size)):
+                        if not existing['valores'][i] and cleaned_vals[i]:
+                            existing['valores'][i] = cleaned_vals[i]
+
+        # Formatear lista final ordenada por número de cota
+        def sort_key(k):
+            if k.startswith("COTA_"):
+                try: return int(k.replace("COTA_", ""))
+                except: return 999
+            return 888
+
+        final_rows = []
+        for k in sorted(merged_matrix.keys(), key=sort_key):
+            row = merged_matrix[k]
+            # Ajustar longitud de valores al número de piezas
+            vals = row['valores']
+            if len(vals) < target_size:
+                vals.extend([""] * (target_size - len(vals)))
+            else:
+                row['valores'] = vals[:target_size]
+            final_rows.append(row)
+
+        # ── DESAMBIGUACIÓN DE NOMBRES DUPLICADOS ──────────────────────────────
+        # Si hay dos o más controles con el mismo nombre (ej: tres "ALT. PARCIAL"),
+        # los renombra a "ALT. PARCIAL 1", "ALT. PARCIAL 2", "ALT. PARCIAL 3"
+        # para que se guarden con nombres únicos en el plan maestro.
+        from collections import Counter
+        name_count = Counter(row['control'] for row in final_rows)
+        name_seen  = {}
+        for row in final_rows:
+            name = row['control']
+            if name_count[name] > 1:
+                name_seen[name] = name_seen.get(name, 0) + 1
+                row['control'] = f"{name} {name_seen[name]}"
+
+        data['matrix'] = final_rows
         return data
     else:
         raise ValueError("La IA respondió pero no en formato JSON válido")

@@ -926,6 +926,7 @@ def configurar_estructura(request):
                         e_nombre = f"Elemento {p.elemento_id}"
 
                 p_info = {
+                    'planilla_id': p.id,
                     'id': p.proceso_id,
                     'nombre': p_nombre,
                     'elemento_id': p.elemento_id if p.elemento_id else '',
@@ -962,10 +963,14 @@ def configurar_estructura(request):
             articulo = Articulo.objects.get(id=articulo_id) if articulo_id else None
             
             # --- SMART UPDATE STRATEGY ---
-            # Instead of deleting everything, we fetch existing planillas to reuse them.
-            # This preserves ids and linked measurements.
+            # If we are editing (renaming), we look for things with the OLD values
+            original_op = data.get('original_op')
+            original_proyecto = data.get('original_proyecto')
             
-            existing_planillas = list(PlanillaMedicion.objects.filter(proyecto=proyecto, num_op=num_op))
+            lookup_op = original_op if original_op is not None else num_op
+            lookup_proy = original_proyecto if original_proyecto is not None else proyecto
+
+            existing_planillas = list(PlanillaMedicion.objects.filter(proyecto=lookup_proy, num_op=lookup_op))
             processed_planillas_ids = []
 
             procesos_data = data.get('procesos', [])
@@ -991,19 +996,29 @@ def configurar_estructura(request):
                         elemento, _ = Elemento.objects.get_or_create(nombre=elemento_nombre)
 
                 # Try to find a matching existing planilla
-                # Match criteria: same Proceso and same Elemento
+                # Strategy: Use real DB ID if provided, fallback to process/element match
                 match_planilla = None
-                for ep in existing_planillas:
-                    if ep.proceso_id == int(proceso_id) and ep.elemento == elemento:
-                        match_planilla = ep
-                        break
+                input_planilla_id = p_data.get('planilla_id')
+                
+                if input_planilla_id:
+                    try:
+                        match_planilla = PlanillaMedicion.objects.get(id=input_planilla_id)
+                    except PlanillaMedicion.DoesNotExist:
+                        pass
+                
+                if not match_planilla:
+                    # Fallback for newly added rows in UI or missing IDs
+                    for ep in existing_planillas:
+                        if ep.proceso_id == int(proceso_id) and ep.elemento == elemento:
+                            match_planilla = ep
+                            break
                 
                 if match_planilla:
                     # UPDATE existing
                     match_planilla.cliente = cliente
                     match_planilla.articulo = articulo
-                    # proyecto and num_op are assumed same since we filtered by them, 
-                    # but if case sensitivity changed or whatever, let's set them.
+                    match_planilla.proceso = proceso
+                    match_planilla.elemento = elemento
                     match_planilla.proyecto = proyecto 
                     match_planilla.num_op = num_op
                     match_planilla.save()
@@ -1330,8 +1345,16 @@ def nueva_medicion_op(request):
         
         # range_piezas is the sorted unique list of pieces with measurements + next one
         range_piezas = list(piezas_medidas)
-        if (max_p + 1) not in range_piezas:
-            range_piezas.append(max_p + 1)
+        # Solo agregar la pieza siguiente si el usuario está parado EN la última pieza
+        # (para permitir avanzar a la próxima), o si no hay piezas medidas aún.
+        # Esto evita que siempre aparezca una pieza extra vacía al final.
+        try:
+            p_actual_int_nav = int(str(pieza_actual))
+        except:
+            p_actual_int_nav = 0
+        if p_actual_int_nav >= max_p:
+            if (max_p + 1) not in range_piezas:
+                range_piezas.append(max_p + 1)
         
         # Paginator logic for pieces
         try:
@@ -1547,6 +1570,7 @@ def eliminar_pieza_ajax(request):
                 try:
                     pieza_int = int(str(pieza))
                     count, _ = ValorMedicion.objects.filter(planilla__in=planillas, pieza=pieza_int).delete()
+                    # Devolver success aunque count sea 0 (pieza vacía sin mediciones guardadas)
                     return JsonResponse({'status': 'success', 'deleted': count})
                 except ValueError:
                     return JsonResponse({'status': 'error', 'message': f'Número de pieza inválido: {pieza}'}, status=400)
@@ -2260,29 +2284,48 @@ def ocr_lector_planos(request):
         from .models import Proceso, Articulo, Elemento, Cliente
         auto_matched = {'proceso_id': '', 'articulo_id': '', 'elemento_id': '', 'cliente_id': ''}
         
-        # Buscar cliente por nombre parcial si existe
-        if header_info['cliente']:
-            c = Cliente.objects.filter(nombre__icontains=header_info['cliente'].strip()[:10]).first()
-            if c: auto_matched['cliente_id'] = c.id
+        # Función auxiliar para limpieza profunda y búsqueda
+        def find_best_match(model, query_text, field_name='nombre'):
+             if not query_text: return None
+             clean_query = str(query_text).strip().upper()
+             if not clean_query: return None
+             
+             # 1. Intento Exacto
+             res = model.objects.filter(**{f"{field_name}__iexact": clean_query}).first()
+             if res: return res
+             
+             # 2. Intento por Contenido (si el query es largo, probamos con una parte)
+             parts = clean_query.split()
+             # Si es un código numérico (Articulo), buscamos coincidencia exacta o que esté contenido
+             if clean_query.isdigit():
+                  res = model.objects.filter(**{f"{field_name}__icontains": clean_query}).first()
+                  if res: return res
+             
+             # 3. Para textos largos (Procesos/Elementos), probamos con las primeras palabras
+             if len(parts) > 1:
+                  short_query = " ".join(parts[:2])
+                  res = model.objects.filter(**{f"{field_name}__icontains": short_query}).first()
+                  if res: return res
 
-        # Buscar artículo por código
-        if header_info['articulo']:
-            a = Articulo.objects.filter(nombre__icontains=header_info['articulo'].strip()).first()
-            if a: auto_matched['articulo_id'] = a.id
+             # 4. Fallback: icontains normal con el texto completo
+             return model.objects.filter(**{f"{field_name}__icontains": clean_query[:30]}).first()
 
-        # Buscar Proceso (en la DB 'Proceso' parece guardar la denominación del producto)
-        if header_info['denominacion']:
-            clean_den = header_info['denominacion'].replace('"', '').strip()[:15]
-            p = Proceso.objects.filter(nombre__icontains=clean_den).first()
-            if p: auto_matched['proceso_id'] = p.id
+        # Buscar cliente
+        c = find_best_match(Cliente, header_info.get('cliente'))
+        if c: auto_matched['cliente_id'] = c.id
 
-        # Buscar Operación/Elemento (en la DB 'Elemento' parece guardar la operación técnica)
-        if header_info['operacion']:
-            clean_op = header_info['operacion'].replace('°', '').strip()[:10]
-            e = Elemento.objects.filter(nombre__icontains=clean_op).first()
-            if not e:
-                e = Elemento.objects.filter(nombre__icontains=header_info['operacion'][:10]).first()
-            if e: auto_matched['elemento_id'] = e.id
+        # Buscar artículo (Prioridad absoluta al código numérico)
+        art_text = header_info.get('articulo')
+        a = find_best_match(Articulo, art_text)
+        if a: auto_matched['articulo_id'] = a.id
+
+        # Buscar Proceso (Denominación)
+        p = find_best_match(Proceso, header_info.get('denominacion'))
+        if p: auto_matched['proceso_id'] = p.id
+
+        # Buscar Operación/Elemento
+        e = find_best_match(Elemento, header_info.get('operacion'))
+        if e: auto_matched['elemento_id'] = e.id
 
         # Procesar matriz con Lógica de Tolerancia Industrial (Soporta Asimétricas)
         valid_matrix = []
@@ -2583,7 +2626,7 @@ def importar_datos_ocr(request):
                     if not instrumento_obj:
                         instrumento_obj = Instrumento.objects.create(nombre=instrumento_nombre, codigo=instrumento_nombre, tipo='OTRO')
 
-                # E. Create/Update Tolerance record
+                # E. Create/Update Tolerance record (matches user rule: same name = same control/overwrite)
                 tolerancia, _ = Tolerancia.objects.update_or_create(
                     planilla=planilla,
                     control=control,

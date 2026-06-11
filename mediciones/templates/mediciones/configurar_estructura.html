@@ -222,7 +222,47 @@
     .process-card-item { background: rgba(255, 255, 255, 0.6); border-radius: 20px; border: 1px solid var(--border-color); padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
     .process-badge-modern { background: rgba(225, 29, 72, 0.05); color: var(--primary); padding: 0.5rem 1rem; border-radius: 12px; font-weight: 800; font-family: 'Outfit', sans-serif; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 0; text-transform: uppercase; border: 1px solid rgba(225, 29, 72, 0.15); }
     
-    /* Control Row Grid (Shrinked columns) */
+    .badge-select-premium {
+        background-color: rgba(225, 29, 72, 0.05);
+        color: var(--primary);
+        border: 1px solid rgba(225, 29, 72, 0.15);
+        border-radius: 12px;
+        padding: 0.4rem 2.2rem 0.4rem 1rem;
+        font-weight: 800;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23e11d48'%3E%3Cpath d='M12 16L6 10H18L12 16Z'%3E%3C/path%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 0.6rem center;
+        background-size: 1rem;
+        transition: all 0.2s;
+        min-width: 140px;
+        max-width: 250px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+    .badge-select-premium:hover {
+        background-color: rgba(225, 29, 72, 0.1);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.05);
+    }
+    .badge-select-secondary {
+        background-color: #f1f5f9;
+        color: var(--text-secondary);
+        border: 1px solid #cbd5e1;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23475569'%3E%3Cpath d='M12 16L6 10H18L12 16Z'%3E%3C/path%3E%3C/svg%3E") !important;
+    }
+    .badge-select-secondary:hover {
+        background-color: #e2e8f0;
+        border-color: #94a3b8;
+        box-shadow: 0 0 0 3px rgba(203, 213, 225, 0.2);
+    }
     .control-row-compact { 
         display: grid; 
         grid-template-columns: 2fr auto 100px 100px 100px auto; 
@@ -285,7 +325,20 @@
 
     <script>
         const controlMap = { {% for c in controles_list %}"{{ c.nombre|escapejs }}": "{{ c.id }}",{% endfor %} };
+        const allProcesos = [ {% for p in procesos_list %}{id: "{{p.id}}", nombre: "{{p.nombre|escapejs}}"},{% endfor %} ];
+        const allElementos = [ {% for e in elementos_list %}{id: "{{e.id}}", nombre: "{{e.nombre|escapejs}}"},{% endfor %} ];
         let processCounter = 0;
+
+        function getProcesosOptions(selectedId) {
+            let html = `<option value="">-- SELECCIONE PROCESO --</option>`;
+            html += allProcesos.map(p => `<option value="${p.id}" ${p.id == selectedId ? 'selected' : ''}>${p.nombre}</option>`).join('');
+            return html;
+        }
+        function getElementosOptions(selectedId) {
+            let html = `<option value="">-- SIN ELEMENTO --</option>`;
+            html += allElementos.map(e => `<option value="${e.id}" ${e.id == selectedId ? 'selected' : ''}>${e.nombre}</option>`).join('');
+            return html;
+        }
 
         function addProcessFromSidebar(skipControlRow = false) {
             const selectProc = document.getElementById('sidebar_process_select');
@@ -309,8 +362,8 @@
             div.innerHTML = `
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="d-flex gap-2">
-                        <div class="process-badge-modern"><i class="ri-archive-line"></i> ${pName}</div>
-                        <div class="process-badge-modern" style="background-color: #f1f5f9; color: var(--text-secondary); border: 1px solid #e2e8f0;"><i class="ri-puzzle-line"></i> ${eName}</div>
+                        <select class="badge-select-premium select-proceso-id">${getProcesosOptions(pId)}</select>
+                        <select class="badge-select-premium badge-select-secondary select-elemento-id">${getElementosOptions(eId)}</select>
                     </div>
                     <button type="button" class="btn-remove-soft" onclick="removeElement('proc-block-${processCounter}')"><i class="ri-delete-bin-line" style="font-size: 1.2rem;"></i></button>
                 </div>
@@ -420,10 +473,27 @@
             const articulo = document.getElementById('header_articulo').value;
             const num_op = document.getElementById('header_num_op').value;
             if(!cliente || !proyecto || !num_op) { Swal.fire({ icon: 'warning', title: 'Datos Faltantes', text: 'Complete los campos obligatorios.' }); return; }
-            const structure = { cliente, proyecto, articulo, num_op, procesos: [] };
+            const data = JSON.parse(document.getElementById('existing-data-json').textContent);
+            const original_op = data ? data.num_op : null;
+            const original_proyecto = data ? data.proyecto : null;
+
+            const structure = { 
+                cliente, 
+                proyecto, 
+                articulo, 
+                num_op, 
+                original_op, 
+                original_proyecto, 
+                procesos: [] 
+            };
             const procBlocks = document.querySelectorAll('.process-card-item');
             procBlocks.forEach(block => {
-                const pData = { id: block.getAttribute('data-proceso-id'), elemento_id: block.getAttribute('data-elemento-id'), controles: [] };
+                const pData = { 
+                    planilla_id: block.getAttribute('data-planilla-id'),
+                    id: block.querySelector('.select-proceso-id').value, 
+                    elemento_id: block.querySelector('.select-elemento-id').value, 
+                    controles: [] 
+                };
                 block.querySelectorAll('.control-row-compact').forEach(row => {
                     const cId = controlMap[row.querySelector('.ctrl-search-input').value];
                     if(cId) pData.controles.push({ id: cId, min: row.querySelector('.col-min').value, nom: row.querySelector('.col-nom').value, max: row.querySelector('.col-max').value });
@@ -449,11 +519,12 @@
                     document.getElementById('empty-state')?.remove();
                     const div = document.createElement('div');
                     div.className = 'process-card-item'; div.id = `proc-block-${currentIdx}`;
+                    div.setAttribute('data-planilla-id', p.planilla_id || '');
                     div.setAttribute('data-proceso-id', p.id); div.setAttribute('data-elemento-id', p.elemento_id || '');
                     div.innerHTML = `
                         <div class="d-flex justify-content-between mb-3"><div class="d-flex gap-2">
-                            <div class="process-badge-modern"><i class="ri-archive-line"></i> ${p.nombre || 'Sin Proceso'}</div>
-                            <div class="process-badge-modern" style="background-color: #f1f5f9; color: var(--text-secondary); border: 1px solid #e2e8f0;"><i class="ri-puzzle-line"></i> ${p.elemento_nombre || ''}</div>
+                            <select class="badge-select-premium select-proceso-id">${getProcesosOptions(p.id)}</select>
+                            <select class="badge-select-premium badge-select-secondary select-elemento-id">${getElementosOptions(p.elemento_id)}</select>
                         </div><button type="button" class="btn-remove-soft" onclick="removeElement('proc-block-${currentIdx}')"><i class="ri-delete-bin-line"></i></button></div>
                         <div id="ctrl-list-${currentIdx}"></div>
                         <button type="button" class="btn-add-ctrl-soft" onclick="addControlRow(${currentIdx})"><i class="ri-add-line"></i> Añadir Control</button>

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABBAMAT - {% block title %}Calidad{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mediciones/css/index.css' %}?v=5.0">
+    <link rel="stylesheet" href="{% static 'mediciones/css/index.css' %}?v=7.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -26,7 +26,6 @@
         }
 
         body { background: var(--bg-body); color: var(--text-primary); transition: all 0.3s ease; }
-        .sidebar { background-color: var(--bg-sidebar) !important; }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -34,10 +33,13 @@
     <div class="app-layout">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-header" style="height: 100px; padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <div class="sidebar-header" style="height: 90px; padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.03);">
                 <a href="{% url 'index' %}" style="display: flex; align-items: center; gap: 1rem; text-decoration: none;">
                     <div class="brand-icon">A</div>
-                    <div class="brand-text">ABBAMAT</div>
+                    <div class="brand-info" style="display: flex; flex-direction: column;">
+                        <div class="brand-text">ABBAMAT</div>
+                        <div class="brand-subtitle" style="color: #64748b; font-size: 0.75rem; font-weight: 500; margin-top: -2px;">Admin Console</div>
+                    </div>
                 </a>
             </div>
             
@@ -48,44 +50,40 @@
                     <ul class="nav-list">
                         <li>
                             <a href="{% url 'index' %}" class="nav-link active-indigo {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
-                                <i class="ri-dashboard-3-line"></i>
+                                <i class="ri-dashboard-fill"></i>
                                 <span>Dashboard</span>
                             </a>
                         </li>
                         <!-- Operaciones Group -->
                         <li class="nav-item-group">
-                            <a href="#" class="nav-link active-indigo group-trigger {% if 'mediciones' in request.path or 'panel-geografico' in request.path or 'nueva-op' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
-                                <i class="ri-clipboard-line"></i>
+                            <a href="#" class="nav-link active-indigo group-trigger {% if 'mediciones' in request.path or 'panel-geografico' in request.path or 'nueva-op' in request.path or 'ocr' in request.path or 'estructuras' in request.path or request.resolver_match.url_name in 'ocr_lector_planos,lista_estructuras,nueva_medicion_op' %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
+                                <i class="ri-line-chart-line"></i>
                                 <span>Operaciones</span>
                                 <i class="ri-arrow-down-s-line chevron"></i>
                             </a>
-                            <ul class="sub-menu {% if 'mediciones' in request.path or 'nueva-op' in request.path %}open{% endif %}">
+                            <ul class="sub-menu {% if 'mediciones' in request.path or 'nueva-op' in request.path or 'ocr' in request.path or 'estructuras' in request.path or request.resolver_match.url_name in 'ocr_lector_planos,lista_estructuras,nueva_medicion_op' %}open{% endif %}">
                                 {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                                 <li>
                                      <a href="{% url 'lista_estructuras' %}" class="active-indigo {% if request.resolver_match.url_name == 'lista_estructuras' %}active{% endif %}">
-                                         <i class="ri-git-merge-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                          Armar Estructura
                                      </a>
                                  </li>
                                 {% endif %}
                                 <li>
                                      <a href="{% url 'nueva_medicion_op' %}" class="active-indigo {% if request.resolver_match.url_name == 'nueva_medicion_op' %}active{% endif %}">
-                                         <i class="ri-add-circle-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                          Nueva Medición (OP)
                                      </a>
                                  </li>
                                  <li>
                                      <a href="{% url 'ocr_lector_planos' %}" class="active-indigo {% if request.resolver_match.url_name == 'ocr_lector_planos' %}active{% endif %}">
-                                         <i class="ri-file-search-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                          Importar Plano (OCR)
-                                         <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.6em;">BETA</span>
+                                         <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.6em; letter-spacing: 0;"></span>
                                      </a>
                                  </li>
                                  <li>
                                      <a href="#" class="active-indigo">
-                                         <i class="ri-error-warning-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                          Sistema de NCR
-                                         <span class="badge bg-warning text-dark rounded-pill ms-2" style="font-size: 0.6em;">PRÓXIMAMENTE</span>
+                                         <span class="badge bg-secondary opacity-50 rounded-pill ms-2" style="font-size: 0.55em; letter-spacing: 0;">PRÓXIMAMENTE</span>
                                      </a>
                                  </li>
                             </ul>
@@ -93,7 +91,7 @@
                         
                         <li>
                             <a href="{% url 'lista_clientes' %}" class="nav-link active-cyan {% if request.resolver_match.url_name == 'lista_clientes' %}active{% endif %}">
-                                <i class="ri-user-line"></i>
+                                <i class="ri-group-fill"></i>
                                 <span>Clientes</span>
                             </a>
                         </li>
@@ -107,26 +105,23 @@
                         {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                         <li class="nav-item-group">
                             <a href="#" class="nav-link active-purple group-trigger {% if request.resolver_match.url_name == 'lista_procesos' or request.resolver_match.url_name == 'lista_elementos' or request.resolver_match.url_name == 'lista_controles' %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
-                                <i class="ri-booklet-line"></i>
+                                <i class="ri-stack-fill"></i>
                                 <span>Maestros</span>
                                 <i class="ri-arrow-down-s-line chevron"></i>
                             </a>
                             <ul class="sub-menu {% if request.resolver_match.url_name == 'lista_procesos' or request.resolver_match.url_name == 'lista_elementos' or request.resolver_match.url_name == 'lista_controles' %}open{% endif %}">
                                 <li>
                                     <a href="{% url 'lista_procesos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_procesos' %}active{% endif %}">
-                                        <i class="ri-node-tree" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                         Procesos
                                     </a>
                                 </li>
                                 <li>
                                     <a href="{% url 'lista_elementos' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_elementos' %}active{% endif %}">
-                                        <i class="ri-stack-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                         Elementos
                                     </a>
                                 </li>
                                 <li>
                                     <a href="{% url 'lista_controles' %}" class="active-purple {% if request.resolver_match.url_name == 'lista_controles' %}active{% endif %}">
-                                        <i class="ri-shield-check-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                         Controles
                                     </a>
                                 </li>
@@ -135,25 +130,29 @@
 
                         <li class="nav-item-group">
                             <a href="#" class="nav-link active-teal group-trigger {% if 'instrumento' in request.path or 'calibracion' in request.path or 'dashboard' in request.path %}active active-parent{% endif %}" onclick="toggleMenu(event, this)">
-                                <i class="ri-tools-line"></i>
+                                <i class="ri-equalizer-fill"></i>
                                 <span>Instrumentos</span>
-                                <i class="ri-arrow-down-s-line chevron"></i>
+                                {% if global_vencidos_count > 0 %}
+                                    <span class="badge bg-danger rounded-pill ms-auto" style="min-width: 20px; height: 20px; padding: 0 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; border-radius: 50% !important; background-color: #ef4444 !important; border: none; color: white !important; font-weight: bold;">{{ global_vencidos_count }}</span>
+                                {% elif global_alertas_count > 0 %}
+                                    <span class="badge bg-warning text-dark rounded-pill ms-auto" style="min-width: 20px; height: 20px; padding: 0 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; border-radius: 50% !important; background-color: #f59e0b !important; border: none; color: black !important; font-weight: bold;">{{ global_alertas_count }}</span>
+                                {% else %}
+                                    <i class="ri-arrow-down-s-line chevron"></i>
+                                {% endif %}
                             </a>
                             <ul class="sub-menu {% if 'instrumento' in request.path or 'calibracion' in request.path or 'dashboard' in request.path %}open{% endif %}">
                                 <li>
                                     <a href="{% url 'lista_instrumentos' %}" class="active-teal {% if request.resolver_match.url_name == 'lista_instrumentos' %}active{% endif %}">
-                                        <i class="ri-compass-3-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                         Listado de Equipos
                                     </a>
                                 </li>
                                 <li>
                                     <a href="{% url 'dashboard_calibracion' %}" class="active-teal {% if request.resolver_match.url_name == 'dashboard_calibracion' %}active{% endif %}">
-                                        <i class="ri-calendar-check-line" style="font-size: 0.9em; margin-right: 0.75rem;"></i>
                                         Dashboard Metrología
                                         {% if global_vencidos_count > 0 %}
-                                            <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 0.6em;">{{ global_vencidos_count }}</span>
+                                            <span class="badge bg-danger rounded-pill ms-auto" style="font-size: 0.8em;">{{ global_vencidos_count }}</span>
                                         {% elif global_alertas_count > 0 %}
-                                            <span class="badge bg-warning text-dark rounded-pill ms-auto" style="font-size: 0.6em;">{{ global_alertas_count }}</span>
+                                            <span class="badge bg-warning text-dark rounded-pill ms-auto" style="font-size: 0.8em;">{{ global_alertas_count }}</span>
                                         {% endif %}
                                     </a>
                                 </li>
@@ -164,42 +163,42 @@
                 </div>
 
                 <!-- SECCIÓN SISTEMA -->
-                <div class="nav-section" style="margin-bottom: 4rem;">
+                <div class="nav-section" style="margin-bottom: 2rem;">
                     <div class="nav-header">SISTEMA</div>
                     <ul class="nav-list">
                         {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
                         <li>
                             <a href="{% url 'lista_usuarios' %}" class="nav-link active-emerald {% if 'usuarios' in request.path %}active{% endif %}">
-                                <i class="ri-group-line"></i>
+                                <i class="ri-admin-fill"></i>
                                 <span>Usuarios</span>
                             </a>
                         </li>
                         {% endif %}
                         <li>
                             <a href="{% url 'configuracion_sistema' %}" class="nav-link active-red {% if 'configuracion' in request.path %}active{% endif %}">
-                                <i class="ri-settings-3-line"></i>
+                                <i class="ri-settings-4-fill"></i>
                                 <span>Configuración</span>
-                                <i class="ri-arrow-right-s-line chevron"></i>
                             </a>
                         </li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Perfil de Usuario -->
-            <div class="user-profile-wrapper" style="border-top: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); margin-top: auto;">
-                <a href="{% url 'perfil_usuario' %}" class="user-profile-link" style="text-decoration: none; display: flex; align-items: center; padding: 1.5rem 1.25rem; transition: all 0.2s;">
-                    <div class="user-avatar" style="width: 44px; height: 44px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white;">
-                        <i class="ri-user-3-fill" style="font-size: 1.2rem;"></i>
+            <!-- Perfil de Usuario (Estilo Card Flotante) -->
+            <div class="user-profile-wrapper" style="margin: 0.5rem 1rem 1.5rem 1rem; border-radius: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); overflow: hidden; backdrop-filter: blur(10px);">
+                <a href="{% url 'perfil_usuario' %}" class="user-profile-link" style="text-decoration: none; display: flex; align-items: center; padding: 1rem; transition: all 0.2s;">
+                    <div class="user-avatar" style="position: relative; width: 40px; height: 40px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; transition: all 0.2s;">
+                        <i class="ri-user-3-fill" style="font-size: 1.1rem;"></i>
+                        <span style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background-color: #22c55e; border: 2px solid #0b0f19; border-radius: 50%;"></span>
                     </div>
-                    <div class="user-info" style="margin-left: 1rem; flex: 1;">
-                        <div class="user-name" style="color: white; font-weight: 600; font-size: 0.95rem;">{{ user.username }}</div>
-                        <div class="user-role" style="color: #94a3b8; font-size: 0.8rem; margin-top: 2px;">{{ user.profile.get_role_display|default:"Usuario" }}</div>
+                    <div class="user-info" style="margin-left: 0.85rem; flex: 1; overflow: hidden;">
+                        <div class="user-name" style="color: #e2e8f0; font-weight: 700; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.username }}</div>
+                        <div class="user-role" style="color: #64748b; font-size: 0.75rem; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.profile.get_role_display|default:"Usuario" }}</div>
                     </div>
                 </a>
-                <div style="padding: 0 1.25rem 1.5rem 1.25rem;">
-                    <a href="{% url 'logout' %}" class="btn-logout-premium" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 0.75rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;">
-                        <i class="ri-logout-box-r-line"></i> Cerrar Sesión
+                <div style="padding: 0 1rem 1rem 1rem;">
+                    <a href="{% url 'logout' %}" class="btn-logout-premium" style="background: rgba(239, 68, 68, 0.08); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; padding: 0.6rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-weight: 700; font-size: 0.82rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#f87171'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.color='#fca5a5'">
+                        <i class="ri-logout-box-r-line" style="font-size: 1.1rem;"></i> Cerrar Sesión
                     </a>
                 </div>
             </div>
@@ -208,12 +207,28 @@
         <script>
             function toggleMenu(e, element) {
                 e.preventDefault();
+                
+                // Toggle active-parent class
                 element.classList.toggle('active-parent');
                 const isExpanded = element.getAttribute('aria-expanded') === 'true';
                 element.setAttribute('aria-expanded', !isExpanded);
+                
                 const subMenu = element.nextElementSibling;
                 if (subMenu && subMenu.classList.contains('sub-menu')) {
                     subMenu.classList.toggle('open');
+                }
+                
+                // If opening/expanded, shift visual focus to this parent menu item
+                const isOpen = subMenu && subMenu.classList.contains('open');
+                if (isOpen) {
+                    // Remove active and active-parent class from other main elements
+                    document.querySelectorAll('.nav-link').forEach(link => {
+                        if (link !== element) {
+                            link.classList.remove('active');
+                            link.classList.remove('active-parent');
+                        }
+                    });
+                    element.classList.add('active');
                 }
             }
         </script>

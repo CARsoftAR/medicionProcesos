@@ -303,6 +303,47 @@
     }
     
     .text-warning-custom { color: #f59e0b !important; }
+    /* Estilos para SweetAlert2 Moderno */
+    .premium-swal-popup {
+        border-radius: 30px !important;
+        border: 1px solid var(--stitch-border) !important;
+        padding: 2rem !important;
+        font-family: 'Inter', sans-serif !important;
+    }
+    .swal-success-container {
+        text-align: center;
+        padding: 1rem 0;
+    }
+    .swal-success-icon {
+        font-size: 5rem;
+        color: #10b981;
+        margin-bottom: 1.5rem;
+        filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.3));
+    }
+    .swal-success-title {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 800;
+        font-size: 1.8rem;
+        color: var(--stitch-text);
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.02em;
+    }
+    .swal-success-text {
+        font-size: 1.1rem;
+        color: #64748b;
+        margin-bottom: 2rem;
+    }
+    .swal-success-footer {
+        font-size: 0.8rem;
+        font-weight: 800;
+        color: var(--stitch-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        opacity: 0.8;
+    }
+    .swal2-timer-progress-bar {
+        background: var(--stitch-primary) !important;
+    }
 </style>
 
 <div class="premium-container animate__animated animate__fadeIn">
@@ -405,16 +446,24 @@
         <div class="status-card">
             <div class="status-group">
                 <label class="status-label">Número de OP</label>
-                <div class="status-value-op">#{{ header.op }}</div>
+                <div class="status-value-op">#{{ header.op|default:"---" }}</div>
             </div>
             <div class="status-group">
                 <label class="status-label">Proyecto</label>
-                <div class="status-value-small">{{ header.proyecto }}</div>
+                <div class="status-value-small">{{ header.proyecto|default:"S/P" }}</div>
             </div>
             <div class="status-group">
                 <label class="status-label">Cliente / Artículo</label>
-                <div class="status-value-small">{{ header.cliente|truncatechars:40 }}</div>
-                <div style="font-size: 0.7rem; color: #64748b; margin-top: 2px;">{{ header.articulo }}</div>
+                <div class="status-value-small">{{ header.cliente|default:"CLIENTE NO DETECTADO"|truncatechars:30 }}</div>
+                <div style="font-size: 0.8rem; color: var(--stitch-primary); font-weight: 800; margin-top: 2px;">Item: {{ header.articulo|default:"S/N" }}</div>
+            </div>
+            <div class="status-group" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--stitch-border);">
+                <label class="status-label">Denominación (Proceso)</label>
+                <div class="status-value-small" style="font-size: 0.8rem;">{{ header.denominacion|default:"---" }}</div>
+            </div>
+            <div class="status-group">
+                <label class="status-label">Fase (Operación)</label>
+                <div class="status-value-small" style="font-size: 0.8rem;">{{ header.operacion|default:"---" }}</div>
             </div>
         </div>
         {% endif %}
@@ -438,7 +487,7 @@
             <div class="selector-group">
                 <label class="selector-label">Cliente</label>
                 <select id="sel-cliente-ocr" class="selector-select">
-                    <option value="">--- Seleccionar ---</option>
+                    <option value="" {% if not auto_matched.cliente_id %}selected{% endif %}>{{ header.cliente|default:"--- Seleccionar ---" }}</option>
                     {% for c in clientes %}
                     <option value="{{ c.id }}" {% if c.id == auto_matched.cliente_id %}selected{% endif %}>{{ c.nombre }}</option>
                     {% endfor %}
@@ -447,7 +496,7 @@
             <div class="selector-group">
                 <label class="selector-label">Proceso</label>
                 <select id="sel-proceso-ocr" class="selector-select">
-                    <option value="">--- Seleccionar ---</option>
+                    <option value="" {% if not auto_matched.proceso_id %}selected{% endif %}>{{ header.denominacion|default:"--- Seleccionar ---" }}</option>
                     {% for p in procesos %}
                     <option value="{{ p.id }}" {% if p.id == auto_matched.proceso_id %}selected{% endif %}>{{ p.nombre }}</option>
                     {% endfor %}
@@ -456,7 +505,7 @@
             <div class="selector-group">
                 <label class="selector-label">Artículo</label>
                 <select id="sel-articulo-ocr" class="selector-select">
-                    <option value="">--- Seleccionar ---</option>
+                    <option value="" {% if not auto_matched.articulo_id %}selected{% endif %}>{{ header.articulo|default:"--- Seleccionar ---" }}</option>
                     {% for a in articulos %}
                     <option value="{{ a.id }}" {% if a.id == auto_matched.articulo_id %}selected{% endif %}>{{ a.nombre }}</option>
                     {% endfor %}
@@ -465,7 +514,7 @@
             <div class="selector-group">
                 <label class="selector-label">Operación</label>
                 <select id="sel-elemento-ocr" class="selector-select">
-                    <option value="">--- Seleccionar ---</option>
+                    <option value="" {% if not auto_matched.elemento_id %}selected{% endif %}>{{ header.operacion|default:"--- Seleccionar ---" }}</option>
                     {% for e in elementos %}
                     <option value="{{ e.id }}" {% if e.id == auto_matched.elemento_id %}selected{% endif %}>{{ e.nombre|upper }}</option>
                     {% endfor %}
@@ -634,13 +683,28 @@
         .then(data => {
             if (data.status === 'success') {
                 Swal.fire({
-                    title: '¡Importación Exitosa!',
-                    text: data.message,
-                    icon: 'success',
-                    timer: 2000,
-                    showConfirmButton: false
+                    title: '¡PROCESO COMPLETADO!',
+                    html: `
+                        <div class="swal-success-container">
+                            <div class="swal-success-icon"><i class="ri-checkbox-circle-fill"></i></div>
+                            <div class="swal-success-title">Importación Exitosa</div>
+                            <div class="swal-success-text">Los datos han sido vinculados correctamente a la <b>OP ${data.op}</b>.</div>
+                            <div class="swal-success-footer">Redirigiendo al panel de mediciones...</div>
+                        </div>
+                    `,
+                    icon: undefined, // Usamos nuestro icono personalizado en el HTML
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    background: 'var(--stitch-glass)',
+                    backdrop: 'rgba(30, 41, 59, 0.4)',
+                    customClass: {
+                        popup: 'premium-swal-popup',
+                    },
+                    didOpen: () => {
+                        // Opcional: algún efecto extra
+                    }
                 }).then(() => {
-                    // Redirigir usando Proyecto y Proceso exactos para que Nueva Medición traiga TODO
                     window.location.href = `{% url 'nueva_medicion_op' %}?op=${data.op}&proy=${encodeURIComponent(data.proy)}&proc=${data.proc_id}`;
                 });
             } else {

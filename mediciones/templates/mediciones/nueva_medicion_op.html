@@ -146,12 +146,13 @@
                     </div>
 
                     <div class="stitch-module p-3 d-flex align-items-center gap-3">
-                        <label class="stitch-label mb-0" style="margin-left: 10px;">DENSIDAD:</label>
-                        <select id="pageSizeSelector" class="stitch-input" style="width: 140px; font-size: 0.8rem; height: 40px;" onchange="changePageSize(this.value)">
-                            <option value="7">7_NODOS</option>
-                            <option value="12">12_NODOS</option>
-                            <option value="24">24_PIEZAS / PÁG</option>
-                            <option value="all">FLUJO_COMPLETO</option>
+                        <label class="stitch-label mb-0" style="margin-left: 10px; margin-top: 5px">Visibilidad:</label>
+                        <select id="pageSizeSelector" class="stitch-input" style="width: 160px; font-size: 0.8rem; height: 45px;" onchange="changePageSize(this.value)">
+                            <option value="7">7 CONTROLES</option>
+                            <option value="10">10 CONTROLES</option>
+                            <option value="12">12 CONTROLES</option>
+                            <option value="20">20 CONTROLES</option>
+                            <option value="all">MOSTRAR TODO</option>
                         </select>
                     </div>
                 </div>
@@ -189,10 +190,10 @@
                                 </td>
                                 <td class="text-center">
                                     {% if row.tolerancia.control.pnp %}
-                                        <select name="valorpnp_{{ row.tolerancia.id }}" class="stitch-input text-center fw-bold pnp-select {% if row.status == 'OK' %}ok{% elif row.status == 'NOK' %}nok{% endif %}" style="height: 42px; font-size: 0.9rem;" onchange="checkStatus(this, 'pnp')">
+                                        <select name="valorpnp_{{ row.tolerancia.id }}" class="stitch-input text-center fw-bold pnp-select {% if row.status == 'OK' %}ok{% elif row.status == 'NOK' %}nok{% endif %}" style="height: 42px; font-size: 0.82rem; padding: 0.4rem 0.5rem;" onchange="checkStatus(this, 'pnp')">
                                             <option value="" {% if not row.valor %}selected{% endif %}>-</option>
                                             <option value="OK" {% if row.valor == 'OK' %}selected{% endif %}>PASA</option>
-                                            <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>FALLA</option>
+                                            <option value="NOK" {% if row.valor == 'NOK' %}selected{% endif %}>NO PASA</option>
                                         </select>
                                     {% else %}
                                         <input type="number" step="0.001" name="valor_{{ row.tolerancia.id }}" 
@@ -212,7 +213,7 @@
                                     </div>
                                 </td>
                                 <td class="text-center">
-                                    <a href="{% url 'estadisticas_control' row.tolerancia.id %}" target="_blank" class="btn-stitch-icon" title="Análisis Estadístico">
+                                    <a href="{% url 'estadisticas_control' row.tolerancia.id %}" class="btn-stitch-icon" title="Análisis Estadístico">
                                         <i class="ri-bar-chart-2-line"></i>
                                     </a>
                                 </td>
@@ -555,6 +556,45 @@
         border-right: 1px solid var(--stitch-border);
     }
 
+    /* MODERN PAGINATION BUTTONS */
+    .btn-stitch-pagination {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        border: 1.5px solid var(--stitch-border);
+        border-radius: 10px;
+        color: #64748b;
+        font-family: 'Fira Code', monospace;
+        font-weight: 700;
+        font-size: 0.8rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .btn-stitch-pagination:hover {
+        border-color: var(--stitch-primary);
+        color: var(--stitch-primary);
+        background: rgba(225, 29, 72, 0.05);
+        transform: translateY(-2px);
+    }
+
+    .btn-stitch-pagination.active {
+        background: var(--stitch-primary);
+        border-color: var(--stitch-primary);
+        color: white;
+        box-shadow: 0 4px 12px rgba(225, 29, 72, 0.3);
+    }
+
+    .btn-stitch-pagination:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
     /* Hide scrollbar */
     .stitch-sidebar::-webkit-scrollbar { display: none; }
 </style>
@@ -655,7 +695,7 @@
         const numbersDiv = document.getElementById('pageNumbers');
         numbersDiv.innerHTML = '';
         
-        // Show max 5 page buttons
+        // Show max 5 page buttons with smart ellipses logic if needed (simplified for common case)
         let startPage = Math.max(1, currentPage - 2);
         let endPage = Math.min(totalPages, startPage + 4);
         if (endPage - startPage < 4) startPage = Math.max(1, endPage - 4);
@@ -663,7 +703,7 @@
         for (let i = startPage; i <= endPage; i++) {
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = `page-num-btn ${i === currentPage ? 'active' : ''}`;
+            btn.className = `btn-stitch-pagination ${i === currentPage ? 'active' : ''}`;
             btn.innerText = i;
             btn.onclick = () => goToPage(i);
             numbersDiv.appendChild(btn);
@@ -748,10 +788,31 @@
                     <i class="ri-add-circle-line"></i>
                 </div>
                 <div class="premium-swal-title">Nueva Pieza</div>
-                <div class="premium-swal-html">Ingrese el número de la pieza que desea comenzar a medir.</div>
+                <div class="premium-swal-html">Ingresá el número de pieza que querés medir.</div>
+                <div style="margin-top: 1.2rem; padding: 0 0.5rem;">
+                    <label style="display:block; font-size:0.7rem; font-weight:700; letter-spacing:0.1em; color:rgba(225, 29, 72, 0.6); text-align:left; margin-bottom:6px;">N° DE PIEZA</label>
+                    <input id="swal-pieza-input" type="number" min="1" step="1"
+                           placeholder="Ej: 24"
+                           style="
+                               width: 100%;
+                               box-sizing: border-box;
+                               background: rgba(225, 29, 72, 0.05);
+                               border: 2px solid rgba(225, 29, 72, 0.2);
+                               border-radius: 12px;
+                               color: var(--stitch-primary);
+                               font-size: 1.8rem;
+                               font-weight: 800;
+                               text-align: center;
+                               padding: 0.8rem 1rem;
+                               outline: none;
+                               transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                               box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+                           "
+                           onfocus="this.style.borderColor='var(--stitch-primary)'; this.style.background='rgba(225, 29, 72, 0.08)'; this.style.boxShadow='0 0 0 4px rgba(225, 29, 72, 0.1)';"
+                           onblur="this.style.borderColor='rgba(225, 29, 72, 0.2)'; this.style.background='rgba(225, 29, 72, 0.05)'; this.style.boxShadow='inset 0 2px 4px rgba(0,0,0,0.05)';"
+                    >
+                </div>
             `,
-            input: 'number',
-            inputAttributes: { min: 1, step: 1 },
             showCancelButton: true,
             confirmButtonText: '<i class="ri-check-line"></i> Ir a medición',
             cancelButtonText: 'Cancelar',
@@ -759,14 +820,23 @@
             customClass: {
                 popup: 'premium-swal-popup',
                 confirmButton: 'premium-swal-confirm',
-                cancelButton: 'premium-swal-cancel',
-                input: 'form-control input-clean'
+                cancelButton: 'premium-swal-cancel'
             },
-            preConfirm: (value) => {
-                if (!value || value < 1) {
-                    Swal.showValidationMessage('Por favor ingrese un número válido');
+            didOpen: () => {
+                // Foco automático en el input
+                document.getElementById('swal-pieza-input').focus();
+                // Confirmar con Enter
+                document.getElementById('swal-pieza-input').addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') Swal.clickConfirm();
+                });
+            },
+            preConfirm: () => {
+                const val = document.getElementById('swal-pieza-input').value;
+                if (!val || parseInt(val) < 1) {
+                    Swal.showValidationMessage('Por favor ingresá un número de pieza válido (mínimo 1)');
+                    return false;
                 }
-                return value;
+                return parseInt(val);
             }
         }).then((result) => {
             if (result.isConfirmed) {
