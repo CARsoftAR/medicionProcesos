@@ -72,6 +72,7 @@ urlpatterns = [
     path('herramientas/ocr/', views.ocr_lector_planos, name='ocr_lector_planos'),
     path('api/herramientas/ocr/importar/', views.importar_datos_ocr, name='importar_datos_ocr'),
     path('configuracion/', views.configuracion_sistema, name='configuracion_sistema'),
+    path('api/procesar-planilla/', views.api_procesar_planilla, name='api_procesar_planilla'),
 ]
 
 

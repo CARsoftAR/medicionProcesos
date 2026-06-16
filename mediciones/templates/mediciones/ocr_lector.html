@@ -12,11 +12,9 @@
 <style>
     /* Critical dark background variables to prevent unstyled flashes */
     html, body, .main-content {
-        background-color: #090d16 !important;
-        background-image: 
-            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 50%) !important;
-        color: #e2e8f0 !important;
+        background-color: #F0F4F8 !important;
+        background-image: none !important;
+        color: #102A43 !important;
     }
 </style>
 {% endblock %}
@@ -24,16 +22,16 @@
 {% block content %}
 <style>
     :root {
-        --stitch-bg: #090d16;
-        --stitch-surface: rgba(255, 255, 255, 0.02);
-        --stitch-card: rgba(255, 255, 255, 0.03);
-        --stitch-primary: #c084fc;       /* Neon purple/violet */
-        --stitch-secondary: #a78bfa;     /* Secondary purple */
-        --stitch-border: rgba(255, 255, 255, 0.08);
-        --stitch-text: #e2e8f0;          /* Light slate/white */
-        --stitch-muted: #94a3b8;
-        --stitch-glass: rgba(255, 255, 255, 0.03);
-        --stitch-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        --stitch-bg: #F0F4F8;
+        --stitch-surface: #FFFFFF;
+        --stitch-card: #FFFFFF;
+        --stitch-primary: #0F4C81;
+        --stitch-secondary: #486581;
+        --stitch-border: #BCCCDC;
+        --stitch-text: #102A43;
+        --stitch-muted: #829AB1;
+        --stitch-glass: #FFFFFF;
+        --stitch-shadow: 0 4px 12px #D9E2EC;
     }
     
     body { font-family: 'Inter', sans-serif; }
@@ -45,9 +43,7 @@
         margin: 0 !important;
         width: 100% !important;
         background: var(--stitch-bg);
-        background-image: 
-            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 50%) !important;
+        background-image: none !important;
         min-height: 100vh;
     }
     
@@ -61,16 +57,14 @@
     /* Sidebar Izquierdo */
     .sidebar-ocr {
         width: 280px;
-        background: rgba(15, 23, 42, 0.3) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        background: #FFFFFF !important;
         padding: 2rem 1.5rem;
         border-right: 1px solid var(--stitch-border);
         display: flex;
         flex-direction: column;
         gap: 2rem;
         flex-shrink: 0;
-        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
     }
 
     .sidebar-title {
@@ -78,39 +72,39 @@
         font-size: 1.5rem;
         font-weight: 800;
         color: var(--stitch-primary);
-        text-shadow: 0 0 15px rgba(192, 132, 252, 0.2);
+        text-shadow: none;
         letter-spacing: -0.02em;
         text-transform: uppercase;
     }
 
     .upload-box {
-        border: 2px dashed rgba(192, 132, 252, 0.3);
-        background: rgba(192, 132, 252, 0.02);
-        border-radius: 16px;
+        border: 2px dashed #BCCCDC;
+        background: #F0F4F8;
+        border-radius: 12px;
         padding: 2rem 1rem;
         text-align: center;
         cursor: pointer;
         transition: all 0.2s;
     }
     .upload-box:hover { 
-        background: rgba(192, 132, 252, 0.06); 
+        background: #E2E8F0; 
         border-color: var(--stitch-primary); 
         transform: translateY(-2px); 
-        box-shadow: 0 0 15px rgba(192, 132, 252, 0.1);
+        box-shadow: none;
     }
     .upload-box i { font-size: 2.5rem; color: var(--stitch-primary); margin-bottom: 0.5rem; }
     .upload-box span { display: block; font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--stitch-primary); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
     .upload-box small { color: var(--stitch-muted); font-size: 0.75rem; font-weight: 500; }
 
     .status-card {
-        background: rgba(255, 255, 255, 0.02);
+        background: #F0F4F8;
         border: 1px solid var(--stitch-border);
-        box-shadow: var(--stitch-shadow);
-        border-radius: 16px;
+        box-shadow: none;
+        border-radius: 12px;
         padding: 1.5rem;
     }
     .status-label { font-size: 0.65rem; font-weight: 800; color: var(--stitch-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
-    .status-value-op { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--stitch-primary); margin-bottom: 1rem; text-shadow: 0 0 10px rgba(192, 132, 252, 0.2); }
+    .status-value-op { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--stitch-primary); margin-bottom: 1rem; text-shadow: none; }
     .status-group { margin-bottom: 1rem; }
     .status-group:last-child { margin-bottom: 0; }
     .status-value-small { font-size: 0.9rem; font-weight: 700; color: var(--stitch-text); line-height: 1.2; }
@@ -143,33 +137,31 @@
         transition: all 0.2s;
         cursor: pointer;
     }
-    .btn-descartar:hover { color: var(--stitch-text); border-color: var(--stitch-muted); background: rgba(255,255,255,0.02); }
+    .btn-descartar:hover { color: var(--stitch-text); border-color: var(--stitch-muted); background: #E2E8F0; }
 
     .btn-confirmar {
-        background: linear-gradient(135deg, #7c3aed, #c084fc);
+        background: var(--stitch-primary);
         color: white;
         border: none;
-        border-radius: 14px;
+        border-radius: 8px;
         padding: 0.75rem 2rem;
         font-family: 'Outfit', sans-serif;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-size: 0.9rem;
-        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
+        box-shadow: 0 4px 6px #BCCCDC;
         transition: all 0.3s;
         cursor: pointer;
     }
-    .btn-confirmar:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 25px rgba(124, 58, 237, 0.5); }
+    .btn-confirmar:hover { transform: translateY(-2px); box-shadow: 0 4px 10px #D9E2EC; background: #102A43; }
 
     /* Panel de Verificación (Selectores) */
     .verification-bar {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
+        background: #FFFFFF;
         border: 1px solid var(--stitch-border);
         box-shadow: var(--stitch-shadow);
-        border-radius: 20px;
+        border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 2rem;
         display: grid;
@@ -179,9 +171,9 @@
     .selector-group { display: flex; flex-direction: column; gap: 0.4rem; }
     .selector-label { font-size: 0.65rem; font-weight: 800; color: var(--stitch-primary); text-transform: uppercase; letter-spacing: 0.05em; }
     .selector-select {
-        background: rgba(15, 23, 42, 0.6);
+        background: #FFFFFF;
         border: 1px solid var(--stitch-border);
-        border-radius: 12px;
+        border-radius: 8px;
         padding: 0.5rem 0.8rem;
         font-size: 0.85rem;
         font-weight: 600;
@@ -189,12 +181,12 @@
         transition: all 0.2s;
     }
     .selector-select option {
-        background: #090d16;
+        background: #FFFFFF;
         color: var(--stitch-text);
     }
     .selector-select:focus {
         border-color: var(--stitch-primary);
-        box-shadow: 0 0 0 4px rgba(192, 132, 252, 0.15);
+        box-shadow: 0 0 0 3px #D6E8FA;
         outline: none;
     }
 
@@ -203,12 +195,10 @@
 
     /* Matriz de Control */
     .matrix-card {
-        background: rgba(255, 255, 255, 0.02);
-        backdrop-filter: blur(20px) saturate(180%);
-        -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border-radius: 24px;
+        background: #FFFFFF;
+        border-radius: 12px;
         border: 1px solid var(--stitch-border);
-        box-shadow: var(--stitch-shadow);
+        box-shadow: 0 4px 12px #D9E2EC;
         overflow: hidden;
     }
     .matrix-header {
@@ -221,14 +211,14 @@
     }
     .matrix-title { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--stitch-primary); text-transform: uppercase; margin: 0; }
     .matrix-badge {
-        background: rgba(192, 132, 252, 0.1);
+        background: #F0F4F8;
         color: var(--stitch-primary);
         font-size: 0.7rem;
         font-weight: 800;
         padding: 0.4rem 0.8rem;
         border-radius: 8px;
         text-transform: uppercase;
-        border: 1px solid rgba(192, 132, 252, 0.2);
+        border: 1px solid #BCCCDC;
     }
 
     .table-ocr {
@@ -236,8 +226,7 @@
         border-collapse: collapse;
     }
     .table-ocr th {
-        background: rgba(15, 23, 42, 0.85) !important;
-        backdrop-filter: blur(12px);
+        background: #F8FAFC !important;
         text-align: left;
         padding: 0.8rem 0.6rem;
         font-size: 0.65rem;
@@ -257,7 +246,7 @@
     .table-ocr tr:last-child td { border-bottom: none; }
 
     .instr-badge {
-        background: rgba(255, 255, 255, 0.1);
+        background: #F0F4F8;
         color: var(--stitch-text);
         font-size: 0.6rem;
         font-weight: 700;
@@ -265,6 +254,7 @@
         border-radius: 4px;
         display: inline-block;
         white-space: nowrap;
+        border: 1px solid #BCCCDC;
     }
 
     .val-text { font-weight: 800; color: #4ade80; }
@@ -282,7 +272,7 @@
     }
     .btn-page {
         border: 1px solid var(--stitch-border);
-        background: rgba(15, 23, 42, 0.6);
+        background: #F0F4F8;
         color: var(--stitch-text);
         font-size: 0.75rem;
         font-weight: 800;
@@ -314,13 +304,13 @@
         outline: none;
     }
     .ocr-input-edit:hover {
-        background: rgba(255, 255, 255, 0.03);
+        background: #F0F4F8;
         border-color: var(--stitch-border);
     }
     .ocr-input-edit:focus {
-        background: rgba(15, 23, 42, 0.8);
+        background: #FFFFFF;
         border-color: var(--stitch-primary);
-        box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.25);
+        box-shadow: 0 0 0 3px #D6E8FA;
     }
     .val-input {
         width: 65px;
@@ -340,12 +330,13 @@
     .text-warning-custom { color: #f59e0b !important; }
     /* Estilos para SweetAlert2 Moderno */
     .premium-swal-popup {
-        border-radius: 30px !important;
+        border-radius: 12px !important;
         border: 1px solid var(--stitch-border) !important;
         padding: 2rem !important;
         font-family: 'Inter', sans-serif !important;
-        background: #090d16 !important;
+        background: #FFFFFF !important;
         color: var(--stitch-text) !important;
+        box-shadow: 0 4px 12px #D9E2EC !important;
     }
     .swal-success-container {
         text-align: center;
@@ -404,15 +395,15 @@
             <div id="processing-loader" style="display: none;" class="px-5 py-5 animate__animated animate__fadeIn">
                 <style>
                     @keyframes neon-pulse {
-                        0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(192, 132, 252, 0.7); }
-                        50% { transform: scale(1.05); opacity: 0.9; box-shadow: 0 0 0 25px rgba(192, 132, 252, 0); text-shadow: 0 0 10px #c084fc; }
-                        100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(192, 132, 252, 0); }
+                        0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(15, 76, 129, 0.7); }
+                        50% { transform: scale(1.05); opacity: 0.9; box-shadow: 0 0 0 25px rgba(15, 76, 129, 0); text-shadow: none; }
+                        100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(15, 76, 129, 0); }
                     }
                     .scan-pulse-icon {
                         font-size: 5rem;
-                        color: #c084fc; /* Neon purple */
+                        color: #0F4C81;
                         animation: neon-pulse 1.5s infinite ease-out;
-                        border-radius: 10%; /* Cuadrado redondeado para simular escaner */
+                        border-radius: 10%;
                         padding: 10px;
                         display: inline-block;
                     }
@@ -422,7 +413,7 @@
                     <i class="ri-scan-2-line scan-pulse-icon"></i>
                 </div>
                 
-                <h4 class="fw-bold text-center mb-3" style="color: var(--stitch-primary); text-shadow: 0 0 10px rgba(192, 132, 252, 0.3);">Digitalizando Plano...</h4>
+                <h4 class="fw-bold text-center mb-3" style="color: var(--stitch-primary); text-shadow: none;">Digitalizando Plano...</h4>
                 <p class="text-muted text-center mb-0" style="font-size: 1.1rem; color: var(--stitch-muted) !important;">
                     El sistema está extrayendo y verificando las mediciones. <br>
                     <span class="fw-bold" style="color: var(--stitch-text);">Aguarde un momento mientras se completa la lectura.</span>
@@ -574,19 +565,19 @@
                     <thead>
                         <tr>
                             <!-- 1. Control (Sticky 0) -->
-                            <th style="width: 280px; min-width: 280px; background: rgba(15, 23, 42, 0.95); border-bottom: 2px solid var(--stitch-border); position: sticky; left: 0; z-index: 30; box-shadow: 2px 0 5px rgba(0,0,0,0.2);" class="ps-4">Control Detectado</th>
+                            <th style="width: 280px; min-width: 280px; background: #F8FAFC; border-bottom: 2px solid var(--stitch-border); position: sticky; left: 0; z-index: 30; box-shadow: 2px 0 5px rgba(0,0,0,0.05);" class="ps-4">Control Detectado</th>
                             
                             <!-- 2. Nominal (Sticky 280) -->
-                            <th class="text-center" style="width: 120px; min-width: 120px; background: rgba(15, 23, 42, 0.95); border-bottom: 2px solid var(--stitch-border); position: sticky; left: 280px; z-index: 30;">Nominal</th>
+                            <th class="text-center" style="width: 120px; min-width: 120px; background: #F8FAFC; border-bottom: 2px solid var(--stitch-border); position: sticky; left: 280px; z-index: 30;">Nominal</th>
                             
                             <!-- 3. Tol (Sticky 400) -->
-                             <th class="text-center" style="width: 160px; min-width: 160px; background: rgba(15, 23, 42, 0.95); border-bottom: 2px solid var(--stitch-border); position: sticky; left: 400px; z-index: 30;">Tol.</th>
+                             <th class="text-center" style="width: 160px; min-width: 160px; background: #F8FAFC; border-bottom: 2px solid var(--stitch-border); position: sticky; left: 400px; z-index: 30;">Tol.</th>
                             
                             <!-- 4. Instr (Sticky 560) -->
-                            <th class="text-center" style="width: 90px; min-width: 90px; background: rgba(15, 23, 42, 0.95); border-bottom: 2px solid var(--stitch-border); position: sticky; left: 560px; z-index: 30; border-right: 2px solid var(--stitch-border); box-shadow: 2px 0 5px rgba(0,0,0,0.2);">Instr.</th>
+                            <th class="text-center" style="width: 90px; min-width: 90px; background: #F8FAFC; border-bottom: 2px solid var(--stitch-border); position: sticky; left: 560px; z-index: 30; border-right: 2px solid var(--stitch-border); box-shadow: 2px 0 5px rgba(0,0,0,0.05);">Instr.</th>
                             
                             {% for p in piezas %}
-                            <th class="text-center" style="width: 85px; min-width: 85px; color: var(--stitch-primary); font-size: 0.8rem; font-weight: 800; padding: 0.5rem 0; border-bottom: 2px solid var(--stitch-border); background: rgba(15, 23, 42, 0.85);">
+                            <th class="text-center" style="width: 85px; min-width: 85px; color: var(--stitch-primary); font-size: 0.8rem; font-weight: 800; padding: 0.5rem 0; border-bottom: 2px solid var(--stitch-border); background: #F8FAFC;">
                                 {{ p }}
                             </th>
                             {% endfor %}
@@ -596,24 +587,24 @@
                         {% for row in matrix %}
                         <tr class="ocr-row" style="border-bottom: 1px solid var(--stitch-border);">
                             <!-- 1. Control -->
-                            <td class="fw-bold ps-4" style="position: sticky; left: 0; z-index: 20; background: #0f172a; border-right: 1px solid var(--stitch-border); white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.2);">
+                            <td class="fw-bold ps-4" style="position: sticky; left: 0; z-index: 20; background: #FFFFFF; border-right: 1px solid var(--stitch-border); white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.05);">
                                 <input type="text" class="ocr-input-edit text-start edit-control" value="{{ row.control }}" style="font-weight: 700; width: 250px; color: var(--stitch-text); font-size: 0.8rem;">
                             </td>
                             
                             <!-- 2. Nominal -->
-                            <td class="text-center" style="position: sticky; left: 280px; z-index: 20; background: #0f172a; white-space: nowrap;">
+                            <td class="text-center" style="position: sticky; left: 280px; z-index: 20; background: #FFFFFF; white-space: nowrap;">
                                 <input type="text" class="ocr-input-edit text-center edit-nominal" value="{{ row.nominal }}" style="color: var(--stitch-primary); font-weight: 800; width: 100px; font-size: 0.9rem;">
                             </td>
                             
                             <!-- 3. Tol -->
-                            <td class="text-center" style="position: sticky; left: 400px; z-index: 20; background: #0f172a; border-right: 1px solid var(--stitch-border); white-space: nowrap;">
+                            <td class="text-center" style="position: sticky; left: 400px; z-index: 20; background: #FFFFFF; border-right: 1px solid var(--stitch-border); white-space: nowrap;">
                                 <div class="d-flex align-items-center justify-content-center">
                                     <input type="text" class="ocr-input-edit text-center edit-tol" value="{{ row.tolerancia }}" style="color: var(--stitch-text); font-weight: 700; width: 140px; font-size: 0.85rem;">
                                 </div>
                             </td>
                             
                             <!-- 4. Instr -->
-                            <td class="text-center" style="position: sticky; left: 560px; z-index: 20; background: #0f172a; border-right: 2px solid var(--stitch-border); white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.2);">
+                            <td class="text-center" style="position: sticky; left: 560px; z-index: 20; background: #FFFFFF; border-right: 2px solid var(--stitch-border); white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.2);">
                                 <input type="text" class="ocr-input-edit text-center edit-instr" value="{{ row.instrumento }}" style="font-size: 0.75rem; font-weight: 800; color: var(--stitch-text); background: rgba(255,255,255,0.05); padding: 0.2rem 0.4rem; border-radius: 4px; width: 70px;">
                             </td>
                             
@@ -634,17 +625,18 @@
         {% else %}
         <!-- ESTADO VACÍO -->
         <div class="text-center py-5" style="margin-top: 5rem; opacity: 0.75;">
-            <i class="ri-file-pdf-line" style="font-size: 8rem; color: var(--stitch-primary); opacity: 0.5; filter: drop-shadow(0 0 15px rgba(192, 132, 252, 0.3));"></i>
-            <h2 class="mt-4" style="font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--stitch-text); text-transform: uppercase;">Esperando Documento...</h2>
+            <i class="ri-file-pdf-line" style="font-size: 8rem; color: var(--stitch-primary); opacity: 0.5; filter: none;"></i>
+            <h2 class="mt-4" style="font-family: 'Inter', sans-serif; font-weight: 800; color: var(--stitch-text); text-transform: uppercase;">Esperando Documento...</h2>
             <p style="font-weight: 500; color: var(--stitch-muted);">Suba un archivo PDF para comenzar el proceso de digitalización inteligente.</p>
         </div>
         {% endif %}
 
-        {% if header.ai_error_msg %}
-        <div class="alert alert-danger animate__animated animate__headShake" role="alert" style="margin-top: 1rem;">
-            <i class="ri-error-warning-line me-2"></i>
-            <strong>Error de IA:</strong> {{ header.ai_error_msg }}. 
-            <small class="d-block mt-1">Por favor verifique su API Key o intente nuevamente.</small>
+        {% if header.ai_error_msg or error_ia %}
+        <div class="alert alert-danger animate__animated animate__headShake" role="alert" style="margin-top: 1rem; border-radius: 8px; border-left: 4px solid #e11d48; background: #ffe4e6; color: #881337;">
+            <i class="ri-error-warning-line me-2" style="font-size: 1.2rem; vertical-align: middle;"></i>
+            <strong style="font-weight: 800; font-family: 'Inter', sans-serif;">Error de Conexión IA:</strong> 
+            <span style="font-weight: 500;">{{ header.ai_error_msg }}{{ error_ia }}</span>
+            <small class="d-block mt-1" style="color: #be123c;">El sistema bloqueó la importación para prevenir desalineación de datos. Por favor, verifique su API Key en la barra lateral.</small>
         </div>
         {% endif %}
         

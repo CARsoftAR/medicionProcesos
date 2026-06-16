@@ -10,33 +10,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-    /* 
-       DESIGN SYSTEM: CYBER-GLASSMOPRHISM PREMIUM
-       Matching the rest of the dark analytical console
-    */
-    :root {
-        --stitch-bg: #090d16;
-        --stitch-surface: rgba(255, 255, 255, 0.02);
-        --stitch-card: rgba(255, 255, 255, 0.03);
-        --stitch-primary: #c084fc;
-        --stitch-secondary: #a78bfa;
-        --stitch-border: rgba(255, 255, 255, 0.08);
-        --stitch-text: #e2e8f0;
-        --stitch-muted: #94a3b8;
-        --stitch-success: #4ade80;
-        --stitch-danger: #fca5a5;
-        --stitch-glass: rgba(255, 255, 255, 0.03);
-    }
-    
-    html, body, .main-content {
-        background-color: var(--stitch-bg) !important;
-        background-image: 
-            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.06) 0%, transparent 50%) !important;
-        color: var(--stitch-text);
-        font-family: 'Inter', sans-serif;
-    }
-
+    /* PREMIUM INDUSTRIAL DESIGN SYSTEM - Specific Dashboard Adjustments */
     .premium-page-container {
         padding: 1.5rem 2.5rem;
         opacity: 0;
@@ -46,166 +20,36 @@
         opacity: 1;
     }
 
-    .btn-stitch-primary {
-        background: #7c3aed !important;
-        color: white !important;
-        border: none;
-        border-radius: 14px;
-        padding: 0.85rem 1.75rem;
-        font-weight: 700;
-        font-family: 'Outfit', sans-serif;
-        letter-spacing: 0.05em;
-        transition: all 0.3s;
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3) !important;
-        text-transform: uppercase;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        text-decoration: none;
-    }
-
-    .btn-stitch-primary:hover {
-        background: #8b5cf6 !important;
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4) !important;
-    }
-
-    .stitch-module {
-        background: var(--stitch-glass) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-        border: 1px solid var(--stitch-border) !important;
-        border-radius: 24px !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25) !important;
-        overflow: hidden;
-    }
-
-    /* KPI CARDS */
-    .kpi-card {
-        background: var(--stitch-glass) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-        border: 1px solid var(--stitch-border) !important;
-        border-radius: 20px !important;
-        padding: 1.5rem !important;
-        display: flex;
-        align-items: center;
-        gap: 1.25rem;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25) !important;
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .kpi-card:hover {
-        transform: translateY(-3px);
-        border-color: rgba(255, 255, 255, 0.15) !important;
-        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.35) !important;
-    }
-    .kpi-icon {
-        width: 52px;
-        height: 52px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        flex-shrink: 0;
-    }
-    .kpi-value {
-        font-family: 'Outfit', sans-serif;
-        font-weight: 800;
-        font-size: 1.95rem;
-        color: #ffffff !important;
-        margin: 0;
-        line-height: 1.2;
-    }
-    .kpi-label {
-        font-size: 0.72rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--stitch-primary);
-        opacity: 0.8;
-    }
-    .kpi-subtext {
-        font-size: 0.75rem;
-        color: var(--stitch-muted);
-        margin-top: 2px;
-    }
-
-    /* CHARTS */
-    .chart-card {
-        background: var(--stitch-glass) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-        border: 1px solid var(--stitch-border) !important;
-        border-radius: 24px !important;
-        padding: 1.75rem !important;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25) !important;
-    }
-
-    /* SEARCH BOX */
-    .search-box-premium {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        border-radius: 12px;
-        padding: 0.6rem 1.15rem;
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-        color: var(--stitch-text);
-        transition: all 0.3s;
-    }
-    .search-box-premium:focus-within {
-        border-color: var(--stitch-primary) !important;
-        background: rgba(255, 255, 255, 0.06) !important;
-        box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.25) !important;
-    }
-    .search-box-premium input {
-        color: #ffffff !important;
-    }
-    .search-box-premium input::placeholder {
-        color: var(--stitch-muted);
-        opacity: 0.6;
-    }
-    .search-box-premium i {
-        color: var(--stitch-primary);
-        font-size: 1.1rem;
-    }
-
-    /* TABLES */
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+    /* Adaptación de tablas específicas del dashboard al nuevo estilo industrial */
     .data-table thead th {
-        background: rgba(15, 23, 42, 0.85) !important;
-        backdrop-filter: blur(12px) !important;
-        color: var(--stitch-primary) !important;
-        font-family: 'Outfit', sans-serif;
+        background: #FFFFFF !important;
+        color: #102A43 !important;
+        font-family: 'Outfit', 'Inter', sans-serif;
         font-weight: 800;
         text-transform: uppercase;
         font-size: 0.75rem;
         letter-spacing: 0.1em;
         padding: 1.25rem 1.5rem;
-        border-bottom: 2px solid var(--stitch-border);
+        border-bottom: 2px solid #BCCCDC;
     }
     .data-table tbody tr {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+        border-bottom: 1px solid #DBE6F0 !important;
         transition: all 0.2s;
-        background: transparent !important;
+        background: #FFFFFF !important;
     }
     .data-table tbody tr:hover {
-        background: rgba(255, 255, 255, 0.01) !important;
+        background: #F0F4F8 !important;
     }
     .data-table td {
         padding: 1.25rem 1.5rem;
-        color: var(--stitch-text) !important;
+        color: #102A43 !important;
         vertical-align: middle;
     }
 
     .btn-action-open {
-        background: rgba(255, 255, 255, 0.03) !important; 
-        color: var(--stitch-primary) !important; 
-        border: 1px solid var(--stitch-border) !important;
+        background: #FFFFFF !important; 
+        color: #0F4C81 !important; 
+        border: 1.5px solid #BCCCDC !important;
         padding: 0.5rem 1rem !important;
         font-size: 0.82rem !important;
         font-weight: 700;
@@ -215,11 +59,13 @@
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
+        box-shadow: 0 2px 0 #D9E2EC;
     }
     .btn-action-open:hover {
-        background: var(--stitch-primary) !important;
-        color: white !important;
+        background: #F0F4F8 !important;
+        border-color: #9FB8D0 !important;
         transform: translateY(-2px);
+        box-shadow: 0 3px 4px #D9E2EC;
     }
 </style>
 {% endblock %}
@@ -229,10 +75,10 @@
     <!-- EXECUTIVE DASHBOARD HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h1 class="stitch-title" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.25rem; letter-spacing: -0.02em; background: linear-gradient(135deg, #ffffff 30%, var(--stitch-primary)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">Dashboard Operativo</h1>
-            <p style="color: var(--stitch-muted); font-weight: 500; font-size: 0.95rem; margin: 0; margin-top: 5px;">Resumen de calidad y producción en tiempo real</p>
+            <h1 class="premium-title" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.25rem; letter-spacing: -0.02em; color: #102A43; margin: 0;">Dashboard Operativo</h1>
+            <p style="color: #486581; font-weight: 500; font-size: 0.95rem; margin: 0; margin-top: 5px;">Resumen de calidad y producción en tiempo real</p>
         </div>
-        <a href="{% url 'asignar_op' %}" class="btn-stitch-primary">
+        <a href="{% url 'asignar_op' %}" class="btn-premium-primary">
             <i class="ri-add-line" style="font-size: 1.2rem;"></i> Nueva OP
         </a>
     </div>
@@ -242,45 +88,45 @@
         <!-- Total OPs -->
         <div class="col-md-4">
             <div class="kpi-card animate__animated animate__fadeInUp" style="--delay: 0.1s;">
-                <div class="kpi-icon" style="background: rgba(192, 132, 252, 0.1); color: var(--stitch-primary);">
+                <div class="kpi-icon" style="background: #D6E8FA; color: #0F4C81;">
                     <i class="ri-rocket-2-line"></i>
                 </div>
                 <div class="kpi-data">
-                    <span class="kpi-label">Total OPs</span>
-                    <h3 class="kpi-value">{{ total_ops }}</h3>
-                    <div class="kpi-subtext">Operaciones registradas</div>
+                    <span class="kpi-label" style="color: #486581;">Total OPs</span>
+                    <h3 class="kpi-value" style="color: #102A43 !important;">{{ total_ops }}</h3>
+                    <div class="kpi-subtext" style="color: #829AB1;">Operaciones registradas</div>
                 </div>
             </div>
         </div>
         <!-- Mediciones 30d -->
         <div class="col-md-4">
             <div class="kpi-card animate__animated animate__fadeInUp" style="--delay: 0.2s;">
-                <div class="kpi-icon" style="background: rgba(167, 139, 250, 0.1); color: var(--stitch-secondary);">
+                <div class="kpi-icon" style="background: #E8EEF5; color: #1B6CA8;">
                     <i class="ri-focus-3-line"></i>
                 </div>
                 <div class="kpi-data">
-                    <span class="kpi-label">Mediciones (30d)</span>
-                    <h3 class="kpi-value">{{ mediciones_recientes }}</h3>
-                    <div class="kpi-subtext">Puntos controlados</div>
+                    <span class="kpi-label" style="color: #486581;">Mediciones (30d)</span>
+                    <h3 class="kpi-value" style="color: #102A43 !important;">{{ mediciones_recientes }}</h3>
+                    <div class="kpi-subtext" style="color: #829AB1;">Puntos controlados</div>
                 </div>
             </div>
         </div>
         <!-- Tasa de Calidad -->
         <div class="col-md-4">
             <div class="kpi-card animate__animated animate__fadeInUp" style="--delay: 0.3s;">
-                <div class="kpi-icon" style="background: rgba(74, 222, 128, 0.1); color: var(--stitch-success);">
+                <div class="kpi-icon" style="background: #D4EDDA; color: #0E7C4A;">
                     <i class="ri-checkbox-circle-line"></i>
                 </div>
                 <div class="kpi-data">
-                    <span class="kpi-label">Tasa de Aprobación</span>
-                    <h3 class="kpi-value">
+                    <span class="kpi-label" style="color: #486581;">Tasa de Aprobación</span>
+                    <h3 class="kpi-value" style="color: #102A43 !important;">
                         {% if mediciones_recientes > 0 %}
                             {% widthratio ok_count mediciones_recientes 100 %}%
                         {% else %}
                             100%
                         {% endif %}
                     </h3>
-                    <div class="kpi-subtext">Cumplimiento global</div>
+                    <div class="kpi-subtext" style="color: #829AB1;">Cumplimiento global</div>
                 </div>
             </div>
         </div>
@@ -289,24 +135,24 @@
     <!-- CHARTS ROW -->
     <div class="row g-4 mb-5">
         <div class="col-md-8">
-            <div class="chart-card animate__animated animate__fadeInLeft" style="--delay: 0.5s;">
+            <div class="card animate__animated animate__fadeInLeft" style="--delay: 0.5s;">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; color: #ffffff; margin: 0;">Tendencia de Actividad</h3>
-                    <span class="badge" style="background: rgba(192, 132, 252, 0.12); color: var(--stitch-primary); border: 1px solid rgba(192, 132, 252, 0.25); padding: 0.4rem 0.8rem; border-radius: 8px;">Últimos 7 días</span>
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; color: #102A43; margin: 0;">Tendencia de Actividad</h3>
+                    <span class="badge" style="background: #D6E8FA; color: #0F4C81; border: 1px solid #BCCCDC; padding: 0.4rem 0.8rem; border-radius: 8px;">Últimos 7 días</span>
                 </div>
                 <div id="trendChart" style="min-height: 320px;"></div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="chart-card animate__animated animate__fadeInRight" style="--delay: 0.6s;">
-                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; color: #ffffff; margin: 0; margin-bottom: 2rem;">Estado de Calidad</h3>
+            <div class="card animate__animated animate__fadeInRight" style="--delay: 0.6s;">
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; color: #102A43; margin: 0; margin-bottom: 2rem;">Estado de Calidad</h3>
                 <div id="statusChart" style="min-height: 320px; display: flex; align-items: center; justify-content: center;"></div>
             </div>
         </div>
     </div>
 
     <!-- TABLE SECTION -->
-    <div class="stitch-module p-4 animate__animated animate__fadeInUp" style="--delay: 0.7s;" id="dashboard-table-container">
+    <div class="card p-4 animate__animated animate__fadeInUp" style="--delay: 0.7s;" id="dashboard-table-container">
         {% include 'mediciones/partials/dashboard_table.html' %}
     </div>
 </div>
@@ -339,9 +185,9 @@
                 toolbar: { show: false },
                 zoom: { enabled: false },
                 background: 'transparent',
-                foreColor: '#94a3b8'
+                foreColor: '#486581'
             },
-            colors: ['#c084fc', '#4ade80'],
+            colors: ['#0F4C81', '#0E7C4A'],
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 3 },
             fill: {
@@ -349,7 +195,7 @@
                 gradient: {
                     shadeIntensity: 1,
                     opacityFrom: 0.4,
-                    opacityTo: 0.02,
+                    opacityTo: 0.05,
                     stops: [0, 90, 100]
                 }
             },
@@ -357,18 +203,18 @@
                 categories: {{ stats_dias|safe }},
                 axisBorder: { show: false },
                 axisTicks: { show: false },
-                labels: { style: { colors: '#94a3b8' } }
+                labels: { style: { colors: '#486581' } }
             },
             yaxis: {
-                labels: { style: { colors: '#94a3b8' } }
+                labels: { style: { colors: '#486581' } }
             },
-            legend: { position: 'top', horizontalAlign: 'right', labels: { colors: '#94a3b8' } },
+            legend: { position: 'top', horizontalAlign: 'right', labels: { colors: '#486581' } },
             grid: {
-                borderColor: 'rgba(255,255,255,0.04)',
+                borderColor: '#DBE6F0',
                 padding: { top: 0, right: 0, bottom: 0, left: 0 }
             },
             tooltip: {
-                theme: 'dark'
+                theme: 'light'
             }
         };
         new ApexCharts(document.querySelector("#trendChart"), trendOptions).render();
@@ -380,10 +226,10 @@
                 height: 300,
                 type: 'donut',
                 background: 'transparent',
-                foreColor: '#94a3b8'
+                foreColor: '#486581'
             },
             labels: ['OK', 'NOK'],
-            colors: ['#4ade80', '#fca5a5'],
+            colors: ['#0E7C4A', '#B91C1C'],
             plotOptions: {
                 pie: {
                     donut: {
@@ -393,13 +239,13 @@
                             total: {
                                 show: true,
                                 label: 'TOTAL',
-                                color: '#94a3b8',
+                                color: '#486581',
                                 formatter: function (w) {
                                     return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
                                 }
                             },
                             value: {
-                                color: '#ffffff',
+                                color: '#102A43',
                                 fontSize: '1.8rem',
                                 fontWeight: '800',
                                 fontFamily: 'Outfit, sans-serif'
@@ -408,10 +254,10 @@
                     }
                 }
             },
-            legend: { position: 'bottom', labels: { colors: '#94a3b8' } },
+            legend: { position: 'bottom', labels: { colors: '#486581' } },
             stroke: { show: false },
             tooltip: {
-                theme: 'dark'
+                theme: 'light'
             }
         };
         new ApexCharts(document.querySelector("#statusChart"), statusOptions).render();

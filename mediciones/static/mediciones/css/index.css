@@ -1,42 +1,70 @@
-/* Professional Light Theme (Dark Sidebar) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+/* ============================================================
+   PREMIUM INDUSTRIAL DESIGN SYSTEM — ABBAMAT 2026
+   Regla: CERO opacidades, transparencias, blur o glassmorphism.
+   Volumen y profundidad: 100% color sólido + contraste + geometría.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap');
 @import url('dark_mode.css');
 
 :root {
-    /* PROFESSIONAL LIGHT THEME (DARK SIDEBAR) */
-    
-    --bg-body: #ffffff;
-    --bg-sidebar: #0f172a;
-    --bg-card: #ffffff;
-    --bg-hover: rgba(0, 0, 0, 0.02);
-    
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
-    --text-inverse: #ffffff;
-    
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --accent: #0891b2;
-    
-    --success: #10b981;
-    --warning: #d97706;
-    --danger: #dc2626;
-    --info: #2563eb;
-    
-    --border-color: #e2e8f0;
-    --border-light: #f1f5f9;
-    
-    --card-radius: 12px;
-    --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    /* ── PALETA INDUSTRIAL TITANIO ── */
+
+    /* Fondos */
+    --bg-body:       #F0F4F8;   /* Gris Platino: fondo de app */
+    --bg-sidebar:    #0D1B2E;   /* Azul Marino Profundo: sidebar */
+    --bg-card:       #FFFFFF;   /* Blanco Puro: superficies */
+    --bg-input:      #FFFFFF;   /* Blanco: inputs en reposo */
+    --bg-input-ro:   #F0F4F8;   /* Platino: inputs readonly */
+    --bg-hover:      #E8EEF5;   /* Hover sólido sutil */
+
+    /* Tipografía */
+    --text-primary:  #102A43;   /* Azul Tinta Oscuro */
+    --text-secondary:#486581;   /* Gris Acero */
+    --text-muted:    #829AB1;   /* Gris Claro */
+    --text-inverse:  #FFFFFF;
+
+    /* Color Principal — Azul Titanio */
+    --primary:       #0F4C81;
+    --primary-dark:  #0A3560;   /* Hover / Pressed */
+    --primary-light: #D6E8FA;   /* Fondo suave de badge */
+
+    /* Acento secundario */
+    --accent:        #1B6CA8;
+
+    /* Estados semánticos — todos sólidos */
+    --success:       #0E7C4A;
+    --success-bg:    #D4EDDA;
+    --warning:       #92570A;
+    --warning-bg:    #FEF3C7;
+    --danger:        #B91C1C;
+    --danger-bg:     #FEE2E2;
+    --info:          #0F4C81;
+
+    /* Sistema de relieve Neumórfico Industrial (SIN opacidad) */
+    --shadow-dark:   #D9E2EC;   /* Gris Cemento suave — sombra inferior/derecha */
+    --shadow-light:  #FFFFFF;   /* Blanco puro — resalte superior/izquierda */
+
+    /* Bordes */
+    --border-color:  #BCCCDC;   /* Gris Ultra Sutil */
+    --border-light:  #DBE6F0;
+
+    /* Forma */
+    --card-radius:   12px;
+    --btn-radius:    10px;
+    --input-radius:  10px;
+
+    /* Sombra de tarjeta — bisel neumórfico sólido */
+    --card-shadow:
+        3px 3px 0px #D9E2EC,
+        -2px -2px 0px #FFFFFF;
 }
 
 /* Sidebar Specific Overrides (Must remain DARK) */
 .sidebar, .sidebar * {
     --text-primary: #ffffff;
-    --text-secondary: #94a3b8;
-    --text-muted: #64748b;
-    --border-color: rgba(255, 255, 255, 0.05);
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --border-color: transparent;
 }
 
 * {
@@ -46,9 +74,9 @@
 }
 
 body {
-    background-color: var(--bg-body);
-    color: var(--text-primary);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-body);    /* Gris Platino #F0F4F8 */
+    color: var(--text-primary);          /* Azul Tinta #102A43 */
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
     font-size: 0.95rem;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -63,8 +91,8 @@ body {
 /* Sidebar - Premium Dark Theme */
 .sidebar {
     width: 280px !important;
-    background-color: #0f172a !important; /* Slate 900 background like Image */
-    color: #e2e8f0 !important;
+    background-color: #1F2937 !important; /* Gris Oscuro Industrial Sólido */
+    color: #F3F4F6 !important;
     display: flex !important;
     flex-direction: column !important;
     flex-shrink: 0 !important;
@@ -72,8 +100,8 @@ body {
     position: sticky !important;
     top: 0 !important;
     font-size: 0.95rem !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.04) !important;
-    border-left: 3px solid #6366f1 !important; /* Glow border on the left */
+    border-right: none !important; /* Eliminar borde negro divisor */
+    border-left: none !important;
     transition: all 0.3s ease;
 }
 
@@ -88,7 +116,7 @@ body {
 .brand-icon {
     width: 40px;
     height: 40px;
-    background: #0070f3;
+    background: #0F4C81;   /* Azul Titanio sólido */
     color: white;
     border-radius: 10px;
     display: flex;
@@ -96,8 +124,8 @@ body {
     justify-content: center;
     font-weight: 900;
     font-size: 1.25rem;
-    box-shadow: 0 4px 12px rgba(0, 112, 243, 0.3);
-    transition: all 0.3s ease;
+    box-shadow: 2px 2px 0 #0A3560;  /* Bisel sólido inferior */
+    transition: all 0.2s ease;
 }
 
 .brand-text {
@@ -129,15 +157,14 @@ body {
 }
 
 .nav-header {
-    font-size: 0.7rem;
-    font-weight: 800;
+    font-size: 0.75rem;
+    font-weight: 500;
     text-transform: uppercase;
-    color: #94a3b8; /* Muted slate */
+    color: #9ca3af; /* Muted slate */
     margin-top: 1.5rem;
     margin-bottom: 0.75rem;
     padding-left: 1rem;
     letter-spacing: 0.1em;
-    opacity: 0.8;
 }
 
 .nav-list {
@@ -147,15 +174,16 @@ body {
 .nav-link {
     display: flex;
     align-items: center;
-    padding: 0.85rem 1.25rem;
-    color: #cbd5e1;
+    padding: 1rem 1.25rem;
+    color: #d1d5db;
     text-decoration: none;
-    border-radius: 12px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 10px;
+    transition: background-color 0.2s, color 0.2s;
     font-weight: 500;
     gap: 1rem;
     position: relative;
     margin-bottom: 6px;
+    border: none;
 }
 
 .nav-link i {
@@ -179,35 +207,33 @@ body {
 }
 
 .nav-link:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    background-color: #374151 !important;
 }
 
 .nav-link:hover i {
-    color: white;
+    color: #ffffff;
 }
 
-/* Base Active State (Default blue if no color class) */
+/* ── Estado Activo del Nav — Color Sólido sin efectos de brillo ── */
 .nav-link.active {
-    background: linear-gradient(90deg, rgba(37, 99, 235, 0.35) 0%, rgba(37, 99, 235, 0.08) 100%) !important;
-    color: #ffffff !important;
-    border-left: 5px solid #3b82f6 !important;
-    font-weight: 700 !important;
+    background-color: #0F4C81 !important;    /* Azul Titanio Sólido */
+    color: #FFFFFF !important;
+    border-left: none !important; 
+    border-radius: 10px !important;
+    font-weight: 600 !important;
     transform: none !important;
-    /* Extra powerful neon box glow */
-    box-shadow: 0 0 25px rgba(37, 99, 235, 0.6), inset 0 0 8px rgba(37, 99, 235, 0.3) !important;
+    box-shadow: none !important;
 }
 
 .nav-link.active i {
-    color: #3b82f6 !important;
-    /* Super intense neon icon glow */
-    text-shadow: 0 0 15px rgba(59, 130, 246, 1), 0 0 30px rgba(59, 130, 246, 0.8), 0 0 6px rgba(59, 130, 246, 0.5) !important;
+    color: #FFFFFF !important;    /* Blanco Puro */
+    text-shadow: none !important;
 }
 
 .nav-link.active span {
-    color: #ffffff !important;
-    /* Super intense neon text halo */
-    text-shadow: 0 0 10px rgba(59, 130, 246, 1), 0 0 20px rgba(59, 130, 246, 0.7), 0 0 4px rgba(255, 255, 255, 0.9) !important;
+    color: #FFFFFF !important;
+    text-shadow: none !important;
 }
 
 /* Remove default focus outlines to maintain premium look */
@@ -229,76 +255,15 @@ body {
     border-left: 4px solid transparent; /* Prevent shifting on active */
 }
 
-/* Hover States & Active Themes */
-.nav-link:hover {
-    background: rgba(255, 255, 255, 0.03) !important;
-    color: #ffffff !important;
-}
-
-/* Indigo Group (Production / Operaciones) */
-.nav-link.active-indigo:hover,
-.sub-menu li a.active-indigo:hover,
-.sub-menu li a.active-indigo.active {
-    background: rgba(99, 102, 241, 0.06) !important;
-    color: #ffffff !important;
-}
-
-/* Cyan Group (Clientes) */
-.nav-link.active-cyan:hover,
-.sub-menu li a.active-cyan:hover,
-.sub-menu li a.active-cyan.active {
-    background: rgba(6, 182, 212, 0.06) !important;
-    color: #ffffff !important;
-}
-
-/* Purple Group (Masters) */
-.nav-link.active-purple:hover,
-.sub-menu li a.active-purple:hover,
-.sub-menu li a.active-purple.active {
-    background: rgba(16, 185, 129, 0.06) !important;
-    color: #ffffff !important;
-}
-
-/* Pink / Teal specific for sub-items */
-.sub-menu li a.active-pink:hover,
-.sub-menu li a.active-pink.active {
-    background: rgba(236, 72, 153, 0.06) !important;
-    color: #f9a8d4 !important;
-}
-
-.sub-menu li a.active-teal:hover,
-.sub-menu li a.active-teal.active {
-    background: rgba(20, 184, 166, 0.06) !important;
-    color: #99f6e4 !important;
-}
-
-/* Orange Group (Maintenance / Config) */
-.nav-link.active-orange:hover {
-    background: rgba(245, 158, 11, 0.06) !important;
-    color: #ffffff !important;
-}
-
-/* Red Group */
-.nav-link.active-red:hover {
-    background: rgba(239, 68, 68, 0.06) !important;
-    color: #ffffff !important;
-}
-
-/* Emerald Group (Users / Personal) */
-.nav-link.active-emerald:hover {
-    background: rgba(16, 185, 129, 0.06) !important;
-    color: #ffffff !important;
-}
-
 /* Ensure text inside active/hover links is white */
 .nav-link:hover span, .nav-link.active span,
 .nav-link:hover .chevron, .nav-link.active .chevron {
     color: #ffffff !important;
 }
 
-/* Sidebar background color to match Image 2 exactly */
+/* Sidebar fondo industrial profundo — override final */
 .sidebar {
-    background-color: #111827 !important; /* Deep Navy from Image 2 */
+    background-color: #1F2937 !important; /* Gris Oscuro Industrial */
 }
 
 /* Submenu Animations & States */
@@ -307,14 +272,14 @@ body {
     margin-top: 0;
     padding: 0.5rem 0 0.5rem 0;
     display: none;
-    background-color: rgba(0, 0, 0, 0.15);
-    border-radius: 12px;
+    background-color: #111827; /* Fondo sub-menu más oscuro sólido */
+    border-radius: 10px;
     margin-bottom: 1rem;
 }
 
 .sub-menu.open {
     display: block;
-    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideDown 0.3s ease-out;
 }
 
 @keyframes slideDown {
@@ -325,28 +290,27 @@ body {
 .sub-menu li a {
     display: flex;
     align-items: center;
-    padding: 0.6rem 1.25rem 0.6rem 3.5rem;
-    color: #94a3b8;
+    padding: 0.8rem 1.25rem 0.8rem 3.5rem;
+    color: #9ca3af;
     text-decoration: none;
     font-size: 0.85rem;
-    transition: all 0.2s;
+    transition: background-color 0.2s, color 0.2s;
     border-radius: 8px;
     margin: 2px 0.5rem;
 }
 
 .sub-menu li a:hover {
-    color: white;
-    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    background-color: #374151 !important;
 }
 
 .sub-menu li a.active {
-    background: linear-gradient(90deg, rgba(37, 99, 235, 0.3) 0%, rgba(37, 99, 235, 0.05) 100%) !important;
-    color: #ffffff !important;
-    font-weight: 700 !important;
-    border-left: 4px solid #3b82f6 !important;
-    box-shadow: 0 0 15px rgba(37, 99, 235, 0.4) !important;
-    /* Neon glow/halo on submenu active items */
-    text-shadow: 0 0 10px rgba(59, 130, 246, 1), 0 0 20px rgba(59, 130, 246, 0.7), 0 0 4px rgba(255, 255, 255, 0.9) !important;
+    background-color: #0F4C81 !important;   /* Sólido — sin gradiente */
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    border-left: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
 }
 
 /* Chevron Rotation */
@@ -451,19 +415,25 @@ body {
     width: 100%;
 }
 
-/* Cards */
+/* ── Tarjetas — Bisel Neumórfico Industrial Sólido ── */
 .card {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
+    background-color: #FFFFFF;
+    border: 1px solid #BCCCDC;        /* Borde gris ultra sutil */
     border-radius: var(--card-radius);
-    padding: 1.5rem;
+    padding: 1.75rem;                  /* Mayor respiración interna */
     margin-bottom: 1.5rem;
-    box-shadow: var(--card-shadow);
-    transition: transform 0.2s, box-shadow 0.2s;
+    /* Bisel sólido: sombra inferior/derecha cemento + resalte superior/izq. blanco */
+    box-shadow:
+        3px 3px 0 #D9E2EC,
+        -2px -2px 0 #FFFFFF;
+    transition: box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .card:hover {
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    border-color: #9FB8D0;
+    box-shadow:
+        4px 4px 0 #C8D8E8,
+        -2px -2px 0 #FFFFFF;
 }
 
 .card-title {
@@ -547,28 +517,37 @@ body {
     margin-bottom: 0.6rem;
 }
 
+/* ── Inputs y Selects — Borde Fino Sólido + Foco Azul Titanio ── */
 .form-control, .form-select {
     width: 100%;
-    background-color: #ffffff;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
+    background-color: #FFFFFF;
+    border: 1.5px solid #BCCCDC;       /* Gris ultra sutil en reposo */
+    border-radius: var(--input-radius);
     padding: 0.85rem 1.15rem;
-    color: var(--text-primary);
-    font-family: inherit;
+    color: #102A43;
+    font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif;
     font-size: 0.95rem;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    box-shadow: none;                  /* SIN sombra de caja en reposo */
 }
 
 .form-control:focus, .form-select:focus {
     outline: none;
-    border-color: var(--primary);
-    background-color: #ffffff;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    border-color: #0F4C81;             /* Azul Titanio al enfocar */
+    background-color: #FFFFFF;
+    /* Riel de foco sólido — 2px exterior color primario */
+    box-shadow: 0 0 0 2px #D6E8FA;
+}
+
+.form-control::placeholder {
+    color: #829AB1;
+    font-weight: 400;
 }
 
 .form-select option {
-    background-color: var(--bg-card);
-    color: var(--text-primary);
+    background-color: #FFFFFF;
+    color: #102A43;
 }
 
 /* Search Bar Specific */
@@ -588,56 +567,93 @@ body {
     padding-left: 2.75rem;
 }
 
-/* Buttons */
+/* ── Botones — Mecánicos Sólidos 2026 (SIN gradientes, SIN blur) ── */
 .btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.6rem 1.25rem;
+    padding: 0.65rem 1.3rem;
     font-weight: 600;
-    border-radius: 8px; /* Rounded buttons */
+    border-radius: var(--btn-radius);
     cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
     font-size: 0.9rem;
-    border: 1px solid transparent;
+    border: none;
+    text-decoration: none;
+    line-height: 1;
+    /* Bisel inferior sólido = aspecto de botón físico */
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
 }
 
+/* Primario — Azul Titanio */
 .btn-primary {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-    color: white;
-    border: none;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    background-color: #0F4C81;
+    color: #FFFFFF;
+    /* Bisel neumórfico sólido: sombra inferior da profundidad sin opacidad */
+    box-shadow:
+        0 3px 0 #0A3560,
+        0 4px 6px #C8D8E8;
 }
 
 .btn-primary:hover {
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.4);
+    background-color: #1B6CA8;
+    box-shadow:
+        0 3px 0 #0A3560,
+        0 5px 10px #C0D2E6;
 }
 
+.btn-primary:active {
+    background-color: #0A3560;      /* Tono más oscuro al presionar */
+    transform: translateY(2px);     /* Desplazamiento físico 2px */
+    box-shadow: 0 1px 0 #072847;
+}
+
+/* Secundario — Superficie blanca con borde gris */
 .btn-secondary {
-    background-color: #ffffff;
-    color: var(--text-primary) !important;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    background-color: #FFFFFF;
+    color: #102A43 !important;
+    border: 1.5px solid #BCCCDC;
+    box-shadow:
+        0 3px 0 #D9E2EC,
+        0 2px 4px #E8EEF5;
 }
 
 .btn-secondary:hover {
-    background-color: #f1f5f9;
-    border-color: #cbd5e1;
-    color: var(--text-primary) !important;
+    background-color: #F0F4F8;
+    border-color: #9FB8D0;
+    color: #0F4C81 !important;
+    box-shadow:
+        0 3px 0 #C8D8E8,
+        0 3px 6px #E0E8F0;
 }
 
+.btn-secondary:active {
+    background-color: #E0EAF4;
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #C0D2E4;
+}
+
+/* Danger — Rojo Sólido */
 .btn-danger {
-    background-color: #dc2626; /* Vivid Red */
-    color: white;
-    box-shadow: 0 2px 4px rgba(220, 38, 38, 0.2);
+    background-color: #B91C1C;
+    color: #FFFFFF;
+    box-shadow:
+        0 3px 0 #7F1D1D,
+        0 4px 6px #F5C6C6;
 }
 
 .btn-danger:hover {
-    background-color: #b91c1c;
+    background-color: #DC2626;
+    box-shadow:
+        0 3px 0 #991B1B,
+        0 5px 10px #F0BABA;
+}
+
+.btn-danger:active {
+    background-color: #7F1D1D;
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #5A0F0F;
 }
 
 /* Empty State */
@@ -667,16 +683,14 @@ body {
     margin-bottom: 0.5rem;
 }
 
-/* Clean Modal / Dialog */
-/* Backdrop */
+/* ── Modal Backdrop — Fondo sólido semi-oscuro (sin blur) ── */
 .modal-backdrop {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(15, 23, 42, 0.6); /* Slate overlay */
-    backdrop-filter: blur(2px);
+    background-color: #0A1929;   /* Azul casi negro sólido, reemplaza rgba overlay */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -820,10 +834,10 @@ body {
     color: #991b1b;
 }
 
-/* Soft Buttons for CRUD */
+/* Soft Buttons — fondos sólidos (sin rgba opacity) */
 .btn-soft-primary {
-    background-color: rgba(59, 130, 246, 0.1);
-    color: var(--primary);
+    background-color: #D6E8FA;    /* Azul claro sólido */
+    color: #0F4C81;
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 10px;
@@ -832,18 +846,23 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    transition: all 0.2s;
+    transition: background-color 0.15s ease, transform 0.1s ease;
     text-decoration: none;
 }
 
 .btn-soft-primary:hover {
-    background-color: rgba(59, 130, 246, 0.2);
+    background-color: #C0D8F0;
     transform: translateY(-1px);
 }
 
+.btn-soft-primary:active {
+    transform: translateY(1px);
+    background-color: #A8C8E8;
+}
+
 .btn-soft-danger {
-    background-color: rgba(239, 68, 68, 0.1);
-    color: var(--danger);
+    background-color: #FEE2E2;    /* Rojo claro sólido */
+    color: #B91C1C;
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 10px;
@@ -852,13 +871,18 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    transition: all 0.2s;
+    transition: background-color 0.15s ease, transform 0.1s ease;
     text-decoration: none;
 }
 
 .btn-soft-danger:hover {
-    background-color: rgba(239, 68, 68, 0.2);
+    background-color: #FECACA;
     transform: translateY(-1px);
+}
+
+.btn-soft-danger:active {
+    transform: translateY(1px);
+    background-color: #FCA5A5;
 }
 
 /* Sidebar text override fix in case of bleed */
@@ -1062,6 +1086,7 @@ body {
     background: #2563eb !important;
 }
 
+/* ── Logout Button — Sólido en sidebar oscuro ── */
 .btn-logout-premium {
     display: flex;
     align-items: center;
@@ -1069,42 +1094,45 @@ body {
     gap: 0.5rem;
     width: 100%;
     padding: 0.6rem;
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
+    background-color: #1F1214;     /* Rojo muy oscuro sólido */
+    color: #F87171;
     border-radius: 10px;
     text-decoration: none;
     font-weight: 700;
     font-size: 0.85rem;
-    transition: all 0.2s;
-    border: 1px solid transparent;
+    border: 1px solid #3D1515;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .btn-logout-premium:hover {
-    background: #ef4444;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    background-color: #7F1D1D;
+    color: #FFFFFF;
 }
 
-/* EXECUTIVE DASHBOARD STYLES (PREMIUM PROFESSIONAL) */
+/* ── KPI Cards — Bisel Industrial Sólido ── */
 .kpi-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 1.5rem;
+    background-color: #FFFFFF;
+    border: 1px solid #BCCCDC;
+    border-radius: 16px;
+    padding: 1.75rem;
     display: flex;
     align-items: center;
     gap: 1.25rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
     height: 100%;
     position: relative;
     overflow: hidden;
+    box-shadow:
+        3px 3px 0 #D9E2EC,
+        -2px -2px 0 #FFFFFF;
 }
 
 .kpi-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.05);
-    border-color: var(--primary);
+    transform: translateY(-2px);
+    border-color: #9FB8D0;
+    box-shadow:
+        4px 4px 0 #C8D8E8,
+        -2px -2px 0 #FFFFFF;
 }
 
 .kpi-icon {
@@ -1118,15 +1146,19 @@ body {
     flex-shrink: 0;
 }
 
+/* ── Clickable KPI — Hover sólido ── */
 .clickable-kpi {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+    cursor: pointer;
 }
 
 .clickable-kpi:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1) !important;
-    border-color: var(--primary) !important;
-    background: #f8fafc;
+    transform: translateY(-2px);
+    border-color: #9FB8D0 !important;
+    box-shadow:
+        4px 4px 0 #C8D8E8,
+        -2px -2px 0 #FFFFFF !important;
+    background-color: #FAFCFE;
 }
 
 .kpi-data {
@@ -1224,12 +1256,14 @@ body {
 .premium-title { font-size: 2rem; font-weight: 800; color: #1e293b; letter-spacing: -0.03em; margin: 0; }
 .premium-subtitle { color: #64748b; font-size: 1rem; margin: 5px 0 0 0; }
 
-.premium-card { 
-    background: #ffffff; 
-    border-radius: 24px; 
-    padding: 2rem; 
-    border: 1px solid #e2e8f0; 
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05); 
+.premium-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 2rem;
+    border: 1px solid #BCCCDC;
+    box-shadow:
+        3px 3px 0 #D9E2EC,
+        -2px -2px 0 #FFFFFF;
     height: 100%;
 }
 
@@ -1248,22 +1282,32 @@ body {
 .premium-list-table tbody td { padding: 1.25rem 1rem !important; vertical-align: middle !important; border-bottom: 1px solid #f1f5f9 !important; background: white !important; }
 .premium-list-table tbody tr:hover td { background: #fcfdfe !important; }
 
-/* Buttons Premium */
-.btn-premium-primary { 
-    background: #3b82f6; 
-    color: white; 
-    padding: 0.75rem 1.5rem; 
-    border-radius: 12px; 
-    font-weight: 700; 
-    text-decoration: none; 
-    border: none; 
-    display: flex; 
-    align-items: center; 
-    gap: 8px; 
-    transition: all 0.2s; 
-    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); 
+/* Buttons Premium — Azul Titanio Sólido */
+.btn-premium-primary {
+    background-color: #0F4C81;
+    color: #FFFFFF;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--btn-radius);
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+    box-shadow: 0 3px 0 #0A3560, 0 4px 6px #C8D8E8;
+    cursor: pointer;
 }
-.btn-premium-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(59, 130, 246, 0.4); color: white; }
+.btn-premium-primary:hover {
+    background-color: #1B6CA8;
+    color: #FFFFFF;
+    box-shadow: 0 3px 0 #0A3560, 0 5px 10px #C0D2E6;
+}
+.btn-premium-primary:active {
+    background-color: #0A3560;
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #072847;
+}
 
 .btn-premium-secondary { 
     background: white; 
@@ -1294,23 +1338,24 @@ body {
     z-index: 5;
 }
 
-.search-box-premium input { 
-    width: 100%; 
-    border-radius: 14px; 
-    border: 1px solid #e2e8f0; 
-    padding: 0.8rem 1rem 0.8rem 3.2rem; 
-    font-size: 1rem; 
-    font-weight: 600; 
-    color: #1e293b;
-    transition: all 0.2s; 
-    background: #ffffff; 
+.search-box-premium input {
+    width: 100%;
+    border-radius: var(--input-radius);
+    border: 1.5px solid #BCCCDC;
+    padding: 0.8rem 1rem 0.8rem 3.2rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #102A43;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    transition: border-color 0.18s ease;
+    background: #FFFFFF;
 }
 
-.search-box-premium input:focus { 
-    border-color: #3b82f6; 
-    outline: none; 
-    box-shadow: 0 0 0 4px rgba(59,130,246,0.1); 
-    background: #ffffff;
+.search-box-premium input:focus {
+    border-color: #0F4C81;
+    outline: none;
+    box-shadow: 0 0 0 2px #D6E8FA;
+    background: #FFFFFF;
 }
 
 .btn-premium-danger-soft {
@@ -1333,9 +1378,28 @@ body {
     transform: translateY(-2px);
 }
 
-/* Modals Premium */
-.premium-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-.premium-modal .modal-content { background: white; border-radius: 28px; width: 100%; max-width: 550px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+/* Modals Premium — backdrop sólido sin blur */
+.premium-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0A1929;    /* Azul marino profundo sólido */
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+.premium-modal .modal-content {
+    background: #FFFFFF;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 550px;
+    overflow: hidden;
+    box-shadow: 6px 6px 0 #D9E2EC, -3px -3px 0 #FFFFFF;
+}
 
 
 /* PREMIUM FORM ENHANCEMENTS */
@@ -1351,29 +1415,35 @@ body {
     margin-left: 4px;
 }
 
-.input-group-premium input, 
-.input-group-premium select, 
+.input-group-premium input,
+.input-group-premium select,
 .input-group-premium textarea {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    background: #FFFFFF;
+    border: 1.5px solid #BCCCDC;
+    border-radius: var(--input-radius);
     padding: 0.75rem 1rem;
     font-size: 0.95rem;
-    font-weight: 600;
-    color: #1e293b;
-    transition: all 0.2s;
+    font-weight: 500;
+    color: #102A43;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
-.input-group-premium input:focus, 
-.input-group-premium select:focus, 
+.input-group-premium input:focus,
+.input-group-premium select:focus,
 .input-group-premium textarea:focus {
     outline: none;
-    border-color: #3b82f6;
-    background: white;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    border-color: #0F4C81;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 2px #D6E8FA;
 }
 
-.input-group-premium input[readonly] { background: #f1f5f9; cursor: not-allowed; opacity: 0.8; }
+.input-group-premium input[readonly] {
+    background: #F0F4F8;
+    color: #829AB1;
+    cursor: not-allowed;
+    border-color: #D9E2EC;
+}
 
 /* File Upload Premium */
 .file-upload-wrapper { position: relative; border: 2px dashed #e2e8f0; border-radius: 16px; transition: 0.2s; cursor: pointer; height: 100px; }
@@ -1390,10 +1460,35 @@ body {
 .premium-modal .close-btn:hover { background: #f1f5f9; color: #1e293b; }
 
 .premium-modal .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid #f1f5f9; display: flex; gap: 1rem; justify-content: flex-end; }
-.btn-submit { background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3); }
-.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 15px rgba(59, 130, 246, 0.4); }
-.btn-cancel { background: #f1f5f9; color: #475569; border: none; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-.btn-cancel:hover { background: #e2e8f0; color: #1e293b; }
+.btn-submit {
+    background-color: #0F4C81;
+    color: #FFFFFF;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--btn-radius);
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.1s ease;
+    box-shadow: 0 3px 0 #0A3560, 0 4px 6px #C8D8E8;
+}
+.btn-submit:hover  { background-color: #1B6CA8; box-shadow: 0 3px 0 #0A3560, 0 5px 10px #C0D2E6; }
+.btn-submit:active { background-color: #0A3560; transform: translateY(2px); box-shadow: 0 1px 0 #072847; }
+
+.btn-cancel {
+    background-color: #F0F4F8;
+    color: #486581;
+    border: 1.5px solid #BCCCDC;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--btn-radius);
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    transition: background-color 0.15s ease, transform 0.1s ease;
+    box-shadow: 0 3px 0 #D9E2EC;
+}
+.btn-cancel:hover  { background-color: #E0EAF4; color: #102A43; border-color: #9FB8D0; }
+.btn-cancel:active { transform: translateY(2px); box-shadow: 0 1px 0 #C0D2E4; }
 
 
 /* Utility Spacing Classes */

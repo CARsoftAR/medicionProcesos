@@ -6,10 +6,8 @@
 <style>
     /* CRITICAL BACKGROUND STYLE TO PREVENT WHITE FLASH (FOUC) ON PAGE RELOAD */
     html, body, .main-content {
-        background-color: #090d16 !important;
-        background-image: 
-            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.06) 0%, transparent 50%) !important;
+        background-color: #F0F4F8 !important;
+        background-image: none !important;
     }
 
     .premium-page-container {
@@ -46,9 +44,7 @@
         <!-- TECH SIDEBAR (SELECTION / NAVIGATION) -->
         <div class="stitch-sidebar" style="width: 380px; flex-shrink: 0;">
             <div class="mb-5 px-2">
-                <a href="{% url 'index' %}" class="text-decoration-none small opacity-50 hover-opacity-100 transition-all font-monospace" style="color: var(--stitch-primary);">
-                    <i class="ri-arrow-left-up-line"></i> SISTEMA / PANEL
-                </a>
+
                 <h1 class="stitch-title mt-2" style="font-size: 1.8rem;">CONTROL TÉCNICO</h1>
                 <p class="small opacity-40" style="margin-top: -5px; letter-spacing: 0.1em;">VERIFICACIÓN DE PIEZAS</p>
             </div>
@@ -96,9 +92,9 @@
                 <div class="d-flex gap-2 align-items-center mb-3">
                     <input type="number" id="input_pieza" class="stitch-input text-center flex-grow-1" value="{{ pieza_actual }}" 
                            onkeydown="if(event.key==='Enter') updatePiece()" min="1" 
-                           style="font-size: 1.6rem; font-weight: 800; color: var(--stitch-primary); background: rgba(225, 29, 72, 0.05); border-color: var(--stitch-primary); height: 50px;">
+                           style="font-size: 1.6rem; font-weight: 800; color: var(--stitch-primary); background: #F0F4F8; border-color: var(--stitch-primary); height: 50px;">
                     {% if user.is_superuser or user.profile.role == 'CALIDAD' %}
-                    <button onclick="deletePiece('{{ pieza_actual }}')" class="btn-stitch-outline" style="width: 44px; height: 44px; padding: 0; color: var(--stitch-danger); border-color: rgba(244, 63, 94, 0.3);">
+                    <button onclick="deletePiece('{{ pieza_actual }}')" class="btn-stitch-outline" style="width: 44px; height: 44px; padding: 0; color: var(--stitch-danger); border-color: #F5C6C6;">
                         <i class="ri-delete-bin-line"></i>
                     </button>
                     {% endif %}
@@ -268,9 +264,9 @@
                     </div>
                 </form>
                 {% else %}
-                <div class="text-center" style="padding: 10rem 2rem; background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-radius: 20px; border: 1px dashed rgba(255, 255, 255, 0.15); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);">
-                    <i class="ri-qr-code-line animate__animated animate__pulse animate__infinite" style="font-size: 4rem; color: var(--stitch-primary); opacity: 0.5; text-shadow: 0 0 15px rgba(192, 132, 252, 0.5);"></i>
-                    <p class="mt-4 fw-bold" style="letter-spacing: 0.1em; color: #cbd5e1;">POR FAVOR, INGRESE UNA OP PARA COMENZAR</p>
+                <div class="text-center" style="padding: 10rem 2rem; background: #FFFFFF; border-radius: 12px; border: 1px dashed #BCCCDC; box-shadow: 0 4px 12px #D9E2EC;">
+                    <i class="ri-qr-code-line" style="font-size: 4rem; color: var(--stitch-primary); opacity: 0.8;"></i>
+                    <p class="mt-4 fw-bold" style="letter-spacing: 0.1em; color: var(--stitch-secondary);">POR FAVOR, INGRESE UNA OP PARA COMENZAR</p>
                 </div>
                 {% endif %}
             </div>
@@ -285,21 +281,21 @@
 
 <style>
     /* 
-       DESIGN SYSTEM: CYBER-GLASSMOPRHISM PREMIUM
-       Inspiration: Dark Glassmorphic Engineering Console
+       DESIGN SYSTEM: PREMIUM INDUSTRIAL 2026
+       Solid colors, no transparencies.
     */
     :root {
-        --stitch-bg: #090d16;
-        --stitch-surface: rgba(255, 255, 255, 0.02);
-        --stitch-card: rgba(255, 255, 255, 0.03);
-        --stitch-primary: #c084fc;
-        --stitch-secondary: #a78bfa;
-        --stitch-border: rgba(255, 255, 255, 0.08);
-        --stitch-text: #e2e8f0;
-        --stitch-muted: #94a3b8;
-        --stitch-success: #4ade80;
-        --stitch-danger: #fca5a5;
-        --stitch-glass: rgba(255, 255, 255, 0.03);
+        --stitch-bg: #F0F4F8;
+        --stitch-surface: #FFFFFF;
+        --stitch-card: #FFFFFF;
+        --stitch-primary: #0F4C81;
+        --stitch-secondary: #486581;
+        --stitch-border: #E2E8F0;
+        --stitch-text: #102A43;
+        --stitch-muted: #829AB1;
+        --stitch-success: #10b981;
+        --stitch-danger: #ef4444;
+        --stitch-glass: #FFFFFF;
     }
 
     body {
@@ -319,41 +315,36 @@
     .premium-page-container {
         padding: 1.5rem 2.5rem;
         background: var(--stitch-bg);
-        background-image: 
-            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.06) 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.06) 0%, transparent 50%);
+        background-image: none;
         height: 100vh;
         overflow: hidden;
     }
 
-    /* STITCH MODULES - Glassmorphic */
+    /* STITCH MODULES - Solid Industrial */
     .stitch-module {
-        background: var(--stitch-glass) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        background: var(--stitch-surface) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
         border: 1px solid var(--stitch-border) !important;
-        border-radius: 24px !important;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        border-radius: 12px !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         overflow: hidden;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25) !important;
+        box-shadow: 0 4px 12px #D9E2EC !important;
         padding: 1.2rem 1.5rem !important;
     }
 
     .stitch-module:hover {
         transform: translateY(-2px);
-        box-shadow: 0 16px 48px 0 rgba(0, 0, 0, 0.35) !important;
-        border-color: rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 8px 16px #D9E2EC !important;
+        border-color: #BCCCDC !important;
     }
 
     /* TYPOGRAPHY */
     .stitch-title {
-        font-family: 'Outfit', sans-serif;
+        font-family: 'Inter', sans-serif;
         font-weight: 800;
-        background: linear-gradient(135deg, #ffffff 30%, var(--stitch-primary));
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--stitch-text);
         letter-spacing: -0.02em;
     }
 
@@ -370,35 +361,36 @@
 
     /* INPUTS */
     .stitch-input {
-        background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        color: #ffffff !important;
+        background: #FFFFFF !important;
+        border: 1px solid #BCCCDC !important;
+        color: var(--stitch-text) !important;
         padding: 0.85rem 1.25rem;
-        border-radius: 12px;
+        border-radius: 8px;
         width: 100%;
-        transition: all 0.3s;
+        transition: all 0.2s;
+        box-shadow: none !important;
     }
 
     .stitch-input:focus {
-        background: rgba(255, 255, 255, 0.06) !important;
+        background: #FFFFFF !important;
         border-color: var(--stitch-primary) !important;
-        box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.25) !important;
+        box-shadow: 0 0 0 2px #D6E8FA !important;
         outline: none;
     }
 
     /* TABLE SYSTEM */
     .stitch-table-container {
-        background: rgba(255, 255, 255, 0.02) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        background: #FFFFFF !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
         border: 1px solid var(--stitch-border) !important;
-        border-radius: 20px;
+        border-radius: 12px;
         overflow-y: auto;
-        max-height: 70vh;
+        max-height: calc(100vh - 230px);
         margin-bottom: 2rem;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25) !important;
+        box-shadow: 0 4px 12px #D9E2EC !important;
         scrollbar-width: thin;
-        scrollbar-color: var(--stitch-primary) rgba(255, 255, 255, 0.03);
+        scrollbar-color: #BCCCDC #F0F4F8;
         position: relative; /* For sticky child */
     }
 
@@ -431,22 +423,22 @@
         position: sticky;
         top: 0;
         z-index: 10;
-        background: rgba(15, 23, 42, 0.85) !important;
-        backdrop-filter: blur(12px) !important;
-        padding: 1.25rem 1.5rem;
+        background: #F0F4F8 !important;
+        backdrop-filter: none !important;
+        padding: 14px;
         font-size: 0.75rem;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.1em;
-        color: var(--stitch-primary) !important;
+        color: var(--stitch-secondary) !important;
         border-bottom: 2px solid var(--stitch-border);
     }
 
     .stitch-table td {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+        padding: 14px;
+        border-bottom: 1px solid var(--stitch-border) !important;
         vertical-align: middle;
-        background: transparent !important;
+        background: #FFFFFF !important;
     }
 
     .stitch-table-row {
@@ -529,50 +521,57 @@
 
     /* ACTION BUTTONS */
     .btn-stitch-primary {
-        background: #7c3aed !important;
+        background: var(--stitch-primary) !important;
         color: white;
         border: none;
-        padding: 1rem;
-        border-radius: 14px;
-        font-weight: 700;
+        padding: 0.85rem 1.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
         text-transform: uppercase;
         width: 100%;
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3) !important;
-        transition: all 0.3s;
+        box-shadow: 0 3px 0 #0A3560, 0 4px 6px #C8D8E8 !important;
+        transition: all 0.2s;
     }
 
     .btn-stitch-primary:hover {
-        background: #8b5cf6 !important;
+        background: #1B6CA8 !important;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4) !important;
+        box-shadow: 0 3px 0 #0A3560, 0 5px 10px #C0D2E6 !important;
+    }
+
+    .btn-stitch-primary:active {
+        background: #0A3560 !important;
+        transform: translateY(2px);
+        box-shadow: 0 1px 0 #072847 !important;
     }
 
     .btn-stitch-outline {
-        background: rgba(255, 255, 255, 0.03) !important;
+        background: #FFFFFF !important;
         color: var(--stitch-text);
-        border: 1px solid var(--stitch-border);
+        border: 1px solid #BCCCDC;
         padding: 0.85rem;
-        border-radius: 14px;
+        border-radius: 8px;
         font-weight: 600;
         width: 100%;
-        transition: all 0.3s;
+        transition: all 0.2s;
     }
 
     .btn-stitch-outline:hover {
-        background: rgba(255, 255, 255, 0.08) !important;
+        background: #F0F4F8 !important;
         border-color: var(--stitch-primary);
-        color: #ffffff;
+        color: var(--stitch-primary);
     }
 
     /* PIECE BUTTONS */
     .btn-stitch-piece {
         padding: 0.5rem 1rem;
-        background: rgba(255, 255, 255, 0.03);
+        background: #FFFFFF;
         border: 1px solid var(--stitch-border);
-        border-radius: 10px;
-        color: #94a3b8;
+        border-radius: 8px;
+        color: var(--stitch-muted);
         text-decoration: none;
-        transition: all 0.3s;
+        transition: all 0.2s;
         font-weight: 600;
         font-size: 0.85rem;
     }
@@ -581,7 +580,7 @@
         background: var(--stitch-primary);
         color: white;
         border-color: var(--stitch-primary);
-        box-shadow: 0 4px 12px rgba(192, 132, 252, 0.2);
+        box-shadow: 0 4px 12px rgba(15, 76, 129, 0.2);
     }
 
     /* SIDEBAR */
@@ -590,7 +589,7 @@
         height: 100vh;
         overflow-y: auto;
         padding-right: 1.5rem;
-        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        border-right: 1px solid var(--stitch-border);
     }
 
     /* MODERN PAGINATION BUTTONS */

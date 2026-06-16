@@ -6,26 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABBAMAT - {% block title %}Calidad{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mediciones/css/index.css' %}?v=7.1">
+    <link rel="stylesheet" href="{% static 'mediciones/css/index.css' %}?v=8.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Dynamic Theme Engine (Propagates to index.css) -->
     <style>
+        /* ── Sincronización de tokens con index.css ── */
         :root {
-            --bg-body: #f1f5f9;
-            --bg-card: #ffffff;
-            --text-primary: #1e293b;
-            --text-muted: #64748b;
-            --primary: #4f46e5;
-            --border-color: #e2e8f0;
-            --card-radius: 12px;
-            --card-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            --input-shadow: none;
-            --bg-sidebar: #0f172a;
+            --bg-body:       #F0F4F8;
+            --bg-card:       #FFFFFF;
+            --text-primary:  #102A43;
+            --text-secondary:#486581;
+            --text-muted:    #829AB1;
+            --primary:       #0F4C81;
+            --primary-dark:  #0A3560;
+            --border-color:  #BCCCDC;
+            --border-light:  #DBE6F0;
+            --card-radius:   12px;
+            --card-shadow:   3px 3px 0 #D9E2EC, -2px -2px 0 #FFFFFF;
+            --bg-sidebar:    #0D1B2E;
+            --shadow-dark:   #D9E2EC;
+            --shadow-light:  #FFFFFF;
         }
 
-        body { background: var(--bg-body); color: var(--text-primary); transition: all 0.3s ease; }
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
@@ -33,7 +42,7 @@
     <div class="app-layout">
         <!-- Sidebar -->
         <aside class="sidebar">
-            <div class="sidebar-header" style="height: 90px; padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid rgba(255,255,255,0.03);">
+            <div class="sidebar-header" style="height: 90px; padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem; border-bottom: 1px solid #162338;">
                 <a href="{% url 'index' %}" style="display: flex; align-items: center; gap: 1rem; text-decoration: none;">
                     <div class="brand-icon">A</div>
                     <div class="brand-info" style="display: flex; flex-direction: column;">
@@ -189,19 +198,19 @@
             </div>
 
             <!-- Perfil de Usuario (Estilo Card Flotante) -->
-            <div class="user-profile-wrapper" style="margin: 0.5rem 1rem 1.5rem 1rem; border-radius: 16px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); overflow: hidden; backdrop-filter: blur(10px);">
-                <a href="{% url 'perfil_usuario' %}" class="user-profile-link" style="text-decoration: none; display: flex; align-items: center; padding: 1rem; transition: all 0.2s;">
-                    <div class="user-avatar" style="position: relative; width: 40px; height: 40px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #94a3b8; transition: all 0.2s;">
+            <div class="user-profile-wrapper" style="margin: 0.5rem 1rem 1.5rem 1rem; border-radius: 12px; background: #374151; border: none; overflow: hidden;">
+                <a href="{% url 'perfil_usuario' %}" class="user-profile-link" style="text-decoration: none; display: flex; align-items: center; padding: 1rem; transition: background-color 0.2s;">
+                    <div class="user-avatar" style="position: relative; width: 40px; height: 40px; background: #4B5563; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #E5E7EB; transition: background-color 0.2s;">
                         <i class="ri-user-3-fill" style="font-size: 1.1rem;"></i>
-                        <span style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background-color: #22c55e; border: 2px solid #0b0f19; border-radius: 50%;"></span>
+                        <span style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background-color: #10B981; border: 2px solid #374151; border-radius: 50%;"></span>
                     </div>
                     <div class="user-info" style="margin-left: 0.85rem; flex: 1; overflow: hidden;">
-                        <div class="user-name" style="color: #e2e8f0; font-weight: 700; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.username }}</div>
-                        <div class="user-role" style="color: #64748b; font-size: 0.75rem; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.profile.get_role_display|default:"Usuario" }}</div>
+                        <div class="user-name" style="color: #F3F4F6; font-weight: 700; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.username }}</div>
+                        <div class="user-role" style="color: #9CA3AF; font-size: 0.75rem; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.profile.get_role_display|default:"Usuario" }}</div>
                     </div>
                 </a>
                 <div style="padding: 0 1rem 1rem 1rem;">
-                    <a href="{% url 'logout' %}" class="btn-logout-premium" style="background: rgba(239, 68, 68, 0.08); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.15); border-radius: 10px; padding: 0.6rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-weight: 700; font-size: 0.82rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.15)'; this.style.color='#f87171'" onmouseout="this.style.background='rgba(239, 68, 68, 0.08)'; this.style.color='#fca5a5'">
+                    <a href="{% url 'logout' %}" class="btn-logout-premium" style="background: #4B5563; color: #FCA5A5; border: none; border-radius: 8px; padding: 0.6rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: background-color 0.15s ease, color 0.15s ease;" onmouseover="this.style.background='#991B1B'; this.style.color='#FFFFFF'" onmouseout="this.style.background='#4B5563'; this.style.color='#FCA5A5'">
                         <i class="ri-logout-box-r-line" style="font-size: 1.1rem;"></i> Cerrar Sesión
                     </a>
                 </div>
