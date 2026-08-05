@@ -1483,165 +1483,50 @@ def guardar_observaciones_ajax(request):
 
 @login_required
 def ocr_lector_planos(request):
-    """
-    Vista Lector OCR de Planos (PDF) - Canal Directo de IA con Imagen (PyMuPDF).
-    """
-    def render_error(msg):
-        return render(request, 'mediciones/ocr_lector.html', {
-            'error_ia': msg,
-            'success': False
-        })
-
-    context = {}
-    from .models import Profile
-    try:
-        profile = request.user.profile
-    except Profile.DoesNotExist:
-        profile = Profile.objects.create(user=request.user)
+    import json
+    from django.http import JsonResponse
+    from .models import Proceso, Articulo, Elemento, Cliente
     
     if request.method == 'POST':
-        api_key_input = request.POST.get('api_key', '').strip()
-        if api_key_input:
-            profile.gemini_api_key = api_key_input
-            profile.save()
-            
-    gemini_key = profile.gemini_api_key
-
-    if request.method == 'POST' and request.FILES.get('plano_pdf'):
-        pdf_file = request.FILES['plano_pdf']
-        file_name = pdf_file.name
-        
-        fs = FileSystemStorage(location=os.path.join('media', 'temporales'))
-        filename = fs.save(pdf_file.name, pdf_file)
-        uploaded_file_path = fs.path(filename)
-        
-        print(f"[OCR-VIEW] Iniciando extracción local determinista para {file_name}...")
         try:
-            # Leer con reintentos para evitar WinError 32 (archivo bloqueado por Windows)
-            pdf_bytes = abrir_archivo_seguro(uploaded_file_path)
+            if request.content_type and 'application/json' in request.content_type:
+                data = json.loads(request.body.decode('utf-8'))
+            else:
+                raw_text = request.POST.get('json_data') or request.POST.get('jsonInput') or request.body.decode('utf-8')
+                data = json.loads(raw_text)
 
-            # Llamada directa a extraer_datos_de_pdf local, omitiendo claves de API
-            datos_ia = extraer_datos_de_pdf(
-                pdf_bytes=pdf_bytes
-            )
-            
-            if datos_ia is None or not isinstance(datos_ia, dict) or not datos_ia.get('matrix'):
-                raise ValueError("El extractor local retornó un objeto vacío o no encontró la matriz de controles.")
-            
-            header_info = datos_ia.get('header') or {}
-            extracted_matrix = datos_ia.get('matrix') or []
-            piezas_cols = datos_ia.get('piezas') or []
-            
-            eliminar_archivo_seguro(uploaded_file_path)
-        except Exception as ocr_error:
-            eliminar_archivo_seguro(uploaded_file_path)
-            print(f"[OCR-VIEW WARNING] OCR local falló, generando matriz en blanco. Detalle: {str(ocr_error)}")
-            # Fallback limpio sin crashear
-            header_info = {"denominacion": "LECTURA MANUAL REQUERIDA"}
-            extracted_matrix = []
-            piezas_cols = [str(i) for i in range(1, 11)]
+            if 'paginas' in data and isinstance(data['paginas'], list) and len(data['paginas']) > 0:
+                pagina = data['paginas'][0]
+            else:
+                pagina = data
 
-        
-        from .models import Proceso, Articulo, Elemento, Cliente
-        auto_matched = {'proceso_id': '', 'articulo_id': '', 'elemento_id': '', 'cliente_id': ''}
-        
-        def find_best_match(model, query_text, field_name='nombre'):
-             if not query_text: return None
-             clean_query = str(query_text).strip().upper()
-             res = model.objects.filter(**{f"{field_name}__iexact": clean_query}).first()
-             if res: return res
-             if clean_query.isdigit():
-                  res = model.objects.filter(**{f"{field_name}__icontains": clean_query}).first()
-                  if res: return res
-             parts = clean_query.split()
-             if len(parts) > 1:
-                  res = model.objects.filter(**{f"{field_name}__icontains": " ".join(parts[:2])}).first()
-                  if res: return res
-             return model.objects.filter(**{f"{field_name}__icontains": clean_query[:30]}).first()
+            # Get the matrix/controles
+            controles = pagina.get('matrix') or pagina.get('controles', [])
 
-        c = find_best_match(Cliente, header_info.get('cliente'))
-        if c: auto_matched['cliente_id'] = c.id
-        a = find_best_match(Articulo, header_info.get('articulo'))
-        if a: auto_matched['articulo_id'] = a.id
-        p = find_best_match(Proceso, header_info.get('denominacion') or header_info.get('proceso'))
-        if p: auto_matched['proceso_id'] = p.id
-        e = find_best_match(Elemento, header_info.get('operacion') or header_info.get('elemento'))
-        if e: auto_matched['elemento_id'] = e.id
+            resultado = {
+                'status': 'success',
+                'cliente': pagina.get('cliente') or pagina.get('header', {}).get('cliente', ''),
+                'proyecto': pagina.get('proyecto') or pagina.get('header', {}).get('proyecto', ''),
+                'op': pagina.get('op') or pagina.get('header', {}).get('op', ''),
+                'articulo': pagina.get('articulo') or pagina.get('header', {}).get('articulo', ''),
+                'denominacion': pagina.get('denominacion') or pagina.get('header', {}).get('denominacion', ''),
+                'operacion': pagina.get('operacion') or pagina.get('header', {}).get('operacion', ''),
+                'piezas': pagina.get('piezas', [str(i) for i in range(1, 11)]),
+                'controles': controles
+            }
+            return JsonResponse(resultado)
+        except json.JSONDecodeError as e:
+            return JsonResponse({'status': 'error', 'message': f'JSON inválido: {str(e)}'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
-        valid_matrix = []
-        for row in extracted_matrix:
-            try:
-                nom_str = str(row['nominal']).replace(',', '.')
-                nom_str_clean = re.sub(r'\(?\d+[xX]\)?', '', nom_str).strip()
-                nom_nums = re.findall(r"[-+]?\d*\.\d+|\d+", nom_str_clean) or re.findall(r"[-+]?\d*\.\d+|\d+", nom_str)
-                nom_float = float(nom_nums[0]) if nom_nums else 0.0
-                
-                tol_str = str(row['tolerancia']).replace(',', '.').strip()
-                t_plus = t_minus = 0.0
-                if '±' in tol_str:
-                    try:
-                        t_val = float(re.findall(r"\d*\.\d+|\d+", tol_str)[0])
-                        t_plus = t_minus = t_val
-                    except: pass
-                elif '/' in tol_str or ('+' in tol_str and '-' in tol_str):
-                    for m in re.findall(r"([+-]\s*\d*\.\d+|[+-]\s*\d+)", tol_str):
-                        val = float(m.replace(' ', ''))
-                        if '+' in m: t_plus = abs(val)
-                        if '-' in m: t_minus = abs(val)
-                else:
-                    try:
-                        t_val = float(re.findall(r"\d*\.\d+|\d+", tol_str)[0])
-                        t_plus = t_minus = t_val
-                    except: pass
-
-                min_v, max_v = nom_float - t_minus, nom_float + t_plus
-                processed_vals = []
-                row_valores = row.get('valores', [])
-                if isinstance(row_valores, dict):
-                    row_valores = [row_valores.get(str(pc)) or row_valores.get(pc) for pc in piezas_cols]
-
-                for v_item in row_valores:
-                    v = v_item.get('val') if isinstance(v_item, dict) else v_item
-                    needs_review = v_item.get('revision', False) if isinstance(v_item, dict) else False
-                    
-                    v_str = str(v).strip().upper().replace(',', '.') if v is not None else ''
-                    
-                    if any(v_str.startswith(x) for x in ['OK', 'ACEP', 'PAS']) or v_str == 'P': 
-                        processed_vals.append({'val': v if v is not None else '', 'ok': True, 'review': needs_review})
-                    elif any(v_str.startswith(x) for x in ['NOK', 'RECH', 'FALL', 'FAIL']) or v_str == 'R': 
-                        processed_vals.append({'val': v if v is not None else '', 'ok': False, 'review': needs_review})
-                    else:
-                        try:
-                            nums = re.findall(r"[-+]?\d*\.\d+|\d+", v_str)
-                            if nums: 
-                                processed_vals.append({'val': v, 'ok': (min_v - 0.0001) <= float(nums[0]) <= (max_v + 0.0001), 'review': needs_review})
-                            else: 
-                                processed_vals.append({'val': v if v is not None else '', 'ok': True, 'review': needs_review})
-                        except:
-                            processed_vals.append({'val': v if v is not None else '', 'ok': True, 'review': needs_review})
-                new_row = row.copy()
-                new_row['valores'] = processed_vals
-                valid_matrix.append(new_row)
-            except Exception as ex: 
-                print(f"[ERROR-TOL] {row.get('control')}: {ex}")
-                valid_matrix.append(row)
-
-        context = {
-            'success': True,
-            'filename': file_name,
-            'header': header_info,
-            'auto_matched': auto_matched,
-            'piezas': piezas_cols,
-            'matrix': valid_matrix,
-            'header_json': json.dumps(header_info),
-            'piezas_json': json.dumps(piezas_cols),
-            'matrix_json': json.dumps(valid_matrix),
-            'procesos': Proceso.objects.all().order_by('nombre'),
-            'articulos': Articulo.objects.all().order_by('nombre'),
-            'elementos': Elemento.objects.all().order_by('nombre'),
-            'clientes': Cliente.objects.all().order_by('nombre'),
-        }
-        
+    context = {
+        'procesos': Proceso.objects.all().order_by('nombre'),
+        'articulos': Articulo.objects.all().order_by('nombre'),
+        'elementos': Elemento.objects.all().order_by('nombre'),
+        'clientes': Cliente.objects.all().order_by('nombre'),
+        'success': False
+    }
     return render(request, 'mediciones/ocr_lector.html', context)
 
 @csrf_exempt
@@ -1728,7 +1613,13 @@ def importar_datos_ocr(request):
                 limit = min(len(valores), len(piezas_cols))
                 
                 for idx in range(limit):
-                    pieza_num = piezas_cols[idx]
+                    pieza_num_raw = str(piezas_cols[idx])
+                    try:
+                        pieza_num = int(re.sub(r'\D', '', pieza_num_raw.split('_')[0]))
+                    except:
+                        pieza_num = idx + 1
+                    
+                    if pieza_num == 0: pieza_num = 1 # Fallback just in case
                     val_raw = valores[idx].get('val') if isinstance(valores[idx], dict) else valores[idx]
                     if val_raw is None or str(val_raw).strip() == '': continue
 
@@ -1752,7 +1643,7 @@ def importar_datos_ocr(request):
                         if val_pnp is not None or val_float is not None:
                             ValorMedicion.objects.update_or_create(planilla=planilla, control=control, pieza=pieza_num, defaults={'tolerancia': tolerancia, 'valor_pieza': val_float, 'valor_pnp': val_pnp, 'op': str(planilla.num_op)})
                     except: continue
-            return JsonResponse({'status': 'success', 'message': f'Datos importados correctamente a la OP {op_numero}', 'op': op_numero, 'proy': planilla.proyecto, 'proc_id': planilla.proceso_id})
+            return JsonResponse({'status': 'success', 'message': f'Datos importados correctamente a la OP {op_numero}', 'op': op_numero, 'proy': planilla.proyecto, 'proc_id': planilla.proceso_id, 'planilla_id': planilla.id})
         except Exception as e: return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 

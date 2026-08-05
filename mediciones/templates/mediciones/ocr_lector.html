@@ -1,773 +1,1526 @@
-{% extends 'mediciones/index.html' %}
+﻿{% extends 'mediciones/index.html' %}
+
 {% load static %}
+
+
 
 {% block title %}Lector OCR de Planos{% endblock %}
 
+
+
 {% block extra_head %}
+
 <!-- FUENTES PREMIUM -->
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
+
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
 
+
+
 <style>
+
     /* Critical dark background variables to prevent unstyled flashes */
+
     html, body, .main-content {
+
         background-color: #F0F4F8 !important;
+
         background-image: none !important;
+
         color: #102A43 !important;
+
     }
+
 </style>
+
 {% endblock %}
 
+
+
 {% block content %}
+
 <style>
+
     :root {
+
         --stitch-bg: #F0F4F8;
+
         --stitch-surface: #FFFFFF;
+
         --stitch-card: #FFFFFF;
+
         --stitch-primary: #0F4C81;
+
         --stitch-secondary: #486581;
+
         --stitch-border: #BCCCDC;
+
         --stitch-text: #102A43;
+
         --stitch-muted: #829AB1;
+
         --stitch-glass: #FFFFFF;
+
         --stitch-shadow: 0 4px 12px #D9E2EC;
+
     }
+
     
+
     body { font-family: 'Inter', sans-serif; }
 
+
+
     /* Estructura Base y Layout */
+
     .content-wrapper {
+
         max-width: none !important;
+
         padding: 0 !important;
+
         margin: 0 !important;
+
         width: 100% !important;
+
         background: var(--stitch-bg);
+
         background-image: none !important;
+
         min-height: 100vh;
+
     }
+
     
+
     .topbar { display: none !important; }
 
+
+
     .premium-container {
+
         display: flex;
+
         min-height: 100vh;
+
     }
+
+
 
     /* Sidebar Izquierdo */
+
     .sidebar-ocr {
+
         width: 280px;
+
         background: #FFFFFF !important;
+
         padding: 2rem 1.5rem;
+
         border-right: 1px solid var(--stitch-border);
+
         display: flex;
+
         flex-direction: column;
+
         gap: 2rem;
+
         flex-shrink: 0;
+
         box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
+
     }
+
+
 
     .sidebar-title {
+
         font-family: 'Outfit', sans-serif;
+
         font-size: 1.5rem;
+
         font-weight: 800;
+
         color: var(--stitch-primary);
+
         text-shadow: none;
+
         letter-spacing: -0.02em;
+
         text-transform: uppercase;
+
     }
+
+
 
     .upload-box {
+
         border: 2px dashed #BCCCDC;
+
         background: #F0F4F8;
+
         border-radius: 12px;
+
         padding: 2rem 1rem;
+
         text-align: center;
+
         cursor: pointer;
+
         transition: all 0.2s;
+
     }
+
     .upload-box:hover { 
+
         background: #E2E8F0; 
+
         border-color: var(--stitch-primary); 
+
         transform: translateY(-2px); 
+
         box-shadow: none;
+
     }
+
     .upload-box i { font-size: 2.5rem; color: var(--stitch-primary); margin-bottom: 0.5rem; }
+
     .upload-box span { display: block; font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--stitch-primary); font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
     .upload-box small { color: var(--stitch-muted); font-size: 0.75rem; font-weight: 500; }
 
+
+
     .status-card {
+
         background: #F0F4F8;
+
         border: 1px solid var(--stitch-border);
+
         box-shadow: none;
+
         border-radius: 12px;
+
         padding: 1.5rem;
+
     }
+
     .status-label { font-size: 0.65rem; font-weight: 800; color: var(--stitch-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+
     .status-value-op { font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--stitch-primary); margin-bottom: 1rem; text-shadow: none; }
+
     .status-group { margin-bottom: 1rem; }
+
     .status-group:last-child { margin-bottom: 0; }
+
     .status-value-small { font-size: 0.9rem; font-weight: 700; color: var(--stitch-text); line-height: 1.2; }
 
+
+
     /* Contenido Principal */
+
     .main-content-ocr {
+
         flex: 1;
+
         padding: 2rem 3rem;
+
         overflow-y: auto;
+
     }
+
+
 
     .header-actions {
+
         display: flex;
+
         justify-content: space-between;
+
         align-items: center;
+
         margin-bottom: 2rem;
+
     }
+
     .panel-title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--stitch-text); margin: 0; text-transform: uppercase; letter-spacing: -0.02em; }
 
+
+
     .btn-descartar {
+
         background: transparent;
+
         border: 1px dashed var(--stitch-border);
+
         border-radius: 12px;
+
         color: var(--stitch-muted);
+
         font-family: 'Outfit', sans-serif;
+
         font-weight: 800;
+
         text-transform: uppercase;
+
         font-size: 0.85rem;
+
         padding: 0.6rem 1.5rem;
+
         transition: all 0.2s;
+
         cursor: pointer;
+
     }
+
     .btn-descartar:hover { color: var(--stitch-text); border-color: var(--stitch-muted); background: #E2E8F0; }
 
+
+
     .btn-confirmar {
+
         background: var(--stitch-primary);
+
         color: white;
+
         border: none;
+
         border-radius: 8px;
+
         padding: 0.75rem 2rem;
+
         font-family: 'Outfit', sans-serif;
+
         font-weight: 800;
+
         text-transform: uppercase;
+
         letter-spacing: 0.05em;
+
         font-size: 0.9rem;
+
         box-shadow: 0 4px 6px #BCCCDC;
+
         transition: all 0.3s;
+
         cursor: pointer;
+
     }
+
     .btn-confirmar:hover { transform: translateY(-2px); box-shadow: 0 4px 10px #D9E2EC; background: #102A43; }
 
+
+
     /* Panel de Verificación (Selectores) */
+
     .verification-bar {
+
         background: #FFFFFF;
+
         border: 1px solid var(--stitch-border);
+
         box-shadow: var(--stitch-shadow);
+
         border-radius: 12px;
+
         padding: 1.5rem;
+
         margin-bottom: 2rem;
+
         display: grid;
+
         grid-template-columns: repeat(4, 1fr);
+
         gap: 1.5rem;
+
     }
+
     .selector-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
     .selector-label { font-size: 0.65rem; font-weight: 800; color: var(--stitch-primary); text-transform: uppercase; letter-spacing: 0.05em; }
+
     .selector-select {
+
         background: #FFFFFF;
+
         border: 1px solid var(--stitch-border);
+
         border-radius: 8px;
+
         padding: 0.5rem 0.8rem;
+
         font-size: 0.85rem;
+
         font-weight: 600;
+
         color: var(--stitch-text);
+
         transition: all 0.2s;
+
     }
+
     .selector-select option {
+
         background: #FFFFFF;
+
         color: var(--stitch-text);
+
     }
+
     .selector-select:focus {
+
         border-color: var(--stitch-primary);
+
         box-shadow: 0 0 0 3px #D6E8FA;
+
         outline: none;
+
     }
+
+
 
     .ok-text { color: #4ade80 !important; }
+
     .nok-text { color: #fca5a5 !important; }
 
+
+
     /* Matriz de Control */
+
     .matrix-card {
+
         background: #FFFFFF;
+
         border-radius: 12px;
+
         border: 1px solid var(--stitch-border);
+
         box-shadow: 0 4px 12px #D9E2EC;
+
         overflow: hidden;
+
     }
+
     .matrix-header {
+
         padding: 1.5rem 2rem;
+
         border-bottom: 1px dashed var(--stitch-border);
+
         display: flex;
+
         justify-content: space-between;
+
         align-items: center;
+
         background: transparent;
+
     }
+
     .matrix-title { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--stitch-primary); text-transform: uppercase; margin: 0; }
+
     .matrix-badge {
+
         background: #F0F4F8;
+
         color: var(--stitch-primary);
+
         font-size: 0.7rem;
+
         font-weight: 800;
+
         padding: 0.4rem 0.8rem;
+
         border-radius: 8px;
+
         text-transform: uppercase;
+
         border: 1px solid #BCCCDC;
+
     }
+
+
 
     .table-ocr {
+
         width: 100%;
+
         border-collapse: collapse;
+
     }
+
     .table-ocr th {
+
         background: #F8FAFC !important;
+
         text-align: left;
+
         padding: 0.8rem 0.6rem;
+
         font-size: 0.65rem;
+
         font-weight: 800;
+
         color: var(--stitch-primary);
+
         text-transform: uppercase;
+
         letter-spacing: 0.05em;
+
         border-bottom: 2px solid var(--stitch-border);
+
     }
+
     .table-ocr td {
+
         padding: 0.8rem 0.6rem;
+
         border-bottom: 1px solid var(--stitch-border);
+
         font-size: 0.85rem;
+
         font-weight: 500;
+
         color: var(--stitch-text);
+
     }
+
     .table-ocr tr:last-child td { border-bottom: none; }
 
+
+
     .instr-badge {
+
         background: #F0F4F8;
+
         color: var(--stitch-text);
+
         font-size: 0.6rem;
+
         font-weight: 700;
+
         padding: 0.2rem 0.5rem;
+
         border-radius: 4px;
+
         display: inline-block;
+
         white-space: nowrap;
+
         border: 1px solid #BCCCDC;
+
     }
+
+
 
     .val-text { font-weight: 800; color: #4ade80; }
+
     .val-text.nok { color: #fca5a5; }
 
+
+
     /* Paginación y Visibilidad - DESHABILITADO */
+
     
+
     .piece-paginator {
+
         display: flex;
+
         align-items: center;
+
         gap: 0.4rem;
+
         background: rgba(255,255,255,0.02);
+
         padding: 0.2rem;
+
         border-radius: 8px;
+
     }
+
     .btn-page {
+
         border: 1px solid var(--stitch-border);
+
         background: #F0F4F8;
+
         color: var(--stitch-text);
+
         font-size: 0.75rem;
+
         font-weight: 800;
+
         padding: 0.3rem 0.6rem;
+
         border-radius: 6px;
+
         cursor: pointer;
+
         transition: all 0.2s;
+
     }
+
     .btn-page:hover:not(:disabled) { background: rgba(255,255,255,0.05); border-color: var(--stitch-muted); }
+
     .btn-page:disabled { opacity: 0.3; cursor: not-allowed; }
 
+
+
     @media (max-width: 1200px) {
+
         .verification-bar { grid-template-columns: repeat(2, 1fr); }
+
     }
+
+
 
     /* Editable Inputs */
+
     .ocr-input-edit {
+
         background: transparent;
+
         border: 1px solid transparent;
+
         border-radius: 4px;
+
         font-family: inherit;
+
         font-size: inherit;
+
         font-weight: inherit;
+
         color: inherit;
+
         text-align: inherit;
+
         width: 100%;
+
         padding: 4px;
+
         transition: all 0.2s;
+
         outline: none;
+
     }
+
     .ocr-input-edit:hover {
+
         background: #F0F4F8;
+
         border-color: var(--stitch-border);
+
     }
+
     .ocr-input-edit:focus {
+
         background: #FFFFFF;
+
         border-color: var(--stitch-primary);
+
         box-shadow: 0 0 0 3px #D6E8FA;
+
     }
+
     .celda-valor { 
+
         min-width: 55px; 
+
         max-width: 65px; 
+
         width: 100%; 
+
         padding: 2px 4px; 
+
         margin: 0 auto;
+
     }
+
+
 
     /* Animación de Rotación */
+
     @keyframes spin {
+
         from { transform: rotate(0deg); }
+
         to { transform: rotate(360deg); }
+
     }
+
     .animate-spin {
+
         display: inline-block;
+
         animation: spin 1.5s linear infinite;
+
     }
+
     
+
     .text-warning-custom { color: #f59e0b !important; }
+
     /* Estilos para SweetAlert2 Moderno */
+
     .premium-swal-popup {
+
         border-radius: 12px !important;
+
         border: 1px solid var(--stitch-border) !important;
+
         padding: 2rem !important;
+
         font-family: 'Inter', sans-serif !important;
+
         background: #FFFFFF !important;
+
         color: var(--stitch-text) !important;
+
         box-shadow: 0 4px 12px #D9E2EC !important;
+
     }
+
     .swal-success-container {
+
         text-align: center;
+
         padding: 1rem 0;
+
     }
+
     .swal-success-icon {
+
         font-size: 5rem;
+
         color: #4ade80;
+
         margin-bottom: 1.5rem;
+
         filter: drop-shadow(0 0 15px rgba(74, 222, 128, 0.3));
+
     }
+
     .swal-success-title {
+
         font-family: 'Outfit', sans-serif;
+
         font-weight: 800;
+
         font-size: 1.8rem;
+
         color: var(--stitch-text);
+
         margin-bottom: 0.5rem;
+
         letter-spacing: -0.02em;
+
     }
+
     .swal-success-text {
+
         font-size: 1.1rem;
+
         color: var(--stitch-muted);
+
         margin-bottom: 2rem;
+
     }
+
     .swal-success-footer {
+
         font-size: 0.8rem;
+
         font-weight: 800;
+
         color: var(--stitch-primary);
+
         text-transform: uppercase;
+
         letter-spacing: 0.1em;
+
         opacity: 0.8;
+
     }
+
     .swal2-timer-progress-bar {
+
         background: var(--stitch-primary) !important;
+
     }
+
 </style>
 
+
+
 <div class="premium-container animate__animated animate__fadeIn">
+
     <!-- SIDEBAR -->
+
     <aside class="sidebar-ocr">
+
         <h1 class="sidebar-title">LECTOR OCR</h1>
+
         
+
         <form method="post" enctype="multipart/form-data" id="ocr-upload-form">
+
             {% csrf_token %}
+
             
+
+
 
             <!-- Configuración movida a pantalla dedicada -->
 
-            <input type="file" name="plano_pdf" id="plano_pdf" accept="application/pdf" style="display: none;">
-            <div id="upload-content" class="upload-box" onclick="document.getElementById('plano_pdf').click();">
-                <i class="ri-file-pdf-2-line"></i>
-                <span>Cargar PDF</span>
-                <small>Digitalización automática</small>
+
+
+            <div id="upload-content">
+                <textarea class="form-control" name="json_data" id="jsonInput" rows="12" placeholder="Pegá aquí el JSON del documento..." style="width: 100%; border: 1px solid var(--stitch-border); border-radius: 8px; padding: 1rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; resize: vertical; margin-bottom: 1rem;"></textarea>
+                <button type="button" id="btn-procesar-json" class="btn btn-primary">PROCESAR JSON</button>
             </div>
             <!-- Loader Simplificado y Robusto -->
+
             <div id="processing-loader" style="display: none;" class="px-5 py-5 animate__animated animate__fadeIn">
+
                 <style>
+
                     @keyframes neon-pulse {
+
                         0% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(15, 76, 129, 0.7); }
+
                         50% { transform: scale(1.05); opacity: 0.9; box-shadow: 0 0 0 25px rgba(15, 76, 129, 0); text-shadow: none; }
+
                         100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(15, 76, 129, 0); }
+
                     }
+
                     .scan-pulse-icon {
+
                         font-size: 5rem;
+
                         color: #0F4C81;
+
                         animation: neon-pulse 1.5s infinite ease-out;
+
                         border-radius: 10%;
+
                         padding: 10px;
+
                         display: inline-block;
+
                     }
+
                 </style>
 
+
+
                 <div class="mb-4 text-center">
+
                     <i class="ri-scan-2-line scan-pulse-icon"></i>
+
                 </div>
+
                 
+
                 <h4 class="fw-bold text-center mb-3" style="color: var(--stitch-primary); text-shadow: none;">Digitalizando Plano...</h4>
+
                 <p class="text-muted text-center mb-0" style="font-size: 1.1rem; color: var(--stitch-muted) !important;">
+
                     El sistema está extrayendo y verificando las mediciones. <br>
+
                     <span class="fw-bold" style="color: var(--stitch-text);">Aguarde un momento mientras se completa la lectura.</span>
+
                 </p>
+
                 <div class="text-center mt-3">
+
                     <div class="spinner-border" style="color: var(--stitch-primary);" role="status">
+
                         <span class="visually-hidden">Procesando...</span>
+
                     </div>
+
                 </div>
+
             </div>
+
             
-            <script>
-                function showLoader() {
-                    // Lógica simple: Solo mostrar/ocultar. La animación es CSS puro (imposible que se tilde).
-                    const loader = document.getElementById('processing-loader');
-                    const upload = document.getElementById('upload-content');
-                    
-                    if (loader) loader.style.display = 'block';
-                    if (upload) upload.style.display = 'none';
-                    
-                    // Asegurar que cualquier intervalo viejo muera
-                    if (window.ocrInterval) clearInterval(window.ocrInterval);
-                }
 
-                // AJAX Upload
-                const fileInput = document.getElementById('plano_pdf');
-                if (fileInput) {
-                    fileInput.addEventListener('change', function() {
-                        if(this.files.length > 0) {
-                            showLoader();
-                            
-                            const form = document.getElementById('ocr-upload-form');
-                            if (!form) return;
-                            
-                            const formData = new FormData(form);
-                            
-                            fetch(window.location.href, {
-                                method: 'POST',
-                                body: formData,
-                            })
-                            .then(response => response.text())
-                            .then(html => {
-                                document.open();
-                                document.write(html);
-                                document.close();
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                alert("Ocurrió un error de conexión.");
-                            });
-                        }
-                    });
-                }
-            </script>
-        </form>
+            
 
-        {% if success %}
+        </form>\n</form>
+
+
+
         <div class="status-card">
+
             <div class="status-group">
+
                 <label class="status-label">Número de OP</label>
+
                 <div class="status-value-op">#{{ header.op|default:"---" }}</div>
+
             </div>
+
             <div class="status-group">
+
                 <label class="status-label">Proyecto</label>
+
                 <div class="status-value-small">{{ header.proyecto|default:"S/P" }}</div>
+
             </div>
+
             <div class="status-group">
-                <label class="status-label">Cliente / Artículo</label>
+
+                <label class="status-label">Cliente / Artáculo</label>
+
                 <div class="status-value-small">{{ header.cliente|default:"CLIENTE NO DETECTADO"|truncatechars:30 }}</div>
+
                 <div style="font-size: 0.8rem; color: var(--stitch-primary); font-weight: 800; margin-top: 2px;">Item: {{ header.articulo|default:"S/N" }}</div>
+
             </div>
+
             <div class="status-group" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--stitch-border);">
+
                 <label class="status-label">Denominación (Proceso)</label>
+
                 <div class="status-value-small" style="font-size: 0.8rem;">{{ header.denominacion|default:"---" }}</div>
+
             </div>
+
             <div class="status-group">
+
                 <label class="status-label">Fase (Operación)</label>
+
                 <div class="status-value-small" style="font-size: 0.8rem;">{{ header.operacion|default:"---" }}</div>
+
             </div>
+
         </div>
-        {% endif %}
     </aside>
 
+
+
     <!-- MAIN CONTENT -->
+
     <main class="main-content-ocr">
+
         <div class="header-actions">
+
             <h2 class="panel-title">Panel de Verificación</h2>
+
             <div class="d-flex align-items-center gap-2">
+
                 <button class="btn-descartar" onclick="location.reload();">Descartar</button>
-                {% if success %}
+
                 <button id="btn-importar-sistema" class="btn-confirmar">Confirmar e Importar</button>
-                {% endif %}
+
             </div>
+
         </div>
 
-        {% if success %}
+
+
         <!-- SELECTORES DE VINCULACIÓN -->
+
         <div class="verification-bar animate__animated animate__fadeInDown">
+
             <div class="selector-group">
+
                 <label class="selector-label">Cliente</label>
+
                 <select id="sel-cliente-ocr" class="selector-select">
+
                     <option value="" {% if not auto_matched.cliente_id %}selected{% endif %}>{{ header.cliente|default:"--- Seleccionar ---" }}</option>
+
                     {% for c in clientes %}
+
                     <option value="{{ c.id }}" {% if c.id == auto_matched.cliente_id %}selected{% endif %}>{{ c.nombre }}</option>
+
                     {% endfor %}
+
                 </select>
+
             </div>
+
             <div class="selector-group">
+
                 <label class="selector-label">Proceso</label>
+
                 <select id="sel-proceso-ocr" class="selector-select">
+
                     <option value="" {% if not auto_matched.proceso_id %}selected{% endif %}>{{ header.denominacion|default:"--- Seleccionar ---" }}</option>
+
                     {% for p in procesos %}
+
                     <option value="{{ p.id }}" {% if p.id == auto_matched.proceso_id %}selected{% endif %}>{{ p.nombre }}</option>
+
                     {% endfor %}
+
                 </select>
+
             </div>
+
             <div class="selector-group">
-                <label class="selector-label">Artículo</label>
+
+                <label class="selector-label">Artáculo</label>
+
                 <select id="sel-articulo-ocr" class="selector-select">
+
                     <option value="" {% if not auto_matched.articulo_id %}selected{% endif %}>{{ header.articulo|default:"--- Seleccionar ---" }}</option>
+
                     {% for a in articulos %}
+
                     <option value="{{ a.id }}" {% if a.id == auto_matched.articulo_id %}selected{% endif %}>{{ a.nombre }}</option>
+
                     {% endfor %}
+
                 </select>
+
             </div>
+
             <div class="selector-group">
+
                 <label class="selector-label">Operación</label>
+
                 <select id="sel-elemento-ocr" class="selector-select">
+
                     <option value="" {% if not auto_matched.elemento_id %}selected{% endif %}>{{ header.operacion|default:"--- Seleccionar ---" }}</option>
+
                     {% for e in elementos %}
+
                     <option value="{{ e.id }}" {% if e.id == auto_matched.elemento_id %}selected{% endif %}>{{ e.nombre|upper }}</option>
+
                     {% endfor %}
+
                 </select>
+
             </div>
+
         </div>
+
+
 
         <!-- TABLA DE RESULTADOS (Estilo Profesional Audit) -->
+
         <div class="matrix-card animate__animated animate__fadeInUp">
+
             <div class="matrix-header">
+
                 <div>
+
                     <h3 class="matrix-title">Panel de Resultados OCR</h3>
+
                     <div style="font-size: 0.75rem; color: var(--stitch-muted); font-weight: 700;">{{ matrix|length }} Controles Detectados / {{ piezas|length }} Piezas Auditadas</div>
+
                 </div>
+
                 
+
             </div>
+
             
+
             <div class="table-responsive" style="overflow-x: auto; background: transparent;">
+
                 <table class="table-ocr" id="tabla-ocr-resultados" style="width: 100%; border-collapse: separate; border-spacing: 0;">
+
                     <thead>
+
                         <tr>
+
                             <!-- 1. Control (Sticky 0) -->
+
                             <th style="width: 280px; min-width: 280px; background: #F8FAFC; border-bottom: 2px solid var(--stitch-border); position: sticky; left: 0; z-index: 30; box-shadow: 2px 0 5px rgba(0,0,0,0.05);" class="ps-4">Control Detectado</th>
+
                             
+
                             <!-- 2. Nominal (Sticky 280) -->
+
                             <th class="text-center" style="width: 120px; min-width: 120px; background: #F8FAFC; border-bottom: 2px solid var(--stitch-border); position: sticky; left: 280px; z-index: 30;">Nominal</th>
+
                             
+
                             <!-- 3. Tol (Sticky 400) -->
+
                              <th class="text-center" style="width: 160px; min-width: 160px; background: #F8FAFC; border-bottom: 2px solid var(--stitch-border); position: sticky; left: 400px; z-index: 30;">Tol.</th>
+
                             
+
                             <!-- 4. Instr (Sticky 560) -->
+
                             <th class="text-center" style="width: 90px; min-width: 90px; background: #F8FAFC; border-bottom: 2px solid var(--stitch-border); position: sticky; left: 560px; z-index: 30; border-right: 2px solid var(--stitch-border); box-shadow: 2px 0 5px rgba(0,0,0,0.05);">Instr.</th>
+
                             
+
                             {% for p in piezas %}
+
                             <th class="text-center" style="width: 85px; min-width: 85px; color: var(--stitch-primary); font-size: 0.8rem; font-weight: 800; padding: 0.5rem 0; border-bottom: 2px solid var(--stitch-border); background: #F8FAFC;">
+
                                 {{ p }}
+
                             </th>
+
                             {% endfor %}
+
                         </tr>
+
                     </thead>
+
                     <tbody>
+
                         {% for row in matrix %}
+
                         <tr class="ocr-row" style="border-bottom: 1px solid var(--stitch-border);">
+
                             <!-- 1. Control -->
+
                             <td class="fw-bold ps-4" style="position: sticky; left: 0; z-index: 20; background: #FFFFFF; border-right: 1px solid var(--stitch-border); white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.05);">
+
                                 <input type="text" class="ocr-input-edit text-start edit-control" value="{{ row.control }}" style="font-weight: 700; width: 250px; color: var(--stitch-text); font-size: 0.8rem;">
+
                             </td>
+
                             
+
                             <!-- 2. Nominal -->
+
                             <td class="text-center" style="position: sticky; left: 280px; z-index: 20; background: #FFFFFF; white-space: nowrap;">
+
                                 <input type="text" class="ocr-input-edit text-center edit-nominal" value="{{ row.nominal }}" style="color: var(--stitch-primary); font-weight: 800; width: 100px; font-size: 0.9rem;">
+
                             </td>
+
                             
+
                             <!-- 3. Tol -->
+
                             <td class="text-center" style="position: sticky; left: 400px; z-index: 20; background: #FFFFFF; border-right: 1px solid var(--stitch-border); white-space: nowrap;">
+
                                 <div class="d-flex align-items-center justify-content-center">
+
                                     <input type="text" class="ocr-input-edit text-center edit-tol" value="{{ row.tolerancia }}" style="color: var(--stitch-text); font-weight: 700; width: 140px; font-size: 0.85rem;">
+
                                 </div>
+
                             </td>
+
                             
+
                             <!-- 4. Instr -->
+
                             <td class="text-center" style="position: sticky; left: 560px; z-index: 20; background: #FFFFFF; border-right: 2px solid var(--stitch-border); white-space: nowrap; box-shadow: 2px 0 5px rgba(0,0,0,0.2);">
+
                                 <input type="text" class="ocr-input-edit text-center edit-instr" value="{{ row.instrumento }}" style="font-size: 0.75rem; font-weight: 800; color: var(--stitch-text); background: rgba(255,255,255,0.05); padding: 0.2rem 0.4rem; border-radius: 4px; width: 70px;">
+
                             </td>
+
                             
+
                             {% for item in row.valores %}
+
                             <td class="text-center" style="padding: 0.6rem 0.4rem; border-right: 1px solid var(--stitch-border); background: transparent;">
+
                                 <input type="number" step="any"
+
                                        class="ocr-input-edit text-center celda-valor edit-val {% if item.ok == False %}nok-text{% else %}ok-text{% endif %}" 
+
                                        value="{% if item.val is not None %}{{ item.val }}{% elif item.get and item.get.val is not None %}{{ item.get.val }}{% else %}{{ item }}{% endif %}"
-                                       title="{% if item.review %}⚠️ Requiere Revisión Manual{% endif %}"
+
+                                       title="{% if item.review %}ÔÜá´©Å Requiere Revisión Manual{% endif %}"
+
                                        style="font-size: 0.95rem; font-weight: 800; border-radius: 4px; {% if item.review %}border: 2px solid #f59e0b; background: #fffbeb;{% else %}background: rgba(255,255,255,0.8); border: 1px solid #BCCCDC;{% endif %}">
+
                             </td>
+
                             {% endfor %}
+
                         </tr>
+
                         {% endfor %}
+
                     </tbody>
+
                 </table>
+
             </div>
+
         </div>
-        {% else %}
-        <!-- ESTADO VACÍO -->
-        <div class="text-center py-5" style="margin-top: 5rem; opacity: 0.75;">
-            <i class="ri-file-pdf-line" style="font-size: 8rem; color: var(--stitch-primary); opacity: 0.5; filter: none;"></i>
-            <h2 class="mt-4" style="font-family: 'Inter', sans-serif; font-weight: 800; color: var(--stitch-text); text-transform: uppercase;">Esperando Documento...</h2>
-            <p style="font-weight: 500; color: var(--stitch-muted);">Suba un archivo PDF para comenzar el proceso de digitalización inteligente.</p>
-        </div>
-        {% endif %}
+
+        
+
+
 
         {% if header.ai_error_msg or error_ia %}
+
         <div class="alert alert-danger animate__animated animate__headShake" role="alert" style="margin-top: 1rem; border-radius: 8px; border-left: 4px solid #e11d48; background: #ffe4e6; color: #881337;">
+
             <i class="ri-error-warning-line me-2" style="font-size: 1.2rem; vertical-align: middle;"></i>
+
             <strong style="font-weight: 800; font-family: 'Inter', sans-serif;">Error de Conexión IA:</strong> 
+
             <span style="font-weight: 500;">{{ header.ai_error_msg }}{{ error_ia }}</span>
+
             <small class="d-block mt-1" style="color: #be123c;">El sistema bloqueó la importación para prevenir desalineación de datos. Por favor, verifique su API Key en la barra lateral.</small>
+
         </div>
+
         {% endif %}
+
         
+
         {% if header.denominacion == "DOCUMENTO ESCANEADO - DATOS NO LEGIBLES" %}
+
         <div class="alert alert-warning animate__animated animate__headShake" role="alert" style="margin-top: 2rem;">
+
             <i class="ri-alert-line me-2"></i>
+
             <strong>Atención:</strong> El documento parece ser una imagen escaneada sin texto digital. 
+
             El sistema no pudo extraer los valores automáticamente. Por favor, complete los datos manualmente.
+
         </div>
+
         {% endif %}
+
     </main>
 </div>
-
 <script>
-    // Paginación DESHABILITADA - Mostrando todas las piezas
-    function changePiecePage(dir) {
-        // No hacer nada
+window.currentOcrData = null;
+
+document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.getElementById("btn-procesar-json");
+    if (btn) {
+        btn.addEventListener("click", function () {
+            console.log("-> Botón clickeado mediante addEventListener seguro.");
+
+            const textarea = document.getElementById("jsonInput") || document.querySelector("textarea");
+            if (!textarea) {
+                alert("No se encontró el campo de texto.");
+                return;
+            }
+
+            let rawText = textarea.value.trim();
+            if (!rawText) {
+                alert("El campo de texto está vacío.");
+                return;
+            }
+
+            let jsonData;
+            try {
+                jsonData = JSON.parse(rawText);
+            } catch (e) {
+                alert("Error de sintaxis en el JSON: " + e.message);
+                return;
+            }
+
+            fetch(window.location.href, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]") ? document.querySelector("[name=csrfmiddlewaretoken]").value : ""
+                },
+                body: JSON.stringify(jsonData)
+            })
+            .then(res => {
+                if (!res.ok) {
+                    return res.text().then(text => { throw new Error("HTTP " + res.status + ": " + text) });
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log("DATOS JSON RECIBIDOS:", data);
+                
+                let paginaDatos = data;
+                if (data.paginas && Array.isArray(data.paginas) && data.paginas.length > 0) {
+                    paginaDatos = data.paginas[0];
+                    console.log("Usando datos de la página 1:", paginaDatos);
+                }
+                
+                window.currentOcrData = paginaDatos;
+
+                if (paginaDatos.status === "success" || paginaDatos.cliente || data.status === "success") {
+                    const statusOp = document.querySelector('.status-value-op');
+                    if(statusOp) statusOp.textContent = '#' + (paginaDatos.op || data.op || '---');
+                    
+                    const statusSmall = document.querySelectorAll('.status-value-small');
+                    if(statusSmall && statusSmall.length >= 4) {
+                        statusSmall[0].textContent = paginaDatos.proyecto || data.proyecto || 'S/P';
+                        statusSmall[1].textContent = paginaDatos.cliente || data.cliente || 'CLIENTE NO DETECTADO';
+                        statusSmall[2].textContent = paginaDatos.denominacion || data.denominacion || '---';
+                        statusSmall[3].textContent = paginaDatos.operacion || data.operacion || '---';
+                    }
+                    
+                    function seleccionarParcial(selectId, textoBuscado) {
+                        const select = document.getElementById(selectId);
+                        if (!select || !textoBuscado) return;
+                        
+                        const limpiar = (str) => String(str).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                        const objetivo = limpiar(textoBuscado);
+                        console.log(`[Autoseleccion] Buscando '${objetivo}' en ${selectId}`);
+
+                        let matchFound = false;
+                        for (let i = 0; i < select.options.length; i++) {
+                            if (!select.options[i].value) continue;
+                            const textoOpcion = limpiar(select.options[i].text);
+                            const valorOpcion = limpiar(select.options[i].value);
+                            
+                            if (textoOpcion.includes(objetivo) || objetivo.includes(textoOpcion) || valorOpcion === objetivo) {
+                                select.selectedIndex = i;
+                                select.dispatchEvent(new Event('change'));
+                                if (window.jQuery) jQuery(select).trigger('change');
+                                console.log(`[Autoseleccion] ÉXITO en ${selectId}`);
+                                matchFound = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!matchFound) {
+                            console.log(`[Autoseleccion] NO EXISTE en ${selectId}. Creando opción dinámica: ${textoBuscado}`);
+                            const nuevaOpcion = document.createElement("option");
+                            nuevaOpcion.value = ""; // ID vacío para forzar al backend a crearlo
+                            nuevaOpcion.text = textoBuscado; // Sin prefijos para que getTextOfSelect lo lea limpio
+                            nuevaOpcion.style.fontWeight = "bold";
+                            nuevaOpcion.style.color = "var(--stitch-primary)";
+                            select.appendChild(nuevaOpcion);
+                            select.selectedIndex = select.options.length - 1;
+                            select.dispatchEvent(new Event('change'));
+                            if (window.jQuery) jQuery(select).trigger('change');
+                        }
+                    }
+
+                    seleccionarParcial('sel-cliente-ocr', paginaDatos.cliente || data.cliente);
+                    seleccionarParcial('sel-proceso-ocr', paginaDatos.denominacion || data.denominacion);
+                    seleccionarParcial('sel-articulo-ocr', paginaDatos.articulo || data.articulo);
+                    seleccionarParcial('sel-elemento-ocr', paginaDatos.operacion || data.operacion);
+
+                    const tbody = document.querySelector("#tabla-ocr-resultados tbody");
+                    if (tbody && (paginaDatos.controles || data.controles)) {
+                        tbody.innerHTML = "";
+                        const controlesData = paginaDatos.controles || data.controles || [];
+                        
+                        // IGNORAR paginaDatos.piezas por completo.
+                        // Extraer estrictamente las claves del objeto `piezas` de cada control.
+                        let uniqueKeys = new Set();
+                        
+                        controlesData.forEach(c => {
+                            if (c.piezas && typeof c.piezas === 'object' && !Array.isArray(c.piezas)) {
+                                Object.keys(c.piezas).forEach(k => uniqueKeys.add(k));
+                            }
+                        });
+                        
+                        let arrayPiezas = Array.from(uniqueKeys).sort((a, b) => {
+                            let numA = parseFloat(a.replace(/_/g, '.'));
+                            let numB = parseFloat(b.replace(/_/g, '.'));
+                            if (isNaN(numA)) return 1;
+                            if (isNaN(numB)) return -1;
+                            return numA - numB;
+                        });
+                        
+                        // Si por algún motivo extremo no hay objeto piezas, no dibujamos nada o solo 1 para evitar crash visual total.
+                        if (arrayPiezas.length === 0) {
+                            console.warn("NO se encontró ningún objeto 'piezas' en los controles. La grilla no generará columnas dinámicas.");
+                        }
+
+                        const theadRow = document.querySelector('.table-ocr thead tr');
+                        if (theadRow) {
+                            while(theadRow.children.length > 4) {
+                                theadRow.removeChild(theadRow.lastChild);
+                            }
+                            arrayPiezas.forEach(p => {
+                                const th = document.createElement('th');
+                                th.className = 'text-center';
+                                th.style = 'width: 85px; min-width: 85px; color: var(--stitch-primary); font-size: 0.8rem; font-weight: 800; padding: 0.5rem 0; border-bottom: 2px solid var(--stitch-border); background: #F8FAFC;';
+                                th.textContent = p;
+                                theadRow.appendChild(th);
+                            });
+                        }
+
+                        controlesData.forEach(row => {
+                            let tr = document.createElement("tr");
+                            tr.className = 'ocr-row';
+                            tr.style = 'border-bottom: 1px solid var(--stitch-border);';
+                            
+                            let valsHtml = '';
+                            arrayPiezas.forEach(p => {
+                                let vItem = '';
+                                
+                                if (row.piezas && typeof row.piezas === 'object' && !Array.isArray(row.piezas)) {
+                                    vItem = row.piezas[p]; // EXCLUSIVAMENTE acceso directo a la clave estricta
+                                }
+
+                                let valStr = '';
+                                let isOk = true;
+                                if (vItem !== null && typeof vItem === 'object') {
+                                    valStr = vItem.val !== undefined ? vItem.val : '';
+                                    isOk = vItem.ok !== false;
+                                } else {
+                                    valStr = (vItem !== undefined && vItem !== null) ? vItem : '';
+                                }
+                                
+                                const colorClass = isOk ? 'ok-text' : 'nok-text';
+                                valsHtml += `<td class="text-center" style="padding: 0.6rem 0.4rem; border-right: 1px solid var(--stitch-border); background: transparent;">
+                                    <input type="text" class="ocr-input-edit text-center celda-valor edit-val ${colorClass}" value="${valStr}" style="font-size: 0.95rem; font-weight: 800; border-radius: 4px; background: rgba(255,255,255,0.8); border: 1px solid #BCCCDC;">
+                                </td>`;
+                            });
+
+                            const cotaName = row.cota || row.control || '';
+                            const nominalVal = row.nominal || '';
+                            const tolVal = row.tol || row.tolerancia || '';
+                            const instrVal = row.instrumento || '';
+
+                            tr.innerHTML = `
+                                <td class="fw-bold ps-4" style="position: sticky; left: 0; z-index: 20; background: #FFFFFF; border-right: 1px solid var(--stitch-border); white-space: nowrap;">
+                                    <input type="text" class="ocr-input-edit text-start edit-control" value="${cotaName}" style="font-weight: 700; width: 250px; font-size: 0.8rem;">
+                                </td>
+                                <td class="text-center" style="position: sticky; left: 280px; z-index: 20; background: #FFFFFF;">
+                                    <input type="text" class="ocr-input-edit text-center edit-nominal" value="${nominalVal}" style="color: var(--stitch-primary); font-weight: 800; width: 100px; font-size: 0.9rem;">
+                                </td>
+                                <td class="text-center" style="position: sticky; left: 400px; z-index: 20; background: #FFFFFF; border-right: 1px solid var(--stitch-border);">
+                                    <input type="text" class="ocr-input-edit text-center edit-tol" value="${tolVal}" style="color: var(--stitch-text); font-weight: 700; width: 140px; font-size: 0.85rem;">
+                                </td>
+                                <td class="text-center" style="position: sticky; left: 560px; z-index: 20; background: #FFFFFF; border-right: 2px solid var(--stitch-border);">
+                                    <input type="text" class="ocr-input-edit text-center edit-instr" value="${instrVal}" style="font-size: 0.75rem; font-weight: 800; width: 70px;">
+                                </td>
+                                ${valsHtml}
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    }
+                    console.log("¡Interfaz pintada con éxito!");
+                    
+                } else {
+                    alert("Error del servidor: " + (data.message || "Desconocido"));
+                }
+            })
+            .catch(err => {
+                console.error("Error en fetch:", err);
+                alert("Ocurrió un error al comunicarse con el servidor: " + err.message);
+            });
+        });
     }
 
-    function showLoader() {
-        if (document.getElementById('upload-content')) document.getElementById('upload-content').style.display = 'none';
-        if (document.getElementById('processing-loader')) document.getElementById('processing-loader').style.display = 'block';
-    }
+    const btnGuardar = document.getElementById('btn-importar-sistema');
+    if (btnGuardar) {
+        btnGuardar.addEventListener('click', function() {
+            if (!window.currentOcrData) {
+                alert("Primero debe procesar un JSON válido antes de confirmar.");
+                return;
+            }
 
-    {% if success %}
-    document.getElementById('btn-importar-sistema').addEventListener('click', function() {
-        const header = JSON.parse('{{ header_json|escapejs }}');
-        const piezas = JSON.parse('{{ piezas_json|escapejs }}');
-        
-        // Colactar matrix desde la tabla editable
-        const matrix = [];
-        document.querySelectorAll('.ocr-row').forEach(tr => {
-            const rowData = {
-                control: tr.querySelector('.edit-control').value,
-                nominal: tr.querySelector('.edit-nominal').value,
-                tolerancia: tr.querySelector('.edit-tol').value,
-                instrumento: tr.querySelector('.edit-instr').value,
-                valores: []
-            };
+            const header = window.currentOcrData.header || window.currentOcrData || {};
             
-            tr.querySelectorAll('.edit-val').forEach(input => {
-                // Si el original era un objeto {val, ok}, mantenemos estructura básica
-                // El backend procesará los valores
-                rowData.valores.push(input.value);
+            function getTextOfSelect(id) {
+                const el = document.getElementById(id);
+                if(el && el.selectedIndex >= 0) {
+                    const txt = el.options[el.selectedIndex].text;
+                    if (txt.includes("---") || txt.toLowerCase().includes("seleccionar")) return "";
+                    return txt;
+                }
+                return "";
+            }
+            
+            header.cliente = getTextOfSelect('sel-cliente-ocr') || header.cliente;
+            header.denominacion = getTextOfSelect('sel-proceso-ocr') || header.denominacion;
+            header.articulo = getTextOfSelect('sel-articulo-ocr') || header.articulo;
+            header.operacion = getTextOfSelect('sel-elemento-ocr') || header.operacion;
+            
+            const matrix = [];
+            const ths = document.querySelectorAll('.table-ocr thead tr th');
+            const piezasCols = [];
+            for (let i = 4; i < ths.length; i++) {
+                piezasCols.push(ths[i].textContent.trim());
+            }
+
+            document.querySelectorAll('.ocr-row').forEach(tr => {
+                const rowData = {
+                    control: tr.querySelector('.edit-control').value,
+                    nominal: tr.querySelector('.edit-nominal').value,
+                    tolerancia: tr.querySelector('.edit-tol').value,
+                    instrumento: tr.querySelector('.edit-instr').value,
+                    valores: []
+                };
+                
+                tr.querySelectorAll('.edit-val').forEach(input => {
+                    rowData.valores.push(input.value);
+                });
+                
+                matrix.push(rowData);
             });
             
-            matrix.push(rowData);
-        });
-        
-        const payload = {
-            header: header,
-            piezas: piezas, 
-            matrix: matrix,
-            proceso_id: document.getElementById('sel-proceso-ocr').value,
-            articulo_id: document.getElementById('sel-articulo-ocr').value,
-            elemento_id: document.getElementById('sel-elemento-ocr').value,
-            cliente_id: document.getElementById('sel-cliente-ocr').value
-        };
+            const payload = {
+                header: header,
+                piezas: piezasCols.length > 0 ? piezasCols : (window.currentOcrData.piezas || []), 
+                matrix: matrix,
+                proceso_id: document.getElementById('sel-proceso-ocr').value,
+                articulo_id: document.getElementById('sel-articulo-ocr').value,
+                elemento_id: document.getElementById('sel-elemento-ocr').value,
+                cliente_id: document.getElementById('sel-cliente-ocr').value
+            };
 
-        const btn = this;
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Guardando...';
 
-        fetch("{% url 'importar_datos_ocr' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === 'success') {
-                Swal.fire({
-                    title: '¡PROCESO COMPLETADO!',
-                    html: `
-                        <div class="swal-success-container">
-                            <div class="swal-success-icon"><i class="ri-checkbox-circle-fill"></i></div>
-                            <div class="swal-success-title">Importación Exitosa</div>
-                            <div class="swal-success-text">Los datos han sido vinculados correctamente a la <b>OP ${data.op}</b>.</div>
-                            <div class="swal-success-footer">Redirigiendo al panel de mediciones...</div>
-                        </div>
-                    `,
-                    icon: undefined, // Usamos nuestro icono personalizado en el HTML
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    background: 'var(--stitch-glass)',
-                    backdrop: 'rgba(30, 41, 59, 0.4)',
-                    customClass: {
-                        popup: 'premium-swal-popup',
-                    },
-                    didOpen: () => {
-                        // Opcional: algún efecto extra
+            fetch("{% url 'importar_datos_ocr' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector("[name=csrfmiddlewaretoken]") ? document.querySelector("[name=csrfmiddlewaretoken]").value : "{{ csrf_token }}"
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(async response => {
+                if (!response.ok) {
+                    const text = await response.text();
+                    console.error("Error del servidor (No 200 OK):", text);
+                    throw new Error(text);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: '¡PROCESO COMPLETADO!',
+                            html: `
+                                <div class="swal-success-container">
+                                    <div class="swal-success-icon"><i class="ri-checkbox-circle-fill"></i></div>
+                                    <div class="swal-success-title">Importación Exitosa</div>
+                                    <div class="swal-success-text">Los datos han sido vinculados correctamente a la <b>OP ${data.op}</b>.</div>
+                                    <div class="swal-success-footer">Redirigiendo al panel de mediciones...</div>
+                                </div>
+                            `,
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            background: 'var(--stitch-glass)',
+                            backdrop: 'rgba(30, 41, 59, 0.4)',
+                        }).then(() => {
+                            window.location.href = `/mediciones/${data.planilla_id}/ingresar/`;
+                        });
+                    } else {
+                        alert(`¡Importación Exitosa! Los datos se vincularon a la OP ${data.op}. Redirigiendo...`);
+                        window.location.href = `/mediciones/${data.planilla_id}/ingresar/`;
                     }
-                }).then(() => {
-                    window.location.href = `{% url 'nueva_medicion_op' %}?op=${data.op}&proy=${encodeURIComponent(data.proy)}&proc=${data.proc_id}`;
-                });
-            } else {
-                alert('Error: ' + data.message);
+                } else {
+                    alert('Error: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = 'Confirmar e Importar';
+                }
+            })
+            .catch(error => {
+                console.error('Error al guardar:', error);
+                alert('Error de conexión o fallo del servidor al importar. Revisar consola (F12) para más detalles.');
                 btn.disabled = false;
                 btn.innerHTML = 'Confirmar e Importar';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error de conexión al importar.');
-            btn.disabled = false;
-            btn.innerHTML = 'Confirmar e Importar';
+            });
         });
-    });
-    {% endif %}
-
-    // Formatear numéricamente a 2 decimales visualmente
-    document.addEventListener("DOMContentLoaded", function() {
-        document.querySelectorAll('.celda-valor').forEach(input => {
-            if (input.value && input.value.trim() !== '') {
-                // Remplazar coma por punto para el parseFloat si existiera, 
-                // aunque input type="number" requiere punto.
-                let valStr = input.value.replace(',', '.');
-                let valNum = parseFloat(valStr);
-                if (!isNaN(valNum)) {
-                    input.value = valNum.toFixed(2);
-                }
-            }
-        });
-    });
+    }
+});
 </script>
 {% endblock %}
