@@ -1,0 +1,15 @@
+# REGLAS ESTRICTAS PARA ANTIGRAVITY (AG)
+
+1. PROTOCOLO DE AISLAMIENTO Y ESTABILIDAD
+- Análisis Previo: Antes de cambiar algo, analiza dependencias.
+- Prohibido alterar funciones globales, estados compartidos o rutas de otros módulos sin avisar previamente.
+- Prioridad: La estabilidad del sistema está por encima de la velocidad de entrega.
+- Cero Suposiciones: Tienes estrictamente prohibido adivinar. Si debes modificar textos o UI, realiza una búsqueda global primero para encontrar el archivo exacto.
+- Verificación: Realiza una simulación lógica del flujo completo antes de entregar código para evitar regresiones.
+
+2. REGLAS ESTRICTAS DE DISEÑO (MODALES)
+- Usa siempre la estructura con bordes de 24px, icono centrado en círculo tenue y descripción centrada.
+- Botón Cancelar: Solo texto, sin fondo ni recuadro.
+- Botón Acción: Fondo azul (con ✓) para éxito o rojo para eliminar.
+- Código Base a usar obligatoriamente:
+const s = { overlay: {position:'fixed', inset:0, display:'flex', alignItems:'center', justifyContent:'center', backgroundColor:'rgba(0,0,0,0.5)'}, card: {backgroundColor:'white', padding:'32px', borderRadius:'24px', textAlign:'center'}, iconCircle: {margin:'0 auto 20px', borderRadius:'50%', width:'64px', height:'64px'}, cancelBtn: {backgroundColor:'transparent', border:'none', fontWeight:'bold'}, confirmBtn: {borderRadius:'16px', padding:'12px', color:'white', fontWeight:'bold'} };

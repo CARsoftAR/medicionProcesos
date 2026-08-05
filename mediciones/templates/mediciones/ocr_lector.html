@@ -312,8 +312,11 @@
         border-color: var(--stitch-primary);
         box-shadow: 0 0 0 3px #D6E8FA;
     }
-    .val-input {
-        width: 65px;
+    .celda-valor { 
+        min-width: 55px; 
+        max-width: 65px; 
+        width: 100%; 
+        padding: 2px 4px; 
         margin: 0 auto;
     }
 
@@ -610,10 +613,11 @@
                             
                             {% for item in row.valores %}
                             <td class="text-center" style="padding: 0.6rem 0.4rem; border-right: 1px solid var(--stitch-border); background: transparent;">
-                                <input type="text" 
-                                       class="ocr-input-edit text-center val-input edit-val {% if item.ok == False %}nok-text{% else %}ok-text{% endif %}" 
+                                <input type="number" step="any"
+                                       class="ocr-input-edit text-center celda-valor edit-val {% if item.ok == False %}nok-text{% else %}ok-text{% endif %}" 
                                        value="{% if item.val is not None %}{{ item.val }}{% elif item.get and item.get.val is not None %}{{ item.get.val }}{% else %}{{ item }}{% endif %}"
-                                       style="font-size: 0.95rem; font-weight: 800; width: 65px;">
+                                       title="{% if item.review %}⚠️ Requiere Revisión Manual{% endif %}"
+                                       style="font-size: 0.95rem; font-weight: 800; border-radius: 4px; {% if item.review %}border: 2px solid #f59e0b; background: #fffbeb;{% else %}background: rgba(255,255,255,0.8); border: 1px solid #BCCCDC;{% endif %}">
                             </td>
                             {% endfor %}
                         </tr>
@@ -750,5 +754,20 @@
         });
     });
     {% endif %}
+
+    // Formatear numéricamente a 2 decimales visualmente
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll('.celda-valor').forEach(input => {
+            if (input.value && input.value.trim() !== '') {
+                // Remplazar coma por punto para el parseFloat si existiera, 
+                // aunque input type="number" requiere punto.
+                let valStr = input.value.replace(',', '.');
+                let valNum = parseFloat(valStr);
+                if (!isNaN(valNum)) {
+                    input.value = valNum.toFixed(2);
+                }
+            }
+        });
+    });
 </script>
 {% endblock %}

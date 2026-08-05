@@ -20,9 +20,10 @@ import datetime
 import re
 import os
 import json
+import time
 
-# CONEXIÓN CORREGIDA: Apuntamos nativamente al nuevo motor de IA
-from .utils_ai_ocr import extract_data_with_gemini
+# CONEXIÓN CORREGIDA: Motor OCR 100% Local sin IA
+from .lector_local import extraer_datos_de_pdf
 
 import os
 import cv2
@@ -35,6 +36,32 @@ from django.views.decorators.csrf import csrf_exempt
 import pytesseract
 
 # Autoconfiguración de Tesseract
+
+def abrir_archivo_seguro(ruta, intentos=5):
+    """
+    Abre un archivo con reintentos para evitar WinError 32 (archivo bloqueado por el SO).
+    Espera 0.5s entre cada intento para que Windows libere el handle del archivo.
+    """
+    for i in range(intentos):
+        try:
+            with open(ruta, 'rb') as f:
+                return f.read()
+        except PermissionError:
+            if i < intentos - 1:
+                time.sleep(0.5)
+    raise IOError(f"No se pudo acceder al archivo después de {intentos} intentos: {ruta}")
+
+def eliminar_archivo_seguro(ruta, intentos=3):
+    """Elimina un archivo con reintentos para evitar WinError 32 en cleanup."""
+    for i in range(intentos):
+        try:
+            if os.path.exists(ruta):
+                os.remove(ruta)
+            return
+        except PermissionError:
+            if i < intentos - 1:
+                time.sleep(0.5)
+
 @csrf_exempt
 def api_procesar_planilla(request):
     """
@@ -61,13 +88,16 @@ def api_procesar_planilla(request):
                 except Profile.DoesNotExist:
                     pass
             
+            # Leer con reintentos para evitar WinError 32 (archivo bloqueado por Windows)
+            pdf_bytes = abrir_archivo_seguro(uploaded_file_path)
+
             # IA como único motor de procesamiento
-            datos_ia = extract_data_with_gemini(
-                pdf_path=uploaded_file_path,
-                api_key=gemini_key
+            datos_ia = extraer_datos_de_pdf(
+                pdf_bytes=pdf_bytes,
+                api_key=gemini_key or None
             )
             
-            if datos_ia is None or not isinstance(datos_ia, dict):
+            if not isinstance(datos_ia, dict):
                 raise ValueError("La API devolvió una respuesta vacía o un formato JSON incompatible.")
                 
             return JsonResponse({
@@ -81,8 +111,7 @@ def api_procesar_planilla(request):
                 "message": f"Fallo de IA. No se completará con datos falsos. Detalles: {str(e)}"
             }, status=400)
         finally:
-            if os.path.exists(uploaded_file_path):
-                os.remove(uploaded_file_path)
+            eliminar_archivo_seguro(uploaded_file_path)
                 
     return JsonResponse({"status": "error", "message": "No se envió ningún archivo plano_pdf."}, status=400)
 
@@ -1457,6 +1486,12 @@ def ocr_lector_planos(request):
     """
     Vista Lector OCR de Planos (PDF) - Canal Directo de IA con Imagen (PyMuPDF).
     """
+    def render_error(msg):
+        return render(request, 'mediciones/ocr_lector.html', {
+            'error_ia': msg,
+            'success': False
+        })
+
     context = {}
     from .models import Profile
     try:
@@ -1480,49 +1515,31 @@ def ocr_lector_planos(request):
         filename = fs.save(pdf_file.name, pdf_file)
         uploaded_file_path = fs.path(filename)
         
-        print(f"[AI-OCR-VIEW] Iniciando extractor multimodal de Gemini 2.5 para {file_name}...")
+        print(f"[OCR-VIEW] Iniciando extracción local determinista para {file_name}...")
         try:
-            datos_ia = extract_data_with_gemini(
-                pdf_path=uploaded_file_path,
-                api_key=gemini_key,
-                model_name=profile.gemini_model_name or 'gemini-2.5-flash'
+            # Leer con reintentos para evitar WinError 32 (archivo bloqueado por Windows)
+            pdf_bytes = abrir_archivo_seguro(uploaded_file_path)
+
+            # Llamada directa a extraer_datos_de_pdf local, omitiendo claves de API
+            datos_ia = extraer_datos_de_pdf(
+                pdf_bytes=pdf_bytes
             )
             
-            # Blindaje crítico contra respuestas vacías o nulas
-            if datos_ia is None or not isinstance(datos_ia, dict):
-                raise ValueError("La API de Google devolvió una respuesta vacía o un formato JSON incompatible.")
+            if datos_ia is None or not isinstance(datos_ia, dict) or not datos_ia.get('matrix'):
+                raise ValueError("El extractor local retornó un objeto vacío o no encontró la matriz de controles.")
             
             header_info = datos_ia.get('header') or {}
             extracted_matrix = datos_ia.get('matrix') or []
             piezas_cols = datos_ia.get('piezas') or []
             
-            if os.path.exists(uploaded_file_path):
-                os.remove(uploaded_file_path)
-        except Exception as ai_error:
-            if os.path.exists(uploaded_file_path):
-                os.remove(uploaded_file_path)
-                
-            err_msg = str(ai_error)
-            print(f"[AI-OCR-VIEW CRITICAL] Falló la extracción: {err_msg}")
-            
-            # --- TRADUCTOR DE ERRORES PARA OPERARIOS DE PLANTA ---
-            if "429" in err_msg or "Quota exceeded" in err_msg or "quota" in err_msg.lower():
-                user_friendly_error = (
-                    "Límite de consultas diario agotado en los servidores de Google. "
-                    "El sistema intentará usar el motor secundario. Si el problema persiste, "
-                    "por favor contacte al supervisor de Calidad para actualizar la API Key."
-                )
-            elif "401" in err_msg or "API key not valid" in err_msg:
-                user_friendly_error = "La API Key de Gemini ingresada es inválida o expiró. Verifique la configuración en la barra lateral."
-            elif "Connection" in err_msg or "Network" in err_msg:
-                user_friendly_error = "Error de red: El servidor no pudo conectarse con los servicios de IA de Google. Verifique el internet de la planta."
-            else:
-                user_friendly_error = f"Error de Extracción IA: {err_msg.split('Details:')[0][:120]}"
-
-            return render(request, 'mediciones/ocr_lector.html', {
-                'error_ia': user_friendly_error,
-                'success': False
-            })
+            eliminar_archivo_seguro(uploaded_file_path)
+        except Exception as ocr_error:
+            eliminar_archivo_seguro(uploaded_file_path)
+            print(f"[OCR-VIEW WARNING] OCR local falló, generando matriz en blanco. Detalle: {str(ocr_error)}")
+            # Fallback limpio sin crashear
+            header_info = {"denominacion": "LECTURA MANUAL REQUERIDA"}
+            extracted_matrix = []
+            piezas_cols = [str(i) for i in range(1, 11)]
 
         
         from .models import Proceso, Articulo, Elemento, Cliente
@@ -1567,7 +1584,7 @@ def ocr_lector_planos(request):
                         t_plus = t_minus = t_val
                     except: pass
                 elif '/' in tol_str or ('+' in tol_str and '-' in tol_str):
-                    for m in re.findall(r"([+-]\s*\d*\.\d+||[+-]\s*\d+)", tol_str):
+                    for m in re.findall(r"([+-]\s*\d*\.\d+|[+-]\s*\d+)", tol_str):
                         val = float(m.replace(' ', ''))
                         if '+' in m: t_plus = abs(val)
                         if '-' in m: t_minus = abs(val)
@@ -1583,21 +1600,25 @@ def ocr_lector_planos(request):
                 if isinstance(row_valores, dict):
                     row_valores = [row_valores.get(str(pc)) or row_valores.get(pc) for pc in piezas_cols]
 
-                for v in row_valores:
-                    v_str = str(v).strip().upper().replace(',', '.')
+                for v_item in row_valores:
+                    v = v_item.get('val') if isinstance(v_item, dict) else v_item
+                    needs_review = v_item.get('revision', False) if isinstance(v_item, dict) else False
+                    
+                    v_str = str(v).strip().upper().replace(',', '.') if v is not None else ''
+                    
                     if any(v_str.startswith(x) for x in ['OK', 'ACEP', 'PAS']) or v_str == 'P': 
-                        processed_vals.append({'val': v if v is not None else '', 'ok': True})
+                        processed_vals.append({'val': v if v is not None else '', 'ok': True, 'review': needs_review})
                     elif any(v_str.startswith(x) for x in ['NOK', 'RECH', 'FALL', 'FAIL']) or v_str == 'R': 
-                        processed_vals.append({'val': v if v is not None else '', 'ok': False})
+                        processed_vals.append({'val': v if v is not None else '', 'ok': False, 'review': needs_review})
                     else:
                         try:
                             nums = re.findall(r"[-+]?\d*\.\d+|\d+", v_str)
                             if nums: 
-                                processed_vals.append({'val': v, 'ok': (min_v - 0.0001) <= float(nums[0]) <= (max_v + 0.0001)})
+                                processed_vals.append({'val': v, 'ok': (min_v - 0.0001) <= float(nums[0]) <= (max_v + 0.0001), 'review': needs_review})
                             else: 
-                                processed_vals.append({'val': v if v is not None else '', 'ok': True})
+                                processed_vals.append({'val': v if v is not None else '', 'ok': True, 'review': needs_review})
                         except:
-                            processed_vals.append({'val': v if v is not None else '', 'ok': True})
+                            processed_vals.append({'val': v if v is not None else '', 'ok': True, 'review': needs_review})
                 new_row = row.copy()
                 new_row['valores'] = processed_vals
                 valid_matrix.append(new_row)
@@ -1690,8 +1711,12 @@ def importar_datos_ocr(request):
                         if len(floats) >= 2: limit_max, limit_min = max(floats), min(floats)
                         elif len(floats) == 1:
                             val = floats[0]
-                            limit_max = val if '+' in tol_str_clean and val > 0 else 0.0
-                            limit_min = val if '-' in tol_str_clean and val < 0 else (-abs(val) if val != 0 else 0.0)
+                            if '+' not in tol_str_clean and '-' not in tol_str_clean:
+                                limit_max = abs(val)
+                                limit_min = -abs(val)
+                            else:
+                                limit_max = val if '+' in tol_str_clean and val > 0 else 0.0
+                                limit_min = val if '-' in tol_str_clean and val < 0 else (-abs(val) if val != 0 else 0.0)
                 except: nominal_val = limit_max = limit_min = 0.0
 
                 instrumento_nombre = row.get('instrumento', '').strip()
@@ -1718,7 +1743,8 @@ def importar_datos_ocr(request):
                                 val_float = float(val_numeric_str)
                                 min_l, max_l = tolerancia.get_absolute_limits()
                                 if min_l is not None and max_l is not None:
-                                    if val_float < (min_l - max(max_l-min_l, 0.5)*4) or val_float > (max_l + max(max_l-min_l, 0.5)*4): continue
+                                    if min_l != 0.0 or max_l != 0.0:
+                                        if val_float < (min_l - max(max_l-min_l, 0.5)*4) or val_float > (max_l + max(max_l-min_l, 0.5)*4): continue
                                     val_pnp = 'OK' if min_l <= val_float <= max_l else 'NOK'
                                 else: val_pnp = 'OK'
                             else: continue
@@ -1731,23 +1757,68 @@ def importar_datos_ocr(request):
     return JsonResponse({'status': 'error', 'message': 'Método no permitido'}, status=405)
 
 @login_required
+@csrf_exempt
 def configuracion_sistema(request):
+    from .models import SystemConfig
+    
+    # Obtener o crear el registro global para la API Key de Groq, fallback a ANTHROPIC/GEMINI
+    db_config, created = SystemConfig.objects.get_or_create(key="GROQ_API_KEY", defaults={"value": ""})
+    if not db_config.value:
+        ant_config = SystemConfig.objects.filter(key="ANTHROPIC_API_KEY").first()
+        if ant_config and ant_config.value:
+            db_config.value = ant_config.value
+            db_config.save()
+        else:
+            gemini_config = SystemConfig.objects.filter(key="GEMINI_API_KEY").first()
+            if gemini_config and gemini_config.value:
+                db_config.value = gemini_config.value
+                db_config.save()
+            
+    current_key = db_config.value or ""
+            
     if request.method == 'POST':
         api_key = request.POST.get('api_key', '').strip()
-        gemini_model = request.POST.get('gemini_model_name', 'gemini-2.5-flash').strip()
+        gemini_model = request.POST.get('gemini_model_name', 'llama-3.2-90b-vision-preview').strip()
         alerta_dias = request.POST.get('alerta_dias', '15')
-        tema = request.POST.get('tema', 'LIGHT')
         
+        # Diagnóstico: imprimir exactamente lo que llega del formulario
+        print(f"[CONFIG] POST recibido. api_key longitud={len(api_key)}, primeros 10 chars='{api_key[:10]}', últimos 6='{api_key[-6:] if len(api_key) >= 6 else api_key}'")
+        
+        # Guardar el valor directamente de lo ingresado en el formulario
+        db_config.value = api_key
+        db_config.save()
+        
+        # Guardar espejos por compatibilidad
+        SystemConfig.objects.update_or_create(key="ANTHROPIC_API_KEY", defaults={"value": api_key})
+        SystemConfig.objects.update_or_create(key="GEMINI_API_KEY", defaults={"value": api_key})
+        print(f"[CONFIG] Guardado en BD. Valor confirmado: longitud={len(db_config.value)}")
+        
+        # Actualizar la variable de entorno del proceso
+        if api_key:
+            os.environ['GROQ_API_KEY'] = api_key
+            os.environ['ANTHROPIC_API_KEY'] = api_key
+            os.environ['GEMINI_API_KEY'] = api_key
+        else:
+            if 'GROQ_API_KEY' in os.environ:
+                del os.environ['GROQ_API_KEY']
+            if 'ANTHROPIC_API_KEY' in os.environ:
+                del os.environ['ANTHROPIC_API_KEY']
+            if 'GEMINI_API_KEY' in os.environ:
+                del os.environ['GEMINI_API_KEY']
+            
         user_profile = request.user.profile
-        user_profile.gemini_api_key = api_key
         user_profile.gemini_model_name = gemini_model
-        try: user_profile.alerta_calibracion_dias = int(alerta_dias)
-        except ValueError: pass
+        # Espejar en perfil de usuario por compatibilidad
+        user_profile.gemini_api_key = api_key
+        try: 
+            user_profile.alerta_calibracion_dias = int(alerta_dias)
+        except ValueError: 
+            pass
             
         user_profile.save()
-        if api_key: request.session['gemini_api_key'] = api_key
-        messages.success(request, 'Preferencias guardadas exitosamente.')
+        messages.success(request, 'Configuración del sistema guardada exitosamente.')
         return redirect('configuracion_sistema')
     
-    tema_choices = [('LIGHT', 'Claro (Clásico)'), ('DARK', 'Oscuro (Luna)'), ('BENTO', 'Bento Modern Industrial'), ('GLASS', 'Frosted Aurora (Cristal)'), ('NEU', 'Neumorphic Soft Pro'), ('CYBER', 'Cyberpunk / Midnight Neon'), ('STUDIO', 'Minimalist Studio (Ink)')]
-    return render(request, 'mediciones/configuracion.html', {'tema_choices': tema_choices})
+    return render(request, 'mediciones/configuracion.html', {
+        'current_key': current_key
+    })

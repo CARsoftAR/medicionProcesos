@@ -113,19 +113,17 @@
                 <div class="col-md-6 mb-3">
                     <label class="stitch-label">Modelo de IA a utilizar</label>
                     <select name="gemini_model_name" class="stitch-input">
-                        <option value="gemini-1.5-flash" {% if user.profile.gemini_model_name == 'gemini-1.5-flash' %}selected{% endif %}>Gemini 1.5 Flash (Rápido)</option>
-                        <option value="gemini-2.5-flash" {% if user.profile.gemini_model_name == 'gemini-2.5-flash' or not user.profile.gemini_model_name %}selected{% endif %}>Gemini 2.5 Flash (Recomendado)</option>
-                        <option value="gemini-1.5-pro" {% if user.profile.gemini_model_name == 'gemini-1.5-pro' %}selected{% endif %}>Gemini 1.5 Pro (Planos Complejos)</option>
+                        <option value="gemini-1.5-flash" {% if user.profile.gemini_model_name == 'gemini-1.5-flash' or not user.profile.gemini_model_name %}selected{% endif %}>Google Gemini 1.5 Flash (Recomendado)</option>
                     </select>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="stitch-label">Google Gemini API Key</label>
-                    <input type="password" name="api_key" class="stitch-input" 
+                    <label class="stitch-label">GOOGLE GEMINI API KEY</label>
+                    <input type="text" name="api_key" class="stitch-input" 
                            placeholder="Ingresa tu clave de API de Google Gemini..."
-                           value="{{ user.profile.gemini_api_key|default:'' }}">
+                           value="{{ current_key }}">
                     <div class="mt-2" style="font-size: 0.8rem; color: #64748b; font-weight: 500;">
                         <i class="ri-information-line" style="color: var(--stitch-primary); margin-right: 4px;"></i>
-                        Clave necesaria para el procesamiento OCR. <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--stitch-primary); font-weight: 700; text-decoration: none;">Obtener en AI Studio</a>.
+                        Clave necesaria para el procesamiento OCR. <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color: var(--stitch-primary); font-weight: 700; text-decoration: none;">Obtener en Google AI Studio</a>.
                     </div>
                 </div>
             </div>

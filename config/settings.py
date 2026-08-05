@@ -27,6 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# Permitir peticiones POST desde todos los orígenes de la red local
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://0.0.0.0:8000',
+]
+
 
 # Application definition
 
@@ -134,8 +141,21 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Authentication settings
-LOGIN_URL = 'login'
-LOGIN_REDIRECT_URL = 'index'
-LOGOUT_REDIRECT_URL = 'login'
+# Load .env variables manually to ensure reliability
+# Buscá donde definiste la clave antes y borrá esa línea.
+# Bajá hasta el final del archivo y asegurate de que solo quede esto:
+
+# Carga manual del .env (esto ya lo tenés)
+env_path = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_path):
+    with open(env_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                key, val = line.split('=', 1)
+                os.environ[key.strip()] = val.strip()
+
+# DEFINICIÓN ÚNICA Y FINAL
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY') or ''
+
 

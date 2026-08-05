@@ -308,3 +308,15 @@ class ValorMedicion(models.Model):
         verbose_name = 'Valor de Medición'
         verbose_name_plural = 'Valores de Medición'
         unique_together = [['planilla', 'control', 'pieza']]
+
+class SystemConfig(models.Model):
+    key = models.CharField(max_length=100, unique=True, verbose_name="Clave del Parámetro")
+    value = models.TextField(blank=True, null=True, verbose_name="Valor del Parámetro")
+
+    class Meta:
+        db_table = 'SYSTEM_CONFIG'
+        verbose_name = 'Configuración de Sistema'
+        verbose_name_plural = 'Configuraciones de Sistema'
+
+    def __str__(self):
+        return f"{self.key}: {self.value[:10]}..." if self.value else f"{self.key}: (vacío)"
