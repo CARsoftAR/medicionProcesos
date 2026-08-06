@@ -10,7 +10,7 @@
         <div class="d-flex align-items-center gap-3">
             <div>
                 <h1 id="controlTitleHeader" style="font-size: 1.5rem; font-family: 'Outfit', sans-serif; font-weight: 800; color: #1e293b; margin: 0; letter-spacing: -0.025em; text-transform: uppercase;">
-                    SEGUIMIENTO DE PARÁMETROS: <span style="color: #e11d48;">{{ tolerancia.control.nombre }}</span>
+                    SEGUIMIENTO DE PARÁMETROS: <span style="color: var(--stitch-primary);">{{ tolerancia.control.nombre }}</span>
                 </h1>
                 <p id="controlSubHeader" style="color: #64748b; font-size: 0.95rem; margin: 0; font-weight: 500;">
                     Proyecto: {{ tolerancia.planilla.proyecto }} | OP: {{ tolerancia.planilla.num_op }} | Proceso: {{ tolerancia.planilla.proceso.nombre }} | Cliente: {{ tolerancia.planilla.cliente.nombre }}
@@ -22,15 +22,15 @@
                 <i class="ri-printer-line"></i> REPORTE PRO
             </a> -->
             
-            <button id="topAlertBtn" onclick="showDiagnosticReport()" class="btn btn-danger animate__animated animate__pulse animate__infinite d-flex align-items-center justify-content-center shadow-danger" style="{% if not stats.alerts %}display: none !important;{% endif %} width: 42px; height: 42px; border-radius: 14px; border: none; background: var(--stitch-primary, #e11d48);">
+            <button id="topAlertBtn" onclick="showDiagnosticReport()" class="btn btn-danger animate__animated animate__pulse animate__infinite d-flex align-items-center justify-content-center shadow-danger" style="{% if not stats.alerts %}display: none !important;{% endif %} width: 42px; height: 42px; border-radius: 14px; border: none; background: var(--stitch-primary);">
                 <i class="ri-error-warning-fill" style="font-size: 1.2rem;"></i>
             </button>
             
             <button onclick="toggleFullScreen()" class="btn shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-radius: 14px; border: 1px solid rgba(225, 29, 72, 0.15); background: rgba(255,255,255,0.9);" title="Pantalla Completa">
-                <i class="ri-fullscreen-line" id="fsIcon" style="font-size: 1.2rem; color: var(--stitch-primary, #e11d48);"></i>
+                <i class="ri-fullscreen-line" id="fsIcon" style="font-size: 1.2rem; color: var(--stitch-primary);"></i>
             </button>
 
-            <a id="btnVolver" href="{% url 'ingreso_mediciones' tolerancia.planilla.id %}" class="btn" style="background-color: var(--stitch-primary, #e11d48); color: white; padding: 0.6rem 1.5rem; border-radius: 14px; font-size: 0.9rem; font-family: 'Outfit', sans-serif; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.3); text-transform: uppercase; letter-spacing: 0.05em;">
+            <a id="btnVolver" href="{% url 'ingreso_mediciones' tolerancia.planilla.id %}" class="btn" style="background-color: var(--stitch-primary); color: white; padding: 0.6rem 1.5rem; border-radius: 14px; font-size: 0.9rem; font-family: 'Outfit', sans-serif; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: var(--stitch-btn-shadow); text-transform: uppercase; letter-spacing: 0.05em;">
                 <i class="ri-arrow-left-line"></i> Volver
             </a>
         </div>
@@ -273,13 +273,41 @@
 
 <style>
     :root {
-        --stitch-primary: #e11d48;     /* Rose 600 */
-        --stitch-secondary: #fda4af;   /* Rose 300 */
-        --stitch-bg: #fdf2f8;          /* Rose 50 */
-        --stitch-text: #1e293b;        /* Slate 800 */
+        --stitch-primary: #e11d48;
+        --stitch-secondary: #fda4af;
+        --stitch-bg: #fdf2f8;
+        --stitch-text: #1e293b;
         --stitch-glass: rgba(255, 255, 255, 0.9);
         --stitch-border: rgba(225, 29, 72, 0.15);
         --stitch-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.08);
+        --stitch-btn-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.3);
+    }
+    
+    :root.theme-danger {
+        --stitch-primary: #e11d48;
+        --stitch-secondary: #fda4af;
+        --stitch-bg: #fdf2f8;
+        --stitch-border: rgba(225, 29, 72, 0.15);
+        --stitch-shadow: 0 10px 40px -10px rgba(225, 29, 72, 0.08);
+        --stitch-btn-shadow: 0 4px 6px -1px rgba(225, 29, 72, 0.3);
+    }
+    
+    :root.theme-warning {
+        --stitch-primary: #d97706;     /* Amber 600 */
+        --stitch-secondary: #fcd34d;   /* Amber 300 */
+        --stitch-bg: #fffbeb;          /* Amber 50 */
+        --stitch-border: rgba(217, 119, 6, 0.15);
+        --stitch-shadow: 0 10px 40px -10px rgba(217, 119, 6, 0.08);
+        --stitch-btn-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.3);
+    }
+
+    :root.theme-success {
+        --stitch-primary: #059669;     /* Emerald 600 */
+        --stitch-secondary: #6ee7b7;   /* Emerald 300 */
+        --stitch-bg: #ecfdf5;          /* Emerald 50 */
+        --stitch-border: rgba(5, 150, 105, 0.15);
+        --stitch-shadow: 0 10px 40px -10px rgba(5, 150, 105, 0.08);
+        --stitch-btn-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3);
     }
     
     body { font-family: 'Inter', sans-serif; }
@@ -839,6 +867,28 @@
         }
     }
 
+    function applyDynamicTheme(cp, cpk) {
+        let worst = null;
+        const vals = [];
+        if (cp !== null && cp !== undefined && !isNaN(cp)) vals.push(parseFloat(cp));
+        if (cpk !== null && cpk !== undefined && !isNaN(cpk)) vals.push(parseFloat(cpk));
+        
+        if (vals.length > 0) {
+            worst = Math.min(...vals);
+        }
+
+        let theme = 'danger'; // Default if missing is red
+        if (worst !== null) {
+            if (worst < 1.0) theme = 'danger';
+            else if (worst < 1.33) theme = 'warning';
+            else theme = 'success';
+        }
+        
+        const root = document.documentElement;
+        root.classList.remove('theme-danger', 'theme-warning', 'theme-success');
+        root.classList.add(`theme-${theme}`);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         try {
             const safeInit = (id, config) => {
@@ -852,6 +902,7 @@
             safeInit('thumbPie', getPieConfig(true));
             
             // Logic to select default chart based on control type
+            applyDynamicTheme(DATA.stats.cp, DATA.stats.cpk);
             {% if is_pnp %}
                 const pieThumb = document.querySelector('[onclick*="pie"]');
                 switchChart('pie', 'ESTATUS DE LOTE', pieThumb);
@@ -878,6 +929,7 @@
             const response = await fetch(`/mediciones/estadisticas/${controlId}/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             const data = await response.json();
             DATA.stats = data.stats; DATA.points = data.data_points; DATA.labels = data.labels;
+            applyDynamicTheme(data.stats.cp, data.stats.cpk);
             document.getElementById('controlTitleHeader').innerText = `SEGUIMIENTO DE PARÁMETROS: ${data.control_nombre}`;
             document.getElementById('controlSubHeader').innerText = `Proyecto: ${data.proyecto} | OP: ${data.num_op} | Proceso: ${data.proceso_nombre} | Cliente: ${data.cliente}`;
             document.getElementById('btnVolver').href = `/mediciones/${data.planilla_id}/ingresar/`;
