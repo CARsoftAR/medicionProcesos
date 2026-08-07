@@ -1,0 +1,74 @@
+{% extends 'mediciones/base.html' %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <a href="{% url 'lista_operarios' %}" class="btn btn-light rounded-circle shadow-sm p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                    <i class="ri-arrow-left-line"></i>
+                </a>
+                <h4 class="fw-bold mb-0" style="color: var(--text-primary);">{{ titulo }}</h4>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="alert bg-primary bg-opacity-10 border-0 border-start border-primary border-4 d-flex gap-3 mb-4">
+                        <i class="ri-information-fill text-primary fs-4"></i>
+                        <div class="small" style="color: var(--text-secondary);">
+                            El legajo será utilizado por el operario como <b>Usuario</b> en la aplicación móvil. El PIN actúa como su <b>Contraseña</b> personal.
+                        </div>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {% if 'legajo' in form.fields %}
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-muted small text-uppercase">Legajo Numérico</label>
+                            {{ form.legajo }}
+                            <div class="text-danger small mt-1">{{ form.legajo.errors }}</div>
+                        </div>
+                        {% endif %}
+
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Nombre</label>
+                                {{ form.nombre }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Apellido</label>
+                                {{ form.apellido }}
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label class="form-label fw-bold text-muted small text-uppercase">PIN (4 Dígitos)</label>
+                                {{ form.pin }}
+                                <div class="text-danger small mt-1">{{ form.pin.errors }}</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-muted small text-uppercase">Confirmar PIN</label>
+                                {{ form.pin_confirmacion }}
+                                <div class="text-danger small mt-1">{{ form.pin_confirmacion.errors }}</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4" style="border-color: var(--border-light);">
+
+                        <div class="d-flex justify-content-end gap-3">
+                            <a href="{% url 'lista_operarios' %}" class="btn btn-light fw-bold px-4 rounded-3">Cancelar</a>
+                            <button type="submit" class="btn text-white fw-bold px-4 rounded-3" style="background-color: var(--stitch-primary, #e11d48);">
+                                <i class="ri-save-3-line me-2"></i> Guardar Operario
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

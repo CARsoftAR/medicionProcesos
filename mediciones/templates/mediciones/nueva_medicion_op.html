@@ -1152,12 +1152,26 @@
                         const isCurrent = (pieza == "{{ pieza_actual }}");
                         if (isCurrent) {
                             const prev = "{{ prev_p }}";
+                            const next = "{{ next_p }}";
                             const first = "{{ first_p }}";
-                            const target = (prev && prev !== "None") ? prev : (first && first !== "None" ? first : "1");
-                            window.location.href = `?proy=${encodeURIComponent(proy)}&op=${encodeURIComponent(op)}&proc=${proc}&pieza=${target}`;
+                            let target = (prev && prev !== "None") ? prev : (next && next !== "None" ? next : (first && first !== "None" ? first : "1"));
+                            
+                            // If we use loadPieceAJAX, it handles the URL and updates DOM silently
+                            loadPieceAJAX(target);
                         } else {
-                            window.location.reload();
+                            // If they deleted a piece that isn't the active one, we still need to refresh the pagination
+                            loadPieceAJAX(document.getElementById('input_pieza').value);
                         }
+                        
+                        Swal.fire({
+                            title: '¡Borrado!',
+                            text: 'La pieza ha sido eliminada.',
+                            icon: 'success',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
                     } else {
                         Swal.fire('Error', data.message || 'No se pudo eliminar la pieza.', 'error');
                     }
@@ -1270,6 +1284,10 @@
                     // Yes, update strictly to match DB.
                     if (el.tagName === 'INPUT' && el.type !== 'hidden') {
                         el.value = parseFloat(result.saved_value).toFixed(3);
+                        checkStatus(el, 'real');
+                    } else if (el.classList.contains('pnp-select')) {
+                        el.value = result.saved_value;
+                        checkStatus(el, 'pnp');
                     }
                     // For PNP select, value is already correct or handled
                 }
@@ -1524,6 +1542,111 @@
                 }
             });
         });
+
+        // ==========================================
+        // EXTERNAL SYNC (SILENT POLLING - PRO FIX)
+        // ==========================================
+        setInterval(() => {
+            const currentUrl = new URL(window.location.href);
+            // Only poll if we are actually viewing a piece
+            if (!currentUrl.searchParams.has('pieza') && !'{{ pieza_actual }}') return;
+            
+            const fetchUrl = new URL(currentUrl.toString());
+            fetchUrl.searchParams.set('format', 'json');
+
+            fetch(fetchUrl.toString(), {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (data && data.status === 'success') {
+                    // Update navigation buttons dynamically
+                    const currentPiezaNum = parseInt(currentUrl.searchParams.get('pieza') || '{{ pieza_actual }}');
+                    
+                    // Check if current piece was deleted remotely (not in piezas_medidas and not piece 1)
+                    if (currentPiezaNum > 1 && !data.piezas_medidas.includes(currentPiezaNum)) {
+                        // The piece we were looking at is gone! Jump to nearest available
+                        const prev = data.prev_p;
+                        const next = data.next_p;
+                        const first = data.first_p;
+                        let target = (prev && prev !== "None" && prev !== null) ? prev : (next && next !== "None" && next !== null ? next : (first && first !== "None" && first !== null ? first : "1"));
+                        
+                        Swal.fire({
+                            title: 'Pieza Borrada',
+                            text: 'Esta pieza fue eliminada remotamente. Redirigiendo...',
+                            icon: 'info',
+                            toast: true,
+                            position: 'top-end',
+                            timer: 3000,
+                            showConfirmButton: false
+                        });
+                        loadPieceAJAX(target);
+                        return; // loadPieceAJAX will do the rest
+                    }
+
+                    // Rebuild navigation buttons
+                    const navContainer = document.getElementById('pieza-navigation-container');
+                    if (navContainer) {
+                        const proy = currentUrl.searchParams.get('proy') || '';
+                        const op = currentUrl.searchParams.get('op') || '';
+                        const proc = currentUrl.searchParams.get('proc') || '';
+                        
+                        let navHTML = '';
+                        const createNavBtnHTML = (targetPiece, iconClass, disabled) => {
+                            if (disabled) {
+                                return `<a href="#" class="btn-stitch-outline d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0; opacity: 0.3; pointer-events: none;"><i class="${iconClass}"></i></a>`;
+                            } else {
+                                return `<a href="?proy=${proy}&op=${op}&proc=${proc}&pieza=${targetPiece}" onclick="event.preventDefault(); loadPieceAJAX(${targetPiece});" class="btn-stitch-outline d-flex align-items-center justify-content-center" style="width: 36px; height: 36px; padding: 0;"><i class="${iconClass}"></i></a>`;
+                            }
+                        };
+                        
+                        navHTML += createNavBtnHTML(data.first_p, 'ri-skip-back-line', !data.first_p || data.pieza_actual == data.first_p);
+                        navHTML += createNavBtnHTML(data.prev_p, 'ri-arrow-left-s-line', !data.prev_p);
+                        
+                        data.piezas_navegacion.forEach(pNum => {
+                            const activeClass = pNum == data.pieza_actual ? 'bg-primary border-primary text-white' : '';
+                            navHTML += `<a href="?proy=${proy}&op=${op}&proc=${proc}&pieza=${pNum}" onclick="event.preventDefault(); loadPieceAJAX(${pNum});" class="btn-stitch-outline d-flex align-items-center justify-content-center ${activeClass}" style="width: 36px; height: 36px; padding: 0; font-weight: 800; font-size: 0.85rem;">${pNum}</a>`;
+                        });
+                        
+                        navHTML += createNavBtnHTML(data.next_p, 'ri-arrow-right-s-line', !data.next_p);
+                        navHTML += createNavBtnHTML(data.last_p, 'ri-skip-forward-line', !data.last_p || data.pieza_actual == data.last_p);
+                        
+                        if (navContainer.innerHTML !== navHTML) {
+                            navContainer.innerHTML = navHTML;
+                        }
+                    }
+
+                    // Update inputs seamlessly if changed externally
+                    data.rows.forEach(row => {
+                        if (row.is_pnp) {
+                            const sel = document.querySelector(`select[name="valorpnp_${row.tolerancia_id}"]`);
+                            if (sel && document.activeElement !== sel) {
+                                const newVal = row.valor === null ? '' : row.valor;
+                                if (sel.value !== newVal) {
+                                    sel.value = newVal;
+                                    checkStatus(sel, 'pnp');
+                                    // Flash yellow to indicate remote update
+                                    sel.style.backgroundColor = '#fef08a';
+                                    setTimeout(() => sel.style.backgroundColor = '', 800);
+                                }
+                            }
+                        } else {
+                            const inp = document.querySelector(`input[name="valor_${row.tolerancia_id}"]`);
+                            if (inp && document.activeElement !== inp) {
+                                const newVal = row.valor === null ? '' : parseFloat(row.valor).toFixed(3);
+                                if (inp.value !== newVal) {
+                                    inp.value = newVal;
+                                    checkStatus(inp, 'real');
+                                    // Flash yellow to indicate remote update
+                                    inp.style.backgroundColor = '#fef08a';
+                                    setTimeout(() => inp.style.backgroundColor = '', 800);
+                                }
+                            }
+                        }
+                    });
+                }
+            }).catch(e => console.log('Polling error:', e));
+        }, 5000); // Poll every 5 seconds
     });
     {% if planilla %}
     function eliminarTodaLaOP() {

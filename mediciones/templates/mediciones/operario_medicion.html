@@ -1009,10 +1009,22 @@
                 const result = await response.json();
                 if (result.status === 'success') {
                     el.style.backgroundColor = 'var(--success-light)';
+                    
+                    if (result.saved_value !== undefined && result.saved_value !== null) {
+                        if (el.tagName === 'INPUT' && el.type !== 'hidden') {
+                            el.value = parseFloat(result.saved_value).toFixed(3);
+                            onValueInput(el);
+                        } else if (el.classList.contains('pnp-select-op')) {
+                            el.value = result.saved_value;
+                            onPnpChange(el);
+                        }
+                    }
+                    
                     setTimeout(() => { el.style.backgroundColor = ''; }, 500);
                     // Add piece to existing list if not there
                     if (!piezasConDatos.includes(currentPieza)) {
                         piezasConDatos.push(currentPieza);
+                        buildPieceNav(opResults.find(r => r.proceso_id == currentProcId).piezas || [], currentPieza);
                     }
                 }
             } catch (err) { console.error(err); }

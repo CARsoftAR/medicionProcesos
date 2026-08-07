@@ -146,3 +146,42 @@ class HistorialCalibracionForm(forms.ModelForm):
             'certificado_nro': forms.TextInput(attrs={'class': 'form-control'}),
             'observaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+
+import re
+
+class OperarioCreationForm(forms.Form):
+    legajo = forms.CharField(max_length=20, label="Legajo (Usuario)", widget=forms.TextInput(attrs={'class': 'form-control'}))
+    nombre = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    apellido = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    pin = forms.CharField(max_length=4, label="PIN (Contraseña)", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    pin_confirmacion = forms.CharField(max_length=4, label="Confirmar PIN", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        pin = cleaned_data.get('pin')
+        pin_conf = cleaned_data.get('pin_confirmacion')
+
+        if pin and pin_conf:
+            if not re.match(r'^\d{4}$', pin):
+                self.add_error('pin', 'El PIN debe contener exactamente 4 números.')
+            if pin != pin_conf:
+                self.add_error('pin_confirmacion', 'Los PINs no coinciden.')
+        return cleaned_data
+
+class OperarioEditForm(forms.Form):
+    nombre = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    apellido = forms.CharField(max_length=50, widget=forms.TextInput(attrs={'class': 'form-control'}))
+    pin = forms.CharField(max_length=4, required=False, label="Nuevo PIN (Opcional)", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    pin_confirmacion = forms.CharField(max_length=4, required=False, label="Confirmar Nuevo PIN", widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        pin = cleaned_data.get('pin')
+        pin_conf = cleaned_data.get('pin_confirmacion')
+
+        if pin or pin_conf:
+            if not re.match(r'^\d{4}$', pin):
+                self.add_error('pin', 'El nuevo PIN debe contener exactamente 4 números.')
+            if pin != pin_conf:
+                self.add_error('pin_confirmacion', 'Los PINs no coinciden.')
+        return cleaned_data

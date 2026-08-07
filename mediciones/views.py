@@ -10,7 +10,7 @@ from .forms import PlanillaForm, ClienteForm, ArticuloForm, ProcesoForm, Element
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.http import HttpResponse
@@ -784,9 +784,11 @@ def configurar_estructura(request):
                 existing_data['procesos'].append(p_info)
 
     if request.method == 'POST':
-        import json
+        import json, logging
+        logger = logging.getLogger(__name__)
         try:
             data_json = request.POST.get('estructura_data')
+            logger.warning(f"Payload received in configurar_estructura: {data_json}")
             if not data_json: return JsonResponse({'status': 'error', 'message': 'No se recibieron datos'}, status=400)
             data = json.loads(data_json)
             cliente_id = data.get('cliente')
@@ -805,14 +807,20 @@ def configurar_estructura(request):
             processed_planillas_ids = []
             procesos_data = data.get('procesos', [])
             
+            if not procesos_data:
+                return JsonResponse({'status': 'error', 'message': 'La estructura debe contener al menos un proceso. Asegúrese de añadir procesos antes de guardar.'}, status=400)
+            
             for p_data in procesos_data:
                 proceso_id = p_data.get('id')
-                proceso = Proceso.objects.get(id=proceso_id)
+                if not proceso_id: continue
+                try: proceso = Proceso.objects.get(id=proceso_id)
+                except (Proceso.DoesNotExist, ValueError): continue
+                
                 elemento_id = p_data.get('elemento_id')
                 elemento = None
                 if elemento_id:
                      try: elemento = Elemento.objects.get(id=elemento_id)
-                     except Elemento.DoesNotExist: pass
+                     except (Elemento.DoesNotExist, ValueError): pass
                 else:
                     elemento_nombre = p_data.get('elemento_nombre')
                     if elemento_nombre: elemento, _ = Elemento.objects.get_or_create(nombre=elemento_nombre)
@@ -847,8 +855,9 @@ def configurar_estructura(request):
                 
                 for idx, c_data in enumerate(controles_data):
                     control_id = c_data.get('id')
+                    if not control_id: continue
                     try: control = Control.objects.get(id=control_id)
-                    except Control.DoesNotExist: continue
+                    except (Control.DoesNotExist, ValueError): continue
                         
                     def to_decimal(val):
                         if val == '' or val is None: return None
@@ -1557,7 +1566,7 @@ def importar_datos_ocr(request):
             planilla = PlanillaMedicion.objects.filter(num_op=op_numero).first()
             created = False
             if not planilla:
-                planilla = PlanillaMedicion.objects.create(num_op=op_numero, proyecto=proyecto_nombre, fecha_elaborador=timezone.now().date(), observaciones='Importado automáticamente via OCR')
+                planilla = PlanillaMedicion.objects.create(num_op=op_numero, proyecto=proyecto_nombre, fecha_elaborador=timezone.now().date(), observaciones='Importado automáticamente via JSON')
                 created = True
             else:
                 if proyecto_nombre and (not planilla.proyecto or planilla.proyecto == 'OCR Import'): planilla.proyecto = proyecto_nombre
@@ -1713,3 +1722,105 @@ def configuracion_sistema(request):
     return render(request, 'mediciones/configuracion.html', {
         'current_key': current_key
     })
+from .models import Operario
+from .forms import OperarioCreationForm, OperarioEditForm
+from django.shortcuts import get_object_or_404
+from django.db import transaction
+from django.http import JsonResponse
+from django.conf import settings
+import traceback
+
+@login_required
+def reset_database_view(request):
+    if request.method == 'POST':
+        if not settings.DEBUG and not request.user.is_superuser:
+            return JsonResponse({'status': 'error', 'error': 'Acceso denegado (Solo Dev o Superadmin)'}, status=403)
+            
+        try:
+            with transaction.atomic():
+                # Orden jerárquico inverso para evitar FK conflicts
+                ValorMedicion.objects.all().delete()
+                Tolerancia.objects.all().delete()
+                PlanillaMedicion.objects.all().delete()
+                
+                # Opcional: Logs de OCR u otros, pero el requerimiento es solo de mediciones.
+                
+            return JsonResponse({'status': 'success', 'message': 'Base de datos reseteada correctamente'})
+        except Exception as e:
+            print("Error resetting database:", traceback.format_exc())
+            return JsonResponse({'status': 'error', 'error': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'error': 'Método no permitido'}, status=405)
+
+def is_admin(user):
+    return user.is_superuser or user.is_staff
+
+@user_passes_test(is_admin)
+def lista_operarios(request):
+    operarios = Operario.objects.filter(activo=True).select_related('user')
+    return render(request, 'mediciones/operarios_list.html', {'operarios': operarios})
+
+@user_passes_test(is_admin)
+def alta_operario(request):
+    if request.method == 'POST':
+        form = OperarioCreationForm(request.POST)
+        if form.is_valid():
+            legajo = form.cleaned_data['legajo']
+            
+            if User.objects.filter(username=legajo).exists():
+                messages.error(request, 'El legajo ya se encuentra registrado en el sistema.')
+            else:
+                user = User.objects.create_user(
+                    username=legajo,
+                    first_name=form.cleaned_data['nombre'],
+                    last_name=form.cleaned_data['apellido'],
+                    password=form.cleaned_data['pin']
+                )
+                Operario.objects.create(user=user)
+                messages.success(request, f'Operario {legajo} registrado con éxito.')
+                return redirect('lista_operarios')
+    else:
+        form = OperarioCreationForm()
+
+    return render(request, 'mediciones/operario_form.html', {'form': form, 'titulo': 'Alta Operario'})
+
+@user_passes_test(is_admin)
+def editar_operario(request, id):
+    operario = get_object_or_404(Operario, id=id, activo=True)
+    user = operario.user
+
+    if request.method == 'POST':
+        form = OperarioEditForm(request.POST)
+        if form.is_valid():
+            user.first_name = form.cleaned_data['nombre']
+            user.last_name = form.cleaned_data['apellido']
+            
+            nuevo_pin = form.cleaned_data.get('pin')
+            if nuevo_pin:
+                user.set_password(nuevo_pin)
+                
+            user.save()
+            messages.success(request, f'Operario {user.username} actualizado correctamente.')
+            return redirect('lista_operarios')
+    else:
+        form = OperarioEditForm(initial={
+            'nombre': user.first_name,
+            'apellido': user.last_name
+        })
+
+    return render(request, 'mediciones/operario_form.html', {'form': form, 'operario': operario, 'titulo': 'Editar Operario'})
+
+@user_passes_test(is_admin)
+def eliminar_operario(request, id):
+    operario = get_object_or_404(Operario, id=id)
+    if request.method == 'POST':
+        operario.activo = False
+        operario.save()
+        
+        user = operario.user
+        user.is_active = False
+        user.save()
+        
+        messages.success(request, f'El operario {user.username} ha sido dado de baja del sistema.')
+        return redirect('lista_operarios')
+        
+    return render(request, 'mediciones/operarios_list.html')

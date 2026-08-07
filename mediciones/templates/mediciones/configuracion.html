@@ -131,6 +131,63 @@
 
         <hr style="border-top: 1px solid var(--stitch-border); margin: 2rem 0;">
 
+        <!-- ZONA DE DESARROLLO / RESET DE DATOS -->
+        <div class="mb-5 animate__animated animate__fadeIn">
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <div style="width: 40px; height: 40px; background: rgba(220, 53, 69, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #dc3545;">
+                    <i class="ri-alert-line" style="font-size: 1.25rem;"></i>
+                </div>
+                <h2 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1.2rem; margin: 0; color: #dc3545; text-transform: uppercase;">
+                    ZONA DE DESARROLLO / RESET DE DATOS
+                </h2>
+            </div>
+            
+            <div class="stitch-module" style="border: 1px solid rgba(220, 53, 69, 0.2); background: rgba(220, 53, 69, 0.02);">
+                <p style="color: #64748b; font-weight: 500; font-size: 0.95rem;">
+                    Herramientas destructivas para el entorno de desarrollo y pruebas. Al borrar, <strong>se conservarán únicamente Clientes, Operarios y Usuarios.</strong>
+                </p>
+                <div class="mt-4">
+                    <button type="button" class="btn btn-danger" style="border-radius: 8px; font-weight: 700; padding: 10px 24px;" onclick="confirmReset()">
+                        <i class="ri-delete-bin-2-line" style="margin-right: 6px;"></i> Borrar Datos de Prueba
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        function confirmReset() {
+            if (confirm("¿Confirmas que deseas borrar todos los datos de OPs y mediciones? Esta acción conservará únicamente Clientes, Operarios y Usuarios.")) {
+                const btn = document.querySelector('.btn-danger');
+                btn.innerHTML = '<i class="ri-loader-4-line ri-spin" style="margin-right: 6px;"></i> Procesando...';
+                btn.disabled = true;
+
+                fetch("{% url 'reset_database' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert("Base de datos reseteada correctamente.");
+                        window.location.reload();
+                    } else {
+                        alert("Error: " + (data.error || "Acceso denegado o error interno"));
+                        btn.innerHTML = '<i class="ri-delete-bin-2-line" style="margin-right: 6px;"></i> Borrar Datos de Prueba';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    alert("Error de red al intentar resetear");
+                    btn.innerHTML = '<i class="ri-delete-bin-2-line" style="margin-right: 6px;"></i> Borrar Datos de Prueba';
+                    btn.disabled = false;
+                });
+            }
+        }
+        </script>
+
         <!-- <div class="mb-4">
             <div class="d-flex align-items-center gap-2 mb-4">
                 <div style="width: 40px; height: 40px; background: rgba(15, 76, 129, 0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--stitch-primary);">

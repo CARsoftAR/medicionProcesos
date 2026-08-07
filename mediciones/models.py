@@ -320,3 +320,15 @@ class SystemConfig(models.Model):
 
     def __str__(self):
         return f"{self.key}: {self.value[:10]}..." if self.value else f"{self.key}: (vacío)"
+
+class Operario(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='operario')
+    activo = models.BooleanField(default=True, verbose_name="Activo")
+
+    class Meta:
+        db_table = 'OPERARIOS'
+        verbose_name = 'Operario'
+        verbose_name_plural = 'Operarios'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.user.first_name} {self.user.last_name}"

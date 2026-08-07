@@ -186,6 +186,12 @@
                                 <span>Usuarios</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="{% url 'lista_operarios' %}" class="nav-link active-emerald {% if 'operarios' in request.path %}active{% endif %}">
+                                <i class="ri-smartphone-line"></i>
+                                <span>Operarios App</span>
+                            </a>
+                        </li>
                         {% endif %}
                         <li>
                             <a href="{% url 'configuracion_sistema' %}" class="nav-link active-red {% if 'configuracion' in request.path %}active{% endif %}">

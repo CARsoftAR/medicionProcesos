@@ -49,6 +49,14 @@ urlpatterns = [
     path('usuarios/<int:user_id>/editar/', views.editar_usuario, name='editar_usuario'),
     path('usuarios/<int:user_id>/eliminar/', views.eliminar_usuario, name='eliminar_usuario'),
     
+    # Operarios App
+    path('operarios/', views.lista_operarios, name='lista_operarios'),
+    path('operarios/alta/', views.alta_operario, name='alta_operario'),
+    path('operarios/editar/<int:id>/', views.editar_operario, name='editar_operario'),
+    path('operarios/eliminar/<int:id>/', views.eliminar_operario, name='eliminar_operario'),
+    
+    path('dev/reset-database/', views.reset_database_view, name='reset_database'),
+    
     # API
     path('api/create/<str:model_name>/', views.api_create_master, name='api_create_master'),
     path('api/tolerancia/<int:tolerancia_id>/delete/', views.api_delete_tolerancia, name='api_delete_tolerancia'),

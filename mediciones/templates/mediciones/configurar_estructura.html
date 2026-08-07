@@ -305,15 +305,27 @@
 
 </style>
 
-<!-- Quick Add Modal -->
-<div id="quickAddModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center;">
-    <div class="card" style="width: 380px; padding: 2rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15);">
-        <h4 id="modalTitle" class="mb-3" style="font-weight: 800; color: #0f172a;">Agregar Nuevo</h4>
-        <input type="text" id="newItemName" class="form-control mb-4" placeholder="Nombre..." style="border-radius: 10px; padding: 0.75rem;">
+<!-- Quick Add Modal (Antigravity Structure) -->
+<div id="quickAddModal" style="display: none; position: fixed; inset: 0; align-items: center; justify-content: center; background-color: rgba(0,0,0,0.5); z-index: 9999;">
+    <div class="card" style="background-color: white; padding: 32px; border-radius: 24px; text-align: center; width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: none;">
+        
+        <!-- Icon Circle -->
+        <div style="margin: 0 auto 20px; border-radius: 50%; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; background-color: #f0f4f8;">
+            <i class="ri-add-line" style="font-size: 2rem; color: #0d47a1;"></i>
+        </div>
+        
+        <h4 id="modalTitle" style="font-weight: 800; color: #0f172a; margin-bottom: 20px; font-family: 'Outfit', sans-serif;">Nuevo Proceso</h4>
+        
+        <input type="text" id="newItemName" class="form-control" placeholder="Ingrese el nombre aquí..." style="border-radius: 12px; padding: 12px; font-weight: 600; font-size: 0.95rem; background: #F0F4F8; border: 1px solid #BCCCDC; margin-bottom: 24px; text-align: center;">
         <input type="hidden" id="currentModelType">
-        <div class="d-flex justify-content-end gap-2">
-            <button type="button" onclick="closeQuickAdd()" class="btn btn-light" style="border-radius: 8px; font-weight: 600;">Cerrar</button>
-            <button type="button" onclick="saveNewItem()" class="btn btn-primary" style="border-radius: 8px; font-weight: 700;">Guardar</button>
+        
+        <div style="display: flex; flex-direction: column;">
+            <button type="button" onclick="saveNewItem()" style="background-color: #0d47a1; border-radius: 16px; padding: 12px 24px; color: white; font-weight: bold; border: none; width: 100%; cursor: pointer;">
+                <i class="ri-check-line"></i> Guardar
+            </button>
+            <button type="button" onclick="closeQuickAdd()" style="background-color: transparent; border: none; font-weight: bold; cursor: pointer; margin-top: 12px; color: #64748b;">
+                Cancelar
+            </button>
         </div>
     </div>
 </div>
@@ -378,6 +390,13 @@
 
 
 
+        function formatToThreeDecimals(input) {
+            if(input.value) {
+                let val = parseFloat(input.value.replace(',', '.'));
+                if(!isNaN(val)) input.value = val.toFixed(3);
+            }
+        }
+
         function addControlRow(pIdx) {
             const container = document.getElementById(`ctrl-list-${pIdx}`);
             const cRowId = Date.now() + Math.random();
@@ -387,9 +406,9 @@
             row.innerHTML = `
                 <div style="position: relative;"><label class="control-label-mini">CONTROL</label><input type="text" class="form-control input-clean py-1 ctrl-search-input" list="controles-datalist" onkeydown="handleKeyNavigation(event, 'min', ${pIdx}, '${cRowId}')"></div>
                 <div><button type="button" class="btn-add-mini" style="width: 32px; height: 32px;" onclick="openQuickAdd('control', '${cRowId}')"></button></div>
-                <div><label class="control-label-mini">TOL. MÍN</label><input type="number" step="0.001" class="form-control input-compact col-min" onkeydown="handleKeyNavigation(event, 'nom', ${pIdx}, '${cRowId}')"></div>
-                <div><label class="control-label-mini">REFERENCIAL</label><input type="number" step="0.001" class="form-control input-compact col-nom" onkeydown="handleKeyNavigation(event, 'max', ${pIdx}, '${cRowId}')"></div>
-                <div><label class="control-label-mini">TOL. MÁX</label><input type="number" step="0.001" class="form-control input-compact col-max" onkeydown="handleKeyNavigation(event, 'new', ${pIdx}, '${cRowId}')"></div>
+                <div><label class="control-label-mini">TOL. MÍN</label><input type="number" step="0.001" class="form-control input-compact col-min" onblur="formatToThreeDecimals(this)" onkeydown="handleKeyNavigation(event, 'nom', ${pIdx}, '${cRowId}')"></div>
+                <div><label class="control-label-mini">REFERENCIAL</label><input type="number" step="0.001" class="form-control input-compact col-nom" onblur="formatToThreeDecimals(this)" onkeydown="handleKeyNavigation(event, 'max', ${pIdx}, '${cRowId}')"></div>
+                <div><label class="control-label-mini">TOL. MÁX</label><input type="number" step="0.001" class="form-control input-compact col-max" onblur="formatToThreeDecimals(this)" onkeydown="handleKeyNavigation(event, 'new', ${pIdx}, '${cRowId}')"></div>
                 <button type="button" class="btn-remove-soft" onclick="removeElement('cr-${cRowId}')"><i class="ri-close-line" style="font-size: 1.3rem;"></i></button>
             `;
             container.appendChild(row);
@@ -420,21 +439,47 @@
         function openQuickAdd(type, refId = null) {
             activeSelectRef = refId;
             document.getElementById('currentModelType').value = type;
-            const typeNames = { 'cliente': 'Cliente', 'proceso': 'Proceso', 'control': 'Control', 'articulo': 'Artículo' };
-            document.getElementById('modalTitle').innerText = 'Nuevo ' + typeNames[type];
-            document.getElementById('newItemName').value = '';
+            const typeNames = { 'cliente': 'Cliente', 'proceso': 'Proceso', 'control': 'Control', 'articulo': 'Artículo', 'elemento': 'Elemento' };
+            document.getElementById('modalTitle').innerText = 'Nuevo ' + (typeNames[type] || type);
+            
+            let presetText = '';
+            if (type === 'control' && refId) {
+                const row = document.getElementById(`cr-${refId}`);
+                if (row) {
+                    const searchInput = row.querySelector('.ctrl-search-input');
+                    if (searchInput) presetText = searchInput.value;
+                }
+            }
+            document.getElementById('newItemName').value = presetText;
+            
             document.getElementById('quickAddModal').style.display = 'flex';
             document.getElementById('newItemName').focus();
         }
 
         function closeQuickAdd() { document.getElementById('quickAddModal').style.display = 'none'; }
 
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
         function saveNewItem() {
             const type = document.getElementById('currentModelType').value;
             const name = document.getElementById('newItemName').value;
             if(!name) return;
             const formData = new FormData(); formData.append('nombre', name);
-            fetch(`/api/create/${type}/`, { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}, body: formData })
+            const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
+            fetch(`/api/create/${type}/`, { method: 'POST', headers: {'X-CSRFToken': csrftoken}, body: formData })
             .then(res => res.json())
             .then(data => {
                 if(data.status === 'success') {
@@ -486,8 +531,10 @@
                 original_proyecto, 
                 procesos: [] 
             };
+            let hasError = false;
             const procBlocks = document.querySelectorAll('.process-card-item');
             procBlocks.forEach(block => {
+                if(hasError) return;
                 const pData = { 
                     planilla_id: block.getAttribute('data-planilla-id'),
                     id: block.querySelector('.select-proceso-id').value, 
@@ -495,15 +542,54 @@
                     controles: [] 
                 };
                 block.querySelectorAll('.control-row-compact').forEach(row => {
-                    const cId = controlMap[row.querySelector('.ctrl-search-input').value];
-                    if(cId) pData.controles.push({ id: cId, min: row.querySelector('.col-min').value, nom: row.querySelector('.col-nom').value, max: row.querySelector('.col-max').value });
+                    const inputVal = row.querySelector('.ctrl-search-input').value.trim();
+                    if(!inputVal) return;
+                    let cId = controlMap[inputVal];
+                    if(!cId) {
+                        const lcInput = inputVal.toLowerCase();
+                        const key = Object.keys(controlMap).find(k => k.toLowerCase() === lcInput);
+                        if(key) cId = controlMap[key];
+                    }
+                    if(cId) {
+                        const min = row.querySelector('.col-min').value.replace(',', '.').trim();
+                        const nom = row.querySelector('.col-nom').value.replace(',', '.').trim();
+                        const max = row.querySelector('.col-max').value.replace(',', '.').trim();
+                        
+                        // Omitir fila solo si tanto los valores como el control son vacíos (aunque si hay cId, el control no es vacío)
+                        // Si el usuario quiere guardar sin tolerancias, se guarda.
+                        pData.controles.push({ id: cId, min: min, nom: nom, max: max });
+                    } else {
+                        hasError = true;
+                        Swal.fire({ icon: 'error', title: 'Control Inválido', text: `El control "${inputVal}" no se reconoce. Seleccione uno de la lista o créelo usando el botón (+).` });
+                    }
                 });
                 structure.procesos.push(pData);
             });
+            if(hasError) return;
             Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             const fd = new FormData(); fd.append('estructura_data', JSON.stringify(structure));
-            fetch('{% url "configurar_estructura" %}', { method: 'POST', headers: {'X-CSRFToken': '{{ csrf_token }}'}, body: fd })
-            .then(res => res.json()).then(data => { if(data.status === 'success') window.location.href = "{% url 'lista_estructuras' %}"; else Swal.fire('Error', data.message, 'error'); });
+            const csrftoken = getCookie('csrftoken') || '{{ csrf_token }}';
+            fetch('{% url "configurar_estructura" %}', { method: 'POST', headers: {'X-CSRFToken': csrftoken}, body: fd })
+            .then(async res => {
+                if (!res.ok) {
+                    if (res.status === 403) throw new Error("Token de seguridad expirado. Por favor, recarga la página (F5) y vuelve a intentarlo.");
+                    let errData = {};
+                    try { errData = await res.json(); } catch(e) {}
+                    throw new Error(errData.message || 'Error HTTP: ' + res.status);
+                }
+                return res.json();
+            })
+            .then(data => { 
+                if(data.status === 'success') {
+                    window.location.href = "{% url 'lista_estructuras' %}"; 
+                } else {
+                    Swal.fire('Error', data.message || 'Error al procesar la solicitud.', 'error'); 
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire('Error', err.message || 'Hubo un fallo de comunicación con el servidor. Intente nuevamente.', 'error');
+            });
         });
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -536,9 +622,9 @@
                         row.innerHTML = `
                             <div style="position: relative;"><label class="control-label-mini">CONTROL</label><input type="text" class="form-control input-clean py-1 ctrl-search-input" list="controles-datalist" value="${c.nombre || ''}" onkeydown="handleKeyNavigation(event, 'min', ${currentIdx}, '${rowId}')"></div>
                             <div><button type="button" class="btn-add-mini" style="width: 32px; height: 32px;" onclick="openQuickAdd('control', '${rowId}')"></button></div>
-                            <div><label class="control-label-mini">TOL. MÍN</label><input type="number" step="0.001" class="form-control input-compact col-min" value="${(c.min !== null && c.min !== '') ? parseFloat(c.min).toFixed(3) : ''}" onkeydown="handleKeyNavigation(event, 'nom', ${currentIdx}, '${rowId}')"></div>
-                            <div><label class="control-label-mini">REFERENCIAL</label><input type="number" step="0.001" class="form-control input-compact col-nom" value="${(c.nom !== null && c.nom !== '') ? parseFloat(c.nom).toFixed(3) : ''}" onkeydown="handleKeyNavigation(event, 'max', ${currentIdx}, '${rowId}')"></div>
-                            <div><label class="control-label-mini">TOL. MÁX</label><input type="number" step="0.001" class="form-control input-compact col-max" value="${(c.max !== null && c.max !== '') ? parseFloat(c.max).toFixed(3) : ''}" onkeydown="handleKeyNavigation(event, 'new', ${currentIdx}, '${rowId}')"></div>
+                            <div><label class="control-label-mini">TOL. MÍN</label><input type="number" step="0.001" class="form-control input-compact col-min" value="${(c.min !== null && c.min !== '') ? parseFloat(c.min).toFixed(3) : ''}" onblur="formatToThreeDecimals(this)" onkeydown="handleKeyNavigation(event, 'nom', ${currentIdx}, '${rowId}')"></div>
+                            <div><label class="control-label-mini">REFERENCIAL</label><input type="number" step="0.001" class="form-control input-compact col-nom" value="${(c.nom !== null && c.nom !== '') ? parseFloat(c.nom).toFixed(3) : ''}" onblur="formatToThreeDecimals(this)" onkeydown="handleKeyNavigation(event, 'max', ${currentIdx}, '${rowId}')"></div>
+                            <div><label class="control-label-mini">TOL. MÁX</label><input type="number" step="0.001" class="form-control input-compact col-max" value="${(c.max !== null && c.max !== '') ? parseFloat(c.max).toFixed(3) : ''}" onblur="formatToThreeDecimals(this)" onkeydown="handleKeyNavigation(event, 'new', ${currentIdx}, '${rowId}')"></div>
                             <button type="button" class="btn-remove-soft" onclick="removeElement('cr-${rowId}')"><i class="ri-close-line"></i></button>
                         `;
                         document.getElementById(`ctrl-list-${currentIdx}`).appendChild(row);
