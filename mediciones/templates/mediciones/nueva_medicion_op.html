@@ -151,34 +151,40 @@
                 {% csrf_token %}
                 
                 <!-- HUB HEADER -->
-                <div class="d-flex justify-content-between align-items-center mb-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
                     <div class="d-flex align-items-center gap-4">
-                        <div class="stitch-module d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; border-radius: 12px;">
-                            <i class="ri-focus-3-line" style="font-size: 2rem; color: var(--stitch-primary);"></i>
+                        <div class="stitch-module d-flex align-items-center justify-content-center" style="width: 54px; height: 54px; border-radius: 12px; padding: 0 !important; background: var(--stitch-primary) !important; color: white;">
+                            <i class="ri-focus-3-line" style="font-size: 1.8rem;"></i>
                         </div>
                         <div>
-                            <h2 class="stitch-title mb-0" style="font-size: 2.25rem;">Centro de Análisis</h2>
-                            <div class="opacity-50 small fw-bold mt-1" style="font-family: 'Fira Code'; letter-spacing: 0.05em;" id="main-data-hub-header">
-                                PIEZA {{ pieza_actual }} 
-                                <span class="mx-2">|</span> 
-                                {% if planilla.num_op %}OP {{ planilla.num_op }}<span class="mx-2">|</span>{% endif %}
-                                {{ planilla.articulo.nombre|upper|default:"SIN ARTICULO" }}
-                                <span class="mx-2">|</span> 
-                                {{ planilla.elemento.nombre|upper|default:"SIN ELEMENTO" }} 
-                                <span class="mx-2">-</span> 
-                                {{ planilla.proceso.nombre|upper|default:"SIN PROCESO" }}
+                            <h2 class="stitch-title mb-0" style="font-size: 2rem;">Centro de Análisis</h2>
+                            <div class="header-datos-tecnicos" id="main-data-hub-header">
+                                <span class="tech-font" style="background: var(--stitch-primary); color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem;">PIEZA {{ pieza_actual }}</span>
+                                <span class="separator">/</span>
+                                {% if planilla.num_op %}
+                                    <span class="tech-font">OP {{ planilla.num_op }}</span>
+                                    <span class="separator">/</span>
+                                {% endif %}
+                                <span class="tech-font">{{ planilla.articulo.nombre|upper|default:"SIN ARTICULO" }}</span>
+                                <span class="separator">/</span> 
+                                <span class="tech-font">{{ planilla.elemento.nombre|upper|default:"SIN ELEMENTO" }}</span> 
+                                <span class="separator">-</span> 
+                                <span class="tech-font">{{ planilla.proceso.nombre|upper|default:"SIN PROCESO" }}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="stitch-module p-3 d-flex align-items-center gap-3">
-                        <label class="stitch-label mb-0" style="margin-left: 10px; margin-top: 5px">Visibilidad:</label>
-                        <select id="pageSizeSelector" class="stitch-input" style="width: 160px; font-size: 0.8rem; height: 45px;" onchange="changePageSize(this.value)">
+                    <div class="d-flex align-items-center gap-2 bg-white p-1" style="border-radius: 10px; border: 1px solid var(--stitch-border); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                        <div class="d-flex align-items-center px-3 border-end">
+                            <i class="ri-eye-line text-muted"></i>
+                            <span class="ms-2 fw-bold" style="font-size: 0.75rem; letter-spacing: 0.05em; color: var(--stitch-secondary);">VER</span>
+                        </div>
+                        <select id="pageSizeSelector" class="form-select border-0 bg-transparent fw-bold text-dark" style="width: auto; font-size: 0.85rem; cursor: pointer; box-shadow: none;" onchange="changePageSize(this.value)">
                             <option value="7">7 CONTROLES</option>
                             <option value="10">10 CONTROLES</option>
                             <option value="12">12 CONTROLES</option>
                             <option value="20">20 CONTROLES</option>
-                            <option value="all">MOSTRAR TODO</option>
+                            <option value="all">TODOS</option>
                         </select>
                     </div>
                 </div>
@@ -202,15 +208,15 @@
                             <tr class="stitch-table-row animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|add:1 }}0ms;" data-id="{{ row.tolerancia.id }}">
                                 <td class="font-monospace opacity-50">{{ forloop.counter }}</td>
                                 <td>
-                                    <div class="fw-bold" style="font-size: 1rem;">{{ row.tolerancia.control.nombre }}</div>
+                                    <div>{{ row.tolerancia.control.nombre }}</div>
                                 </td>
                                 <td class="text-center font-monospace fw-bold" style="color: var(--stitch-secondary);">
-                                    {{ row.tolerancia.nominal|default:"0.000" }}
+                                    {% if row.tolerancia.nominal != None %}{{ row.tolerancia.nominal|floatformat:3 }}{% else %}0.000{% endif %}
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2 font-monospace small">
-                                        <div class="px-2 py-1 rounded" style="background: rgba(239, 68, 68, 0.12); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.25);">{{ row.tolerancia.minimo|default:"-0.000" }}</div>
-                                        <div class="px-2 py-1 rounded" style="background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.25);">{{ row.tolerancia.maximo|default:"+0.000" }}</div>
+                                        <div style="padding: 4px 12px; border-radius: 6px; font-weight: 700; background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1.5px solid rgba(220, 38, 38, 0.4);">{% if row.tolerancia.minimo != None %}{{ row.tolerancia.minimo|floatformat:3 }}{% else %}-0.000{% endif %}</div>
+                                        <div style="padding: 4px 12px; border-radius: 6px; font-weight: 700; background: rgba(34, 197, 94, 0.12); color: #16a34a; border: 1.5px solid rgba(22, 163, 74, 0.4);">{% if row.tolerancia.maximo != None %}{% if row.tolerancia.maximo >= 0 %}+{% endif %}{{ row.tolerancia.maximo|floatformat:3 }}{% else %}+0.000{% endif %}</div>
                                     </div>
                                 </td>
                                 <td class="text-center">
@@ -330,13 +336,13 @@
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 12px #D9E2EC !important;
-        padding: 1.2rem 1.5rem !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.04) !important;
+        padding: 1.5rem 1.8rem !important;
     }
 
     .stitch-module:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px #D9E2EC !important;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.06) !important;
         border-color: #BCCCDC !important;
     }
 
@@ -357,6 +363,34 @@
         margin-bottom: 0.5rem;
         display: block;
         opacity: 0.8;
+    }
+
+    /* HEADER DATOS TECNICOS */
+    .header-datos-tecnicos {
+        display: flex;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        overflow-x: auto;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        padding-bottom: 4px; /* Space for scroll if it appears */
+    }
+    
+    .header-datos-tecnicos::-webkit-scrollbar { display: none; }
+
+    .tech-font {
+        font-family: 'Fira Code', monospace;
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+
+    .separator {
+        font-family: 'Fira Code', monospace;
+        font-weight: 600;
+        color: #94a3b8;
+        margin: 0 2px;
     }
 
     /* INPUTS */
@@ -435,10 +469,17 @@
     }
 
     .stitch-table td {
-        padding: 14px;
+        padding: 18px 14px;
         border-bottom: 1px solid var(--stitch-border) !important;
         vertical-align: middle;
         background: #FFFFFF !important;
+    }
+
+    .stitch-table td:nth-child(2) {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.95rem;
+        letter-spacing: -0.01em;
     }
 
     .stitch-table-row {
@@ -446,19 +487,19 @@
     }
 
     .stitch-table-row:hover td {
-        background: rgba(255, 255, 255, 0.01) !important;
+        background: rgba(15, 76, 129, 0.02) !important;
     }
 
     .stitch-table-input {
         background: rgba(255, 255, 255, 0.03) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        color: #ffffff !important;
+        border: 1.5px solid #D9E2EC !important;
+        color: var(--stitch-text) !important;
         text-align: center;
         font-family: 'Fira Code', monospace;
-        font-size: 1.1rem;
-        font-weight: 800;
+        font-size: 1.15rem;
+        font-weight: 700;
         width: 100%;
-        height: 42px;
+        height: 46px;
         border-radius: 10px;
         transition: all 0.2s;
     }
@@ -466,8 +507,8 @@
     .stitch-table-input:focus {
         outline: none;
         border-color: var(--stitch-primary) !important;
-        background-color: rgba(255, 255, 255, 0.06) !important;
-        box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.2) !important;
+        background-color: #FFFFFF !important;
+        box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.15) !important;
     }
 
     .stitch-table-input.ok, .pnp-select.ok {
@@ -504,20 +545,37 @@
 
     /* STATUS LIGHTS */
     .status-flux-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        box-shadow: 0 0 8px transparent;
+        display: none; /* Hide the dot in favor of pill shape */
     }
-    .status-flux-dot.ok { 
-        background: var(--stitch-success); 
-        box-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+    
+    .status-flux-text {
+        border-radius: 12px;
+        padding: 4px 10px;
+        font-size: 0.65rem !important;
+        display: inline-block;
+        border: 1px solid transparent;
+        text-align: center;
+        letter-spacing: 0.05em;
     }
-    .status-flux-dot.nok { 
-        background: var(--stitch-danger); 
-        box-shadow: 0 0 8px rgba(252, 165, 165, 0.4);
+    
+    .status-flux-text.text-success {
+        background-color: rgba(34, 197, 94, 0.12);
+        color: #166534 !important;
+        border-color: rgba(34, 197, 94, 0.3);
     }
-    .status-flux-dot.pending { background: #475569; }
+    
+    .status-flux-text.text-danger {
+        background-color: rgba(239, 68, 68, 0.12);
+        color: #991b1b !important;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .status-flux-text.opacity-25 {
+        background-color: #F0F4F8;
+        color: #64748b !important;
+        opacity: 1 !important;
+        border-color: #D9E2EC;
+    }
 
     /* ACTION BUTTONS */
     .btn-stitch-primary {
@@ -555,12 +613,22 @@
         font-weight: 600;
         width: 100%;
         transition: all 0.2s;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
 
     .btn-stitch-outline:hover {
         background: #F0F4F8 !important;
         border-color: var(--stitch-primary);
         color: var(--stitch-primary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+    }
+    
+    .btn-stitch-outline.bg-primary {
+        background: var(--stitch-primary) !important;
+        color: #FFFFFF !important;
+        border-color: var(--stitch-primary) !important;
+        box-shadow: 0 4px 12px rgba(15, 76, 129, 0.3) !important;
     }
 
     /* PIECE BUTTONS */
@@ -797,9 +865,7 @@
                         tr.appendChild(tdIndex);
 
                         const tdParam = document.createElement('td');
-                        tdParam.innerHTML = `
-                            <div class="fw-bold" style="font-size: 1rem;">${row.control_nombre}</div>
-                        `;
+                        tdParam.innerHTML = `<div>${row.control_nombre}</div>`;
                         tr.appendChild(tdParam);
 
                         const tdNom = document.createElement('td');
@@ -812,8 +878,8 @@
                         tdTol.className = 'text-center';
                         tdTol.innerHTML = `
                             <div class="d-flex justify-content-center gap-2 font-monospace small">
-                                <div class="px-2 py-1 rounded" style="background: rgba(239, 68, 68, 0.12); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.25);">${row.minimo !== null ? row.minimo.toFixed(3) : '-0.000'}</div>
-                                <div class="px-2 py-1 rounded" style="background: rgba(34, 197, 94, 0.12); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.25);">${row.maximo !== null ? (row.maximo >= 0 ? '+' : '') + row.maximo.toFixed(3) : '+0.000'}</div>
+                                <div style="padding: 4px 12px; border-radius: 6px; font-weight: 700; background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1.5px solid rgba(220, 38, 38, 0.4);">${row.minimo !== null ? row.minimo.toFixed(3) : '-0.000'}</div>
+                                <div style="padding: 4px 12px; border-radius: 6px; font-weight: 700; background: rgba(34, 197, 94, 0.12); color: #16a34a; border: 1.5px solid rgba(22, 163, 74, 0.4);">${row.maximo !== null ? (row.maximo >= 0 ? '+' : '') + row.maximo.toFixed(3) : '+0.000'}</div>
                             </div>
                         `;
                         tr.appendChild(tdTol);
