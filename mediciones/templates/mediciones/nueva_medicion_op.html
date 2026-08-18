@@ -35,7 +35,7 @@
 <!-- FUENTES PREMIUM -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <!-- STYLES CONSOLIDATED AT BOTTOM -->
 
@@ -51,12 +51,12 @@
 
             <!-- OP SEARCH MODULE -->
             <div class="stitch-module p-4 mb-4" style="overflow: visible;">
-                <label class="stitch-label" style="display: block; margin-top: 5px;">SEÑAL: BUSCAR OP</label>
-                <div class="position-relative mt-2">
+                <label class="stitch-label" style="display: block; margin-top: 5px; font-size: 0.75rem;">SEÑAL: BUSCAR OP</label>
+                <div class="position-relative mt-3">
                     <input type="text" id="input_op" class="stitch-input" value="{{ query_op|default:'' }}" 
                            placeholder="INGRESAR LA OP AQUÍ..." onchange="updateSelection()" 
-                           style="font-size: 1rem; font-weight: 700; padding-right: 45px;">
-                    <i class="ri-radar-line position-absolute" style="right: 15px; top: 50%; transform: translateY(-50%); color: var(--stitch-primary); font-size: 1.2rem;"></i>
+                           style="font-size: 1.15rem; font-weight: 700; padding: 1rem 1.25rem; border-radius: 12px; padding-right: 50px;">
+                    <i class="ri-search-line position-absolute" style="right: 18px; top: 50%; transform: translateY(-50%); color: var(--stitch-primary); font-size: 1.4rem;"></i>
                 </div>
                 <input type="hidden" id="input_proyecto" value="{% if query_proy %}{{ query_proy }}{% elif planilla %}{{ planilla.proyecto }}{% endif %}">
                 <input type="hidden" id="select_proceso" value="{% if query_proc %}{{ query_proc }}{% elif planilla %}{{ planilla.proceso_id }}{% endif %}">
@@ -270,9 +270,12 @@
                     </div>
                 </form>
                 {% else %}
-                <div class="text-center" style="padding: 10rem 2rem; background: #FFFFFF; border-radius: 12px; border: 1px dashed #BCCCDC; box-shadow: 0 4px 12px #D9E2EC;">
-                    <i class="ri-qr-code-line" style="font-size: 4rem; color: var(--stitch-primary); opacity: 0.8;"></i>
-                    <p class="mt-4 fw-bold" style="letter-spacing: 0.1em; color: var(--stitch-secondary);">POR FAVOR, INGRESE UNA OP PARA COMENZAR</p>
+                <div class="text-center d-flex flex-column align-items-center justify-content-center h-100" style="background: #FFFFFF; border-radius: 24px; border: 1px solid var(--stitch-border); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01); padding: 3rem;">
+                    <div style="width: 140px; height: 140px; background: #F0F4F8; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 2.5rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);">
+                        <i class="ri-qr-code-scan-2-line" style="font-size: 5.5rem; color: var(--stitch-primary);"></i>
+                    </div>
+                    <h2 style="font-family: 'Urbanist', sans-serif; font-weight: 700; font-size: 2.2rem; color: var(--stitch-primary); margin-bottom: 0.75rem; letter-spacing: -0.01em;">Listo para medir</h2>
+                    <p style="font-size: 1.1rem; color: var(--stitch-secondary); font-weight: 600; letter-spacing: 0.05em; margin: 0; opacity: 0.85;">POR FAVOR, INGRESE UNA OP PARA COMENZAR</p>
                 </div>
                 {% endif %}
             </div>
@@ -332,17 +335,17 @@
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
         border: 1px solid var(--stitch-border) !important;
-        border-radius: 12px !important;
+        border-radius: 24px !important;
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         position: relative;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.04) !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01) !important;
         padding: 1.5rem 1.8rem !important;
     }
 
     .stitch-module:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(0,0,0,0.06) !important;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02) !important;
         border-color: #BCCCDC !important;
     }
 

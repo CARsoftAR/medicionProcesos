@@ -2,66 +2,217 @@
 
 {% block title %}Mi Perfil{% endblock %}
 
+{% block extra_head %}
+<!-- FUENTES PREMIUM -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Urbanist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --stitch-primary: #0F4C81;
+        --stitch-surface: #FFFFFF;
+        --stitch-bg: #F0F4F8;
+        --stitch-text: #102A43;
+        --stitch-secondary: #486581;
+        --stitch-border: #E2E8F0;
+        --stitch-muted: #829AB1;
+    }
+
+    html, body, .main-content {
+        background-color: var(--stitch-bg) !important;
+        background-image: none !important;
+    }
+
+    .premium-page-container {
+        padding: 1.5rem;
+        min-height: calc(100vh - 100px);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+
+    .stitch-module {
+        background: var(--stitch-surface) !important;
+        border: 1px solid var(--stitch-border) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01) !important;
+        padding: 2rem !important;
+        width: 100%;
+        max-width: 600px;
+    }
+
+    .user-avatar-premium {
+        width: 70px;
+        height: 70px;
+        font-size: 2.2rem;
+        background: var(--stitch-primary);
+        color: white;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 15px -3px rgba(15, 76, 129, 0.2);
+    }
+
+    .profile-name {
+        font-family: 'Urbanist', sans-serif;
+        font-weight: 800;
+        font-size: 1.8rem;
+        color: var(--stitch-text);
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+    }
+
+    .role-badge {
+        background: #F0F4F8;
+        color: var(--stitch-primary);
+        padding: 0.5rem 1.25rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 0.9rem;
+        border: 1px solid #BCCCDC;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .form-label-premium {
+        font-family: 'Urbanist', sans-serif;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--stitch-text);
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stitch-module input[type="text"],
+    .stitch-module input[type="email"],
+    .stitch-module input[type="password"],
+    .stitch-module select {
+        width: 100%;
+        padding: 0.65rem 1rem;
+        border-radius: 12px;
+        border: 1px solid var(--stitch-border);
+        background: #F8FAFC;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--stitch-text);
+        transition: all 0.2s;
+        outline: none;
+    }
+
+    .stitch-module input:focus,
+    .stitch-module select:focus {
+        background: #FFFFFF;
+        border-color: var(--stitch-primary);
+        box-shadow: 0 0 0 3px rgba(15, 76, 129, 0.1);
+    }
+
+    .security-box {
+        background: #F8FAFC;
+        border: 1.5px dashed var(--stitch-border);
+        border-radius: 16px;
+        padding: 1rem 1.25rem;
+    }
+
+    .security-title {
+        font-family: 'Urbanist', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--stitch-primary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .btn-stitch-primary {
+        background: var(--stitch-primary) !important;
+        color: white !important;
+        border: none;
+        border-radius: 12px;
+        padding: 0.75rem;
+        font-weight: 700;
+        font-family: 'Urbanist', sans-serif;
+        font-size: 1rem;
+        letter-spacing: 0.05em;
+        transition: all 0.2s;
+        box-shadow: 0 4px 10px rgba(15, 76, 129, 0.2);
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .btn-stitch-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(15, 76, 129, 0.3);
+        background: #0A3560 !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="card animate__animated animate__fadeInUp" style="border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">
-            <div class="card-body p-4">
-                <div class="text-center mb-4">
-                    <div class="user-avatar mx-auto mb-3" style="width: 80px; height: 80px; font-size: 2.5rem; background: #3b82f6; color: white; border-radius: 20px;">
-                        <i class="ri-user-3-fill"></i>
-                    </div>
-                    <h3 style="font-weight: 800; color: #1e293b; margin-bottom: 0.25rem;">{{ user.username }}</h3>
-                    <span class="badge" style="background: #e0e7ff; color: #4338ca; padding: 0.5rem 1rem; border-radius: 10px;">
-                        {{ user.profile.get_role_display }}
-                    </span>
-                </div>
-
-                <form method="post" class="mt-4">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Nombre</label>
-                            {{ user_form.first_name }}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Apellido</label>
-                            {{ user_form.last_name }}
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Correo Electrónico</label>
-                        {{ user_form.email }}
-                    </div>
-
-                    <div class="mb-4">
-                        <label class="form-label">Rol del Sistema</label>
-                        {{ user_form.role }}
-                        <div class="form-text mt-1" style="font-size: 0.75rem;">
-                            <i class="ri-information-line"></i> Solo los supervisores pueden modificar roles.
-                        </div>
-                    </div>
-
-                    <div class="p-3 rounded-4 mb-4" style="background: #f8fafc; border: 1px dashed #cbd5e1;">
-                        <label class="form-label d-flex align-items-center gap-2">
-                           <i class="ri-lock-password-line"></i> Seguridad
-                        </label>
-                        {{ user_form.password }}
-                        <div class="form-text mt-1 text-muted">
-                            {{ user_form.password.help_text }}
-                        </div>
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary" style="border-radius: 12px; padding: 0.75rem;">
-                            <i class="ri-save-line"></i> Guardar Cambios
-                        </button>
-                    </div>
-                </form>
+<div class="premium-page-container animate__animated animate__fadeIn">
+    <div class="stitch-module">
+        <div class="text-center mb-4">
+            <div class="user-avatar-premium mx-auto mb-3">
+                <i class="ri-user-3-fill"></i>
             </div>
+            <h3 class="profile-name">{{ user.username }}</h3>
+            <span class="role-badge">
+                {{ user.profile.get_role_display }}
+            </span>
         </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-premium">Nombre</label>
+                    {{ user_form.first_name }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label-premium">Apellido</label>
+                    {{ user_form.last_name }}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label-premium">Correo Electrónico</label>
+                {{ user_form.email }}
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label-premium">Rol del Sistema</label>
+                {{ user_form.role }}
+                <div class="mt-1" style="font-size: 0.75rem; color: var(--stitch-secondary); font-weight: 500;">
+                    <i class="ri-information-line"></i> Solo los supervisores pueden modificar roles.
+                </div>
+            </div>
+
+            <div class="security-box mb-4">
+                <div class="security-title">
+                   <i class="ri-lock-password-line" style="font-size: 1.2rem;"></i> Seguridad y Contraseña
+                </div>
+                {{ user_form.password }}
+                <div class="mt-1" style="font-size: 0.75rem; color: var(--stitch-muted); font-weight: 500;">
+                    {{ user_form.password.help_text|default:"Dejar en blanco si no desea cambiarla." }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn-stitch-primary">
+                <i class="ri-save-line" style="font-size: 1.2rem;"></i> Guardar Cambios
+            </button>
+        </form>
     </div>
 </div>
 {% endblock %}

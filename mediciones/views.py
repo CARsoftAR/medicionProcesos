@@ -577,7 +577,7 @@ def editar_control(request, pk):
             error_msg = next(iter(form.errors.values()))[0]
             return JsonResponse({'status': 'error', 'message': error_msg})
     else: form = ControlForm(instance=control)
-    return render(request, 'crear_control.html', {'form': form, 'titulo': 'Editar Control', 'is_edit': True})
+    return render(request, 'mediciones/crear_control.html', {'form': form, 'titulo': 'Editar Control', 'is_edit': True})
 
 @supervisor_required
 def eliminar_control(request, pk):
@@ -973,7 +973,7 @@ def nueva_medicion_op(request):
                 
                 messages.success(request, f'Mediciones de Pieza {pieza_actual} guardadas.')
                 if 'guardar_siguiente' in request.POST:
-                    return redirect(f"{reverse('nueva_medicion_op')}?proy={proy_query}&op={op_query}&proc={proc_id}&pieza={pieza_actual + 1}")
+                    return redirect(f"{reverse('nueva_medicion_op')}?proy={proy_query}&op={op_query}&proc={proc_id}&pieza={pieza_actual}")
 
             valores_existentes = ValorMedicion.objects.filter(planilla__in=planillas, pieza=pieza_actual)
             valores_dict = { (v.planilla_id, v.control_id): v for v in valores_existentes }
@@ -1028,18 +1028,19 @@ def nueva_medicion_op(request):
                 })
             planilla = planillas.first()
 
-        piezas_medidas = ValorMedicion.objects.filter(planilla__in=planillas).values_list('pieza', flat=True).distinct().order_by('pieza')
+        piezas_medidas = ValorMedicion.objects.filter(planilla__in=planillas).exclude(valor_pieza__isnull=True, valor_pnp__isnull=True).values_list('pieza', flat=True).distinct().order_by('pieza')
         max_p = piezas_medidas.last() if piezas_medidas.exists() else 0
         range_piezas = list(piezas_medidas)
         
         try: p_actual_int_nav = int(str(pieza_actual))
         except: p_actual_int_nav = 0
-        if p_actual_int_nav >= max_p:
-            if (max_p + 1) not in range_piezas: range_piezas.append(max_p + 1)
         
         try:
             p_actual_int = int(pieza_actual)
-            current_idx = range_piezas.index(p_actual_int) if p_actual_int in range_piezas else -1
+            if p_actual_int not in range_piezas:
+                range_piezas.append(p_actual_int)
+                range_piezas.sort()
+            current_idx = range_piezas.index(p_actual_int)
         except: current_idx = -1
             
         first_p = range_piezas[0] if range_piezas else 1
@@ -1090,7 +1091,7 @@ def nueva_medicion_op(request):
                 'max_limit': float(r['max_limit']) if r['max_limit'] is not None else None, 'spc_alerts': r['spc_alerts'],
                 'has_warning': r['has_warning'], 'has_danger': r['has_danger'], 'is_pnp': r['tolerancia'].control.pnp
             })
-        return JsonResponse({'status': 'success', 'pieza_actual': pieza_actual, 'piezas_medidas': list(piezas_medidas) if planilla else [], 'piezas_navegacion': piezas_mostrar if planilla else [], 'first_p': first_p, 'last_p': last_p, 'prev_p': prev_p, 'next_p': next_p, 'rows': serializable_rows, 'observaciones': planilla.observaciones if planilla else ''})
+        return JsonResponse({'status': 'success', 'pieza_actual': pieza_actual, 'piezas_medidas': range_piezas if planilla else [], 'piezas_navegacion': piezas_mostrar if planilla else [], 'first_p': first_p, 'last_p': last_p, 'prev_p': prev_p, 'next_p': next_p, 'rows': serializable_rows, 'observaciones': planilla.observaciones if planilla else ''})
     return render(request, 'mediciones/nueva_medicion_op.html', context)
 
 @csrf_exempt
@@ -1390,11 +1391,12 @@ def api_operario_data(request):
                     except: status = 'pending'
         rows.append({'tolerancia_id': tol.id, 'control_nombre': tol.control.nombre, 'is_pnp': tol.control.pnp, 'nominal': float(tol.nominal) if tol.nominal is not None else None, 'tol_min': float(tol.minimo) if tol.minimo is not None else None, 'tol_max': float(tol.maximo) if tol.maximo is not None else None, 'valor': current_val, 'status': status, 'instrumento_id': tol.instrumento_id, 'elemento_nombre': tol.planilla.elemento.nombre if tol.planilla.elemento else None})
     
-    piezas_medidas = list(ValorMedicion.objects.filter(planilla__in=planillas).values_list('pieza', flat=True).distinct().order_by('pieza'))
+    piezas_medidas = list(ValorMedicion.objects.filter(planilla__in=planillas).exclude(valor_pieza__isnull=True, valor_pnp__isnull=True).values_list('pieza', flat=True).distinct().order_by('pieza'))
     max_p = max(piezas_medidas) if piezas_medidas else 0
     range_piezas = list(piezas_medidas)
-    if (max_p + 1) not in range_piezas: range_piezas.append(max_p + 1)
-    if pieza not in range_piezas: range_piezas.append(pieza); range_piezas.sort()
+    if pieza not in range_piezas:
+        range_piezas.append(pieza)
+        range_piezas.sort()
     
     window_size = 6
     try: current_idx = range_piezas.index(pieza)
@@ -1766,8 +1768,24 @@ def alta_operario(request):
         if form.is_valid():
             legajo = form.cleaned_data['legajo']
             
-            if User.objects.filter(username=legajo).exists():
-                messages.error(request, 'El legajo ya se encuentra registrado en el sistema.')
+            user_exists = User.objects.filter(username=legajo).first()
+            
+            if user_exists:
+                if user_exists.is_active:
+                    messages.error(request, 'El legajo ya se encuentra registrado en el sistema.')
+                else:
+                    user_exists.is_active = True
+                    user_exists.first_name = form.cleaned_data['nombre']
+                    user_exists.last_name = form.cleaned_data['apellido']
+                    user_exists.set_password(form.cleaned_data['pin'])
+                    user_exists.save()
+                    
+                    operario, _ = Operario.objects.get_or_create(user=user_exists)
+                    operario.activo = True
+                    operario.save()
+                    
+                    messages.success(request, f'Operario {legajo} reactivado con éxito.')
+                    return redirect('lista_operarios')
             else:
                 user = User.objects.create_user(
                     username=legajo,

@@ -24,7 +24,7 @@ class CotasPlanillaAPIView(APIView):
         serializer = ToleranciaSerializer(tolerancias, many=True)
         
         # Obtener lista de piezas ya registradas (sin repetidos, ordenadas)
-        valores = ValorMedicion.objects.filter(planilla=planilla)
+        valores = ValorMedicion.objects.filter(planilla=planilla).exclude(valor_pieza__isnull=True, valor_pnp__isnull=True)
         piezas = valores.values_list('pieza', flat=True).distinct().order_by('pieza')
         piezas_registradas = list(piezas)
         
@@ -72,11 +72,20 @@ class BorrarPiezaAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, op_num, pieza, format=None):
-        planilla = get_object_or_404(PlanillaMedicion, num_op=op_num)
-        deleted, _ = ValorMedicion.objects.filter(planilla=planilla, pieza=pieza).delete()
+        planillas = PlanillaMedicion.objects.filter(num_op=op_num)
+        if not planillas.exists() and str(op_num).isdigit():
+            planillas = PlanillaMedicion.objects.filter(num_op=int(op_num))
+            
+        if not planillas.exists():
+            return Response({'status': 'error', 'message': 'OP no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+            
+        deleted, _ = ValorMedicion.objects.filter(planilla__in=planillas, pieza=pieza).delete()
         if deleted > 0:
             return Response({'status': 'success', 'deleted': deleted}, status=status.HTTP_200_OK)
-        return Response({'status': 'error', 'message': 'Pieza no encontrada'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'status': 'error', 'message': 'Pieza no encontrada o ya estaba vacía'}, status=status.HTTP_200_OK)
+
+import logging
+logger = logging.getLogger(__name__)
 
 class OperarioLoginAPIView(APIView):
     permission_classes = [AllowAny]
@@ -86,18 +95,37 @@ class OperarioLoginAPIView(APIView):
         pin = request.data.get('pin')
         
         if not legajo or not pin:
+            logger.warning("Login fallido: Legajo o PIN no proporcionados.")
             return Response({'error': 'Legajo y PIN son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.get(username=legajo)
         except User.DoesNotExist:
+            logger.warning(f"Login fallido: Legajo inexistente ({legajo}).")
             return Response({'error': 'Legajo incorrecto'}, status=status.HTTP_404_NOT_FOUND)
+        except User.MultipleObjectsReturned:
+            logger.error(f"Login fallido: Múltiples usuarios encontrados para el legajo {legajo}. Intentando buscar activo.")
+            users = User.objects.filter(username=legajo, is_active=True)
+            if users.exists():
+                user = users.first()
+            else:
+                return Response({'error': 'Legajo duplicado o inactivo.'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.exception(f"Error interno en login para legajo {legajo}: {str(e)}")
+            return Response({'error': 'Error interno del servidor'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         if not user.check_password(pin):
+            logger.warning(f"Login fallido: PIN incorrecto para legajo {legajo}.")
             return Response({'error': 'PIN incorrecto'}, status=status.HTTP_401_UNAUTHORIZED)
             
+        if not user.is_active:
+            logger.warning(f"Login fallido: Usuario {legajo} inactivo (is_active=False).")
+            return Response({'error': 'Usuario inactivo'}, status=status.HTTP_403_FORBIDDEN)
+
         if hasattr(user, 'operario') and not user.operario.activo:
+            logger.warning(f"Login fallido: Operario {legajo} inactivo (operario.activo=False).")
             return Response({'error': 'Operario inactivo'}, status=status.HTTP_403_FORBIDDEN)
             
         token, _ = Token.objects.get_or_create(user=user)
+        logger.info(f"Login exitoso para legajo {legajo}.")
         return Response({'token': token.key}, status=status.HTTP_200_OK)

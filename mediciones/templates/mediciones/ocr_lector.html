@@ -1,4 +1,4 @@
-﻿{% extends 'mediciones/index.html' %}
+{% extends 'mediciones/index.html' %}
 
 {% load static %}
 
@@ -16,7 +16,7 @@
 
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Urbanist:wght@400;600;700;800&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
 
 
 
@@ -111,47 +111,32 @@
 
 
     /* Sidebar Izquierdo */
-
     .sidebar-ocr {
-
-        width: 280px;
-
+        width: 320px;
         background: #FFFFFF !important;
-
-        padding: 2rem 1.5rem;
-
-        border-right: 1px solid var(--stitch-border);
-
+        padding: 2rem;
+        border: 1px solid var(--stitch-border);
+        border-radius: 24px;
+        margin: 1.5rem 0 1.5rem 2rem;
         display: flex;
-
         flex-direction: column;
-
-        gap: 2rem;
-
+        gap: 1.5rem;
         flex-shrink: 0;
-
-        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.05);
-
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        height: calc(100vh - 3rem);
+        overflow-y: auto;
     }
 
 
 
     .sidebar-title {
-
-        font-family: 'Outfit', sans-serif;
-
-        font-size: 1.5rem;
-
+        font-family: 'Urbanist', sans-serif;
+        font-size: 1.8rem;
         font-weight: 800;
-
         color: var(--stitch-primary);
-
         text-shadow: none;
-
         letter-spacing: -0.02em;
-
-        text-transform: uppercase;
-
+        margin-bottom: 0;
     }
 
 
@@ -221,121 +206,76 @@
 
 
     /* Contenido Principal */
-
     .main-content-ocr {
-
         flex: 1;
-
-        padding: 2rem 3rem;
-
+        padding: 1.5rem 2.5rem;
         overflow-y: auto;
-
+        height: 100vh;
     }
-
-
 
     .header-actions {
-
         display: flex;
-
         justify-content: space-between;
-
         align-items: center;
-
-        margin-bottom: 2rem;
-
+        margin-bottom: 1.5rem;
     }
 
-    .panel-title { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: var(--stitch-text); margin: 0; text-transform: uppercase; letter-spacing: -0.02em; }
+    .panel-title { 
+        font-family: 'Urbanist', sans-serif; 
+        font-size: 2rem; 
+        font-weight: 800; 
+        color: var(--stitch-text); 
+        margin: 0; 
+        letter-spacing: -0.02em; 
+    }
 
 
 
     .btn-descartar {
-
         background: transparent;
-
-        border: 1px dashed var(--stitch-border);
-
+        border: 1.5px solid var(--stitch-muted);
         border-radius: 12px;
-
         color: var(--stitch-muted);
-
-        font-family: 'Outfit', sans-serif;
-
-        font-weight: 800;
-
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
         text-transform: uppercase;
-
         font-size: 0.85rem;
-
-        padding: 0.6rem 1.5rem;
-
+        padding: 0.75rem 1.5rem;
         transition: all 0.2s;
-
         cursor: pointer;
-
     }
-
-    .btn-descartar:hover { color: var(--stitch-text); border-color: var(--stitch-muted); background: #E2E8F0; }
-
-
+    .btn-descartar:hover { color: var(--stitch-text); border-color: var(--stitch-text); background: #F0F4F8; }
 
     .btn-confirmar {
-
         background: var(--stitch-primary);
-
         color: white;
-
         border: none;
-
-        border-radius: 8px;
-
+        border-radius: 12px;
         padding: 0.75rem 2rem;
-
-        font-family: 'Outfit', sans-serif;
-
-        font-weight: 800;
-
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
         text-transform: uppercase;
-
         letter-spacing: 0.05em;
-
-        font-size: 0.9rem;
-
-        box-shadow: 0 4px 6px #BCCCDC;
-
-        transition: all 0.3s;
-
+        font-size: 0.85rem;
+        box-shadow: 0 4px 10px rgba(15, 76, 129, 0.2);
+        transition: all 0.2s;
         cursor: pointer;
-
     }
-
-    .btn-confirmar:hover { transform: translateY(-2px); box-shadow: 0 4px 10px #D9E2EC; background: #102A43; }
+    .btn-confirmar:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(15, 76, 129, 0.3); background: #0A3560; }
 
 
 
     /* Panel de Verificación (Selectores) */
-
     .verification-bar {
-
         background: #FFFFFF;
-
         border: 1px solid var(--stitch-border);
-
-        box-shadow: var(--stitch-shadow);
-
-        border-radius: 12px;
-
-        padding: 1.5rem;
-
-        margin-bottom: 2rem;
-
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        border-radius: 24px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 1.5rem;
         display: grid;
-
         grid-template-columns: repeat(4, 1fr);
-
         gap: 1.5rem;
-
     }
 
     .selector-group { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -389,38 +329,29 @@
 
 
     /* Matriz de Control */
-
     .matrix-card {
-
         background: #FFFFFF;
-
-        border-radius: 12px;
-
+        border-radius: 24px;
         border: 1px solid var(--stitch-border);
-
-        box-shadow: 0 4px 12px #D9E2EC;
-
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         overflow: hidden;
-
     }
-
     .matrix-header {
-
         padding: 1.5rem 2rem;
-
         border-bottom: 1px dashed var(--stitch-border);
-
         display: flex;
-
         justify-content: space-between;
-
         align-items: center;
-
         background: transparent;
-
     }
-
-    .matrix-title { font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 800; color: var(--stitch-primary); text-transform: uppercase; margin: 0; }
+    .matrix-title { 
+        font-family: 'Urbanist', sans-serif; 
+        font-size: 1.4rem; 
+        font-weight: 700; 
+        color: var(--stitch-primary); 
+        margin: 0; 
+        letter-spacing: -0.01em; 
+    }
 
     .matrix-badge {
 
@@ -779,8 +710,8 @@
 
 
             <div id="upload-content">
-                <textarea class="form-control" name="json_data" id="jsonInput" rows="12" placeholder="Pegá aquí el JSON del documento..." style="width: 100%; border: 1px solid var(--stitch-border); border-radius: 8px; padding: 1rem; font-family: 'Fira Code', monospace; font-size: 0.8rem; resize: vertical; margin-bottom: 1rem;"></textarea>
-                <button type="button" id="btn-procesar-json" class="btn btn-primary">PROCESAR JSON</button>
+                <textarea class="form-control" name="json_data" id="jsonInput" rows="12" placeholder="Pegá aquí el JSON del documento..." style="width: 100%; border: 1.5px solid var(--stitch-border); border-radius: 16px; padding: 1.2rem; font-family: 'Fira Code', monospace; font-size: 0.85rem; resize: vertical; margin-bottom: 1.5rem; background: #F8FAFC; color: var(--stitch-text); outline: none;"></textarea>
+                <button type="button" id="btn-procesar-json" class="btn btn-primary" style="width: 100%; border-radius: 12px; font-family: 'Inter', sans-serif; font-weight: 700; background: var(--stitch-primary); border: none; padding: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(15, 76, 129, 0.2);">PROCESAR JSON</button>
             </div>
             <!-- Loader Simplificado y Robusto -->
 

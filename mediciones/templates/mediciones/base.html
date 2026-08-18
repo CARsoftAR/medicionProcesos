@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABBAMAT - {% block title %}Calidad{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'mediciones/css/index.css' %}?v=8.1">
+    <link rel="stylesheet" href="{% static 'mediciones/css/index.css' %}?v=8.2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -204,19 +204,19 @@
             </div>
 
             <!-- Perfil de Usuario (Estilo Card Flotante) -->
-            <div class="user-profile-wrapper" style="margin: 0.5rem 1rem 1.5rem 1rem; border-radius: 12px; background: #374151; border: none; overflow: hidden;">
-                <a href="{% url 'perfil_usuario' %}" class="user-profile-link" style="text-decoration: none; display: flex; align-items: center; padding: 1rem; transition: background-color 0.2s;">
-                    <div class="user-avatar" style="position: relative; width: 40px; height: 40px; background: #4B5563; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #E5E7EB; transition: background-color 0.2s;">
+            <div class="user-profile-wrapper" style="margin: 0.5rem 1rem 1.5rem 1rem; border-radius: 12px; background: #111827; border: 1px solid #1f2937; overflow: hidden;">
+                <a href="{% url 'perfil_usuario' %}" class="user-profile-link" style="text-decoration: none; display: flex; align-items: center; padding: 1rem; transition: background-color 0.2s;" onmouseover="this.style.background='#1f2937'" onmouseout="this.style.background='transparent'">
+                    <div class="user-avatar" style="position: relative; width: 40px; height: 40px; background: #1f2937; border: none; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #e2e8f0; transition: background-color 0.2s;">
                         <i class="ri-user-3-fill" style="font-size: 1.1rem;"></i>
-                        <span style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background-color: #10B981; border: 2px solid #374151; border-radius: 50%;"></span>
+                        <span style="position: absolute; bottom: -2px; right: -2px; width: 10px; height: 10px; background-color: #10B981; border: 2px solid #111827; border-radius: 50%;"></span>
                     </div>
                     <div class="user-info" style="margin-left: 0.85rem; flex: 1; overflow: hidden;">
-                        <div class="user-name" style="color: #F3F4F6; font-weight: 700; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.username }}</div>
-                        <div class="user-role" style="color: #9CA3AF; font-size: 0.75rem; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.profile.get_role_display|default:"Usuario" }}</div>
+                        <div class="user-name" style="color: #f8fafc; font-weight: 700; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.username }}</div>
+                        <div class="user-role" style="color: #94a3b8; font-size: 0.75rem; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ user.profile.get_role_display|default:"Usuario" }}</div>
                     </div>
                 </a>
                 <div style="padding: 0 1rem 1rem 1rem;">
-                    <a href="{% url 'logout' %}" class="btn-logout-premium" style="background: #4B5563; color: #FCA5A5; border: none; border-radius: 8px; padding: 0.6rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: background-color 0.15s ease, color 0.15s ease;" onmouseover="this.style.background='#991B1B'; this.style.color='#FFFFFF'" onmouseout="this.style.background='#4B5563'; this.style.color='#FCA5A5'">
+                    <a href="{% url 'logout' %}" class="btn-logout-premium" style="background: #1f2937; color: #f87171; border: none; border-radius: 8px; padding: 0.6rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: background-color 0.15s ease, color 0.15s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='#ffffff'" onmouseout="this.style.background='#1f2937'; this.style.color='#f87171'">
                         <i class="ri-logout-box-r-line" style="font-size: 1.1rem;"></i> Cerrar Sesión
                     </a>
                 </div>

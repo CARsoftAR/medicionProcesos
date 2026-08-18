@@ -9,262 +9,288 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@400;600;800&family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
-    /* Critical dark background variables to prevent unstyled flashes */
-    html, body, .main-content {
-        background-color: #090d16 !important;
-        background-image: 
-            radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.05) 0%, transparent 50%),
-            radial-gradient(circle at 100% 100%, rgba(168, 85, 247, 0.05) 0%, transparent 50%) !important;
-        color: #e2e8f0 !important;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<style>
+    /* 
+       DESIGN SYSTEM: PREMIUM INDUSTRIAL 2026
+       Colores sólidos, sin transparencias ni bordes pesados.
+    */
     :root {
-        --stitch-bg: #090d16;
-        --stitch-surface: rgba(255, 255, 255, 0.02);
-        --stitch-card: rgba(255, 255, 255, 0.03);
-        --stitch-primary: #c084fc;       /* Neon purple/violet */
-        --stitch-secondary: #a78bfa;     /* Secondary purple */
-        --stitch-border: rgba(255, 255, 255, 0.08);
-        --stitch-text: #e2e8f0;          /* Light slate/white */
-        --stitch-muted: #94a3b8;
-        --stitch-glass: rgba(255, 255, 255, 0.03);
-        --stitch-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        --text-primary: #102A43;
+        --text-secondary: #486581;
+        --primary: #0F4C81;
+        --border-color: #E2E8F0;
+        --bg-surface: #FFFFFF;
+        --bg-body: #F0F4F8;
     }
     
-    body { font-family: 'Inter', sans-serif; background-color: var(--stitch-bg); }
-
-    .stitch-module {
-        background: var(--stitch-glass) !important;
-        backdrop-filter: blur(20px) saturate(180%) !important;
-        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-        border: 1px solid var(--stitch-border) !important;
-        border-radius: 24px !important;
-        padding: 2.5rem;
-        box-shadow: var(--stitch-shadow) !important;
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    html, body, .main-content {
+        background-color: var(--bg-body) !important;
+        background-image: none !important;
+        color: var(--text-primary);
+        font-family: 'Inter', sans-serif;
     }
 
-    .stitch-header { margin-bottom: 2rem; }
-    .stitch-title {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.8rem;
-        font-weight: 800;
-        color: var(--stitch-text);
-        margin: 0;
-        text-transform: uppercase;
-        letter-spacing: -0.02em;
+    .premium-page-container {
+        padding: 1.5rem 2.5rem;
+        opacity: 0;
+        transition: opacity 0.18s ease-in-out;
     }
-    .stitch-subtitle { color: var(--stitch-muted); font-size: 0.9rem; margin-top: 0.2rem; font-weight: 500; }
+    .premium-page-container.loaded {
+        opacity: 1;
+    }
 
     .btn-stitch-primary {
-        background: linear-gradient(135deg, #7c3aed, #c084fc);
-        color: white;
+        background: #0F4C81 !important;
+        color: white !important;
         border: none;
-        border-radius: 12px;
-        padding: 0.75rem 1.5rem;
-        font-family: 'Outfit', sans-serif;
-        font-weight: 800;
-        text-transform: uppercase;
+        border-radius: 10px;
+        padding: 0.85rem 1.75rem;
+        font-weight: 600;
+        font-family: 'Inter', sans-serif;
         letter-spacing: 0.05em;
-        font-size: 0.85rem;
+        transition: all 0.2s;
+        box-shadow: 0 4px 6px -1px rgba(15, 76, 129, 0.2), 0 2px 4px -2px rgba(15, 76, 129, 0.1) !important;
+        text-transform: uppercase;
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
     }
+
     .btn-stitch-primary:hover {
+        background: #0A3560 !important;
         transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(124, 58, 237, 0.45);
-        color: white;
+        box-shadow: 0 10px 15px -3px rgba(10, 53, 96, 0.3), 0 4px 6px -4px rgba(10, 53, 96, 0.1) !important;
     }
 
-    .table-stitch { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 1.5rem; }
-    .table-stitch th {
-        background: transparent;
-        color: var(--stitch-primary);
-        font-family: 'Outfit', sans-serif;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        font-size: 0.75rem;
-        padding: 1rem;
-        border-bottom: 2px dashed var(--stitch-border);
-        text-align: left !important;
+    .btn-stitch-primary:active {
+        background: #072847 !important;
+        transform: translateY(1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
     }
-    .table-stitch td {
-        padding: 1.2rem 1rem;
-        border-bottom: 1px solid var(--stitch-border);
-        color: var(--stitch-text);
-        font-size: 0.95rem;
-        vertical-align: middle;
-        transition: background-color 0.2s;
-    }
-    .table-stitch tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
 
-    .btn-action-soft {
-        background: rgba(255, 255, 255, 0.03);
-        color: var(--stitch-primary);
-        border: 1px solid var(--stitch-border);
-        border-radius: 8px;
-        padding: 0.4rem 0.8rem;
+    .stitch-module {
+        background: var(--bg-surface) !important;
+        border: 1px solid #E2E8F0 !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01) !important;
+        overflow: hidden;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table thead th {
+        background: #F8FAFC !important;
+        color: #64748B !important;
+        font-family: 'Inter', sans-serif;
         font-weight: 700;
-        font-family: 'Outfit', sans-serif;
-        font-size: 0.75rem;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-        text-decoration: none;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        padding: 18px 24px;
+        border-bottom: 2px solid #E2E8F0;
+        text-align: left;
     }
-    .btn-action-soft:hover {
-        background: var(--stitch-primary);
-        color: white;
-        border-color: var(--stitch-primary);
-        transform: translateY(-1px);
+    
+    .data-table tbody tr {
+        transition: background 0.2s;
+        border-bottom: 1px solid #F1F5F9 !important;
+    }
+    
+    .data-table tbody tr:hover {
+        background: #F8FAFC !important;
     }
 
-    .pagination-stitch { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--stitch-border); padding-top: 1.5rem; }
+    .data-table td {
+        padding: 18px 24px;
+        vertical-align: middle;
+        color: var(--text-primary);
+    }
+
+    .btn-action-edit {
+        background: #FFFFFF !important; 
+        color: #3b82f6 !important; 
+        width: 38px; height: 38px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid #E2E8F0 !important;
+        transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .btn-action-edit:hover {
+        background: #EFF6FF !important;
+        border-color: #BFDBFE !important;
+        color: #2563EB !important;
+    }
+
+    .btn-action-delete {
+        background: #FFFFFF !important; 
+        color: #EF4444 !important; 
+        width: 38px; height: 38px; border: 1px solid #E2E8F0 !important; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
+        transition: all 0.2s;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .btn-action-delete:hover {
+        background: #FEF2F2 !important;
+        border-color: #FECACA !important;
+        color: #DC2626 !important;
+    }
+
+    .pagination-stitch { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 1.5rem; }
     .pager-controls { display: flex; gap: 0.5rem; align-items: center; }
     .pager-btn {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid var(--stitch-border);
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
         border-radius: 8px;
         width: 36px;
         height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--stitch-text);
+        color: #64748B;
         text-decoration: none;
         transition: all 0.2s;
         font-weight: 600;
-        font-family: 'Outfit', sans-serif;
+        font-family: 'Inter', sans-serif;
     }
-    .pager-btn:hover:not(.disabled) { background: var(--stitch-primary); color: white; border-color: var(--stitch-primary); }
-    .pager-btn.active { background: var(--stitch-primary); color: white; border-color: var(--stitch-primary); pointer-events: none; }
-    .pager-btn.disabled { opacity: 0.4; cursor: not-allowed; background: transparent; }
+    .pager-btn:hover:not(.disabled) { background: #F0F4F8; color: #0F4C81; border-color: #0F4C81; }
+    .pager-btn.active { background: #0F4C81; color: white; border-color: #0F4C81; pointer-events: none; }
+    .pager-btn.disabled { opacity: 0.4; cursor: not-allowed; background: #F8FAFC; }
 
     .per-page-input-stitch {
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px dashed var(--stitch-border);
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
         border-radius: 8px;
         padding: 0.4rem;
         width: 60px;
         text-align: center;
-        color: var(--stitch-primary);
-        font-weight: 800;
-        font-family: 'Outfit', sans-serif;
+        color: #0F4C81;
+        font-weight: 700;
+        font-family: 'Inter', sans-serif;
         outline: none;
         transition: 0.2s;
     }
-    .per-page-input-stitch:focus { border-style: solid; border-color: var(--stitch-primary); }
+    .per-page-input-stitch:focus { border-color: #0F4C81; box-shadow: 0 0 0 2px rgba(15, 76, 129, 0.1); }
 </style>
+{% endblock %}
 
-<div class="stitch-module animate__animated animate__fadeIn">
-    <div class="stitch-header d-flex justify-content-between align-items-center mb-4">
+{% block content %}
+<div class="premium-page-container container-fluid py-4 animate__animated animate__fadeIn" style="max-width: 1400px;">
+    <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h2 class="stitch-title">Clientes</h2>
-            <div class="stitch-subtitle">Administra la base de datos de clientes corporativos.</div>
+            <div class="d-flex align-items-center gap-3 mb-1">
+                <div style="width: 48px; height: 48px; background: #0F4C81; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 4px 10px rgba(15, 76, 129, 0.3);">
+                    <i class="ri-user-smile-line" style="font-size: 1.5rem;"></i>
+                </div>
+                <h1 class="stitch-title" style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 2.25rem; letter-spacing: -0.02em; color: #0f172a; margin: 0;">Clientes</h1>
+            </div>
+            <p style="color: #64748b; font-weight: 500; font-size: 1rem; margin: 0; margin-left: 64px;">Administra la base de datos de clientes corporativos.</p>
         </div>
         <a href="{% url 'crear_cliente' %}" class="btn-stitch-primary">
-            <i class="ri-add-line"></i> Nuevo Cliente
+            <i class="ri-add-line" style="font-size: 1.2rem;"></i> NUEVO CLIENTE
         </a>
     </div>
 
-    <div class="table-responsive">
-        <table class="table-stitch">
-            <thead>
-                <tr>
-                    <th class="text-start" style="width: 100px;">ID</th>
-                    <th class="text-start">Nombre</th>
-                    <th class="text-end" style="width: 200px;">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for cliente in clientes %}
-                <tr>
-                    <td class="text-start" style="font-family: 'Outfit', monospace; color: var(--stitch-primary); font-weight: 800;">#{{ cliente.id }}</td>
-                    <td class="text-start fw-bold" style="letter-spacing: -0.01em;">{{ cliente.nombre }}</td>
-                    <td class="text-end">
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="{% url 'editar_cliente' cliente.pk %}" class="btn-action-soft">
-                                <i class="ri-edit-line"></i> Editar
-                            </a>
-                            <form action="{% url 'eliminar_cliente' cliente.pk %}" method="post" style="margin: 0;" id="delete-form-cliente-{{ cliente.pk }}">
-                                {% csrf_token %}
-                                <button type="button" class="btn-action-soft" onclick="confirmDelete('{{ cliente.nombre }}', 'delete-form-cliente-{{ cliente.pk }}')">
-                                    <i class="ri-delete-bin-line"></i> Borrar
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="3" class="text-center py-5">
-                        <div style="opacity: 0.75;">
-                            <i class="ri-user-smile-line" style="font-size: 4rem; color: var(--stitch-primary); filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.3));"></i>
-                            <h4 class="mt-3" style="font-family: 'Outfit', sans-serif; font-weight: 800; color: var(--stitch-text); text-transform: uppercase;">Sin Clientes</h4>
-                            <p style="color: var(--stitch-muted); font-weight: 500;">Comienza registrando tu primer cliente en el sistema.</p>
-                        </div>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination and Per Page Selector -->
-    <div class="pagination-stitch">
-        <div class="d-flex align-items-center gap-2">
-            <span style="font-size: 0.8rem; font-weight: 700; color: var(--stitch-muted); text-transform: uppercase; letter-spacing: 0.05em;">Registros p/pág:</span>
-            <input type="number" class="per-page-input-stitch" value="{{ per_page }}" min="1" max="100" 
-                   onchange="changePerPage(this.value)"
-                   onkeydown="if(event.key==='Enter') changePerPage(this.value)">
-        </div>
-
-        <div class="pager-controls">
-            {% if clientes.has_previous %}
-                <a href="?page=1&per_page={{ per_page }}" class="pager-btn" title="Primera">
-                    <i class="ri-double-left-line"></i>
-                </a>
-                <a href="?page={{ clientes.previous_page_number }}&per_page={{ per_page }}" class="pager-btn" title="Anterior">
-                    <i class="ri-arrow-left-s-line"></i>
-                </a>
-            {% else %}
-                <div class="pager-btn disabled"><i class="ri-double-left-line"></i></div>
-                <div class="pager-btn disabled"><i class="ri-arrow-left-s-line"></i></div>
-            {% endif %}
-
-            <div class="pager-btn active" style="width: auto; padding: 0 1rem;">
-                {{ clientes.number }} / {{ clientes.paginator.num_pages }}
+    <div class="stitch-module">
+        <div class="card-body p-0">
+            <div style="overflow-x: auto;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 100px;">ID</th>
+                            <th>NOMBRE</th>
+                            <th class="text-end" style="width: 200px;">ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cliente in clientes %}
+                        <tr>
+                            <td>
+                                <span style="font-family: 'Inter', monospace; color: var(--primary); font-weight: 800;">#{{ cliente.id }}</span>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700; color: var(--text-primary); font-size: 1.05rem; letter-spacing: -0.01em;">{{ cliente.nombre }}</div>
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <a href="{% url 'editar_cliente' cliente.pk %}" class="btn-action-edit" title="Editar Cliente">
+                                        <i class="ri-edit-line" style="font-size: 1.1rem;"></i>
+                                    </a>
+                                    <form action="{% url 'eliminar_cliente' cliente.pk %}" method="post" style="margin: 0;" id="delete-form-cliente-{{ cliente.pk }}">
+                                        {% csrf_token %}
+                                        <button type="button" class="btn-action-delete" title="Eliminar Cliente" onclick="confirmDelete('{{ cliente.nombre }}', 'delete-form-cliente-{{ cliente.pk }}')">
+                                            <i class="ri-delete-bin-line" style="font-size: 1.1rem;"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" style="padding: 6rem 1rem; text-align: center; color: var(--text-secondary);">
+                                <i class="ri-user-smile-line" style="font-size: 4rem; margin-bottom: 1rem; display: block; opacity: 0.3; color: var(--primary);"></i>
+                                <div style="font-weight: 800; font-size: 1.2rem; font-family: 'Inter', sans-serif; color: var(--text-primary);">SIN CLIENTES</div>
+                                <div style="font-size: 0.95rem; margin-top: 0.5rem; opacity: 0.8;">Comienza registrando tu primer cliente en el sistema.</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
 
-            {% if clientes.has_next %}
-                <a href="?page={{ clientes.next_page_number }}&per_page={{ per_page }}" class="pager-btn" title="Siguiente">
-                    <i class="ri-arrow-right-s-line"></i>
-                </a>
-                <a href="?page={{ clientes.paginator.num_pages }}&per_page={{ per_page }}" class="pager-btn" title="Última">
-                    <i class="ri-double-right-line"></i>
-                </a>
-            {% else %}
-                <div class="pager-btn disabled"><i class="ri-arrow-right-s-line"></i></div>
-                <div class="pager-btn disabled"><i class="ri-double-right-line"></i></div>
-            {% endif %}
+            <!-- Pagination and Per Page Selector -->
+            <div class="pagination-stitch">
+                <div class="d-flex align-items-center gap-2">
+                    <span style="font-size: 0.8rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em;">Registros p/pág:</span>
+                    <input type="number" class="per-page-input-stitch" value="{{ per_page }}" min="1" max="100" 
+                           onchange="changePerPage(this.value)"
+                           onkeydown="if(event.key==='Enter') changePerPage(this.value)">
+                </div>
+
+                <div class="pager-controls">
+                    {% if clientes.has_previous %}
+                        <a href="?page=1&per_page={{ per_page }}" class="pager-btn" title="Primera">
+                            <i class="ri-double-left-line"></i>
+                        </a>
+                        <a href="?page={{ clientes.previous_page_number }}&per_page={{ per_page }}" class="pager-btn" title="Anterior">
+                            <i class="ri-arrow-left-s-line"></i>
+                        </a>
+                    {% else %}
+                        <div class="pager-btn disabled"><i class="ri-double-left-line"></i></div>
+                        <div class="pager-btn disabled"><i class="ri-arrow-left-s-line"></i></div>
+                    {% endif %}
+
+                    <div class="pager-btn active" style="width: auto; padding: 0 1rem;">
+                        {{ clientes.number }} / {{ clientes.paginator.num_pages }}
+                    </div>
+
+                    {% if clientes.has_next %}
+                        <a href="?page={{ clientes.next_page_number }}&per_page={{ per_page }}" class="pager-btn" title="Siguiente">
+                            <i class="ri-arrow-right-s-line"></i>
+                        </a>
+                        <a href="?page={{ clientes.paginator.num_pages }}&per_page={{ per_page }}" class="pager-btn" title="Última">
+                            <i class="ri-double-right-line"></i>
+                        </a>
+                    {% else %}
+                        <div class="pager-btn disabled"><i class="ri-arrow-right-s-line"></i></div>
+                        <div class="pager-btn disabled"><i class="ri-double-right-line"></i></div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+    const pageContainer = document.querySelector('.premium-page-container');
+    if (pageContainer) {
+        requestAnimationFrame(() => {
+            pageContainer.classList.add('loaded');
+        });
+    }
+});
+
 function changePerPage(value) {
     if (value < 1) value = 1;
     const urlParams = new URLSearchParams(window.location.search);
@@ -272,26 +298,36 @@ function changePerPage(value) {
     urlParams.set('page', 1);
     window.location.search = urlParams.toString();
 }
+
 function confirmDelete(name, formId) {
     Swal.fire({
-        title: '¿Estás seguro?',
-        text: `Vas a eliminar al cliente: "${name}". Esta acción no se puede deshacer.`,
-        iconHtml: '<i class="ri-delete-bin-line" style="font-size: 3rem; color: #ef4444;"></i>',
+        html: `
+            <div class="swal-icon-circle danger">
+                <i class="ri-delete-bin-line"></i>
+            </div>
+            <div class="premium-swal-title">¿Eliminar Cliente?</div>
+            <div class="premium-swal-html">
+                Vas a eliminar al cliente: <strong>${name}</strong>.<br>Esta acción no se puede deshacer.
+            </div>
+        `,
         showCancelButton: true,
-        confirmButtonText: 'Sí, eliminar',
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: '<i class="ri-delete-bin-line"></i> Eliminar',
         cancelButtonText: 'Cancelar',
-        buttonsStyling: false,
+        reverseButtons: true,
         customClass: {
-            popup: 'premium-swal',
-            title: 'premium-title',
-            htmlContainer: 'premium-text',
-            actions: 'premium-actions',
-            confirmButton: 'swal2-confirm premium-confirm-btn premium-confirm-btn-danger',
-            cancelButton: 'swal2-cancel premium-cancel-btn',
-            icon: 'premium-icon-warning-box'
+            popup: 'premium-swal-popup',
+            confirmButton: 'premium-swal-confirm btn-danger',
+            cancelButton: 'premium-swal-cancel'
         }
     }).then((result) => {
         if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Eliminando...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+                customClass: { popup: 'premium-swal-popup' }
+            });
             document.getElementById(formId).submit();
         }
     });
