@@ -148,8 +148,7 @@ def escanear_planilla_view(request):
     """
     POST /api/calidad/escanear/
     Recibe la foto de la planilla desde la app móvil.
-    Guarda la imagen en disco, lanza el OCR en un hilo daemon y
-    responde INMEDIATAMENTE con {"status": "recibido", "task_id": "..."}.
+    Procesa la imagen usando google.genai de forma sincrónica.
     """
     print("--- [DEBUG] PETICIÓN DE ESCANEO RECIBIDA ---")
     print("Método:", request.method)
@@ -161,13 +160,9 @@ def escanear_planilla_view(request):
 
     import traceback
     try:
-        try:
-            from google import genai  # noqa: solo verificar disponibilidad
-        except ImportError:
-            return JsonResponse({
-                "status": "error",
-                "message": "Librería google.genai no instalada en el servidor."
-            }, status=500)
+        from google import genai
+        import json
+        from .models import SystemConfig
 
         imagen = request.FILES.get('imagen') or request.FILES.get('file') or request.FILES.get('photo')
         if not imagen:
@@ -182,47 +177,69 @@ def escanear_planilla_view(request):
             return JsonResponse({
                 "status": "error",
                 "message": "API Key de Gemini no configurada en el sistema."
-            }, status=500)
+            }, status=400)
 
-        # Guardar imagen en disco de forma segura
-        from django.conf import settings as django_settings
-        tmp_dir = os.path.join(getattr(django_settings, 'MEDIA_ROOT', '.'), 'temporales')
-        os.makedirs(tmp_dir, exist_ok=True)
-
-        task_id  = str(uuid.uuid4())
-        ext      = os.path.splitext(imagen.name)[1] if imagen.name else '.jpg'
-        img_path = os.path.join(tmp_dir, f"ocr_{task_id}{ext}")
-
-        with open(img_path, 'wb') as f:
-            for chunk in imagen.chunks():
-                f.write(chunk)
-
+        img_data = imagen.read()
         mime_type = imagen.content_type or 'image/jpeg'
 
-        # Importar el motor asíncrono y el registro de tareas desde views.py
-        from .views import process_ocr_background_task, _set_task_status
+        client = genai.Client(api_key=api_key)
+        image_part = {"mime_type": mime_type, "data": img_data}
 
-        _set_task_status(task_id, 'pending')
-
-        thread = threading.Thread(
-            target=process_ocr_background_task,
-            args=(task_id, img_path, mime_type, api_key),
-            daemon=True
+        prompt = """
+Extrae toda la información de esta planilla de medición de calidad y devuélvela EXCLUSIVAMENTE en formato JSON válido.
+El JSON debe tener la siguiente estructura exacta:
+{
+  "header": {
+    "cliente": "Nombre del cliente",
+    "proyecto": "Nombre del proyecto",
+    "op": "Numero de OP (solo dígitos)",
+    "articulo": "Articulo",
+    "denominacion": "Denominacion o proceso",
+    "operacion": "Operacion o elemento"
+  },
+  "piezas": ["1", "2", "3", "4", "5"],
+  "matrix": [
+    {
+      "control": "Nombre del control o parámetro",
+      "nominal": "Valor nominal numérico o '-'",
+      "tolerancia": "Texto de tolerancia (ej: ±0.1, +0.2/-0.1)",
+      "instrumento": "Instrumento usado",
+      "valores": [
+        {"val": "Valor medido para la pieza 1"},
+        {"val": "Valor medido para la pieza 2"}
+      ]
+    }
+  ]
+}
+Asegúrate de leer tanto el texto impreso como las anotaciones hechas a mano (valores de medición).
+Si un campo no tiene valor, envíalo como "". Solo responde con el JSON puro sin bloques markdown (sin ```json ... ```).
+"""
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[prompt, image_part]
         )
-        thread.start()
+        response_text = response.text.strip()
 
-        logger.info(f"[OCR] Tarea {task_id} iniciada desde /api/calidad/escanear/")
+        # Limpiar posible markdown
+        if response_text.startswith("```json"):
+            response_text = response_text.replace("```json", "", 1)
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+
+        data = json.loads(response_text.strip())
 
         return JsonResponse({
             "status": "success",
-            "message": "Imagen recibida correctamente",
-            "data": {},
-            "task_id": task_id
+            "message": "Planilla procesada correctamente",
+            "data": data
         }, status=200)
+
     except Exception as e:
         print("❌ ERROR CRÍTICO EN EL ESCANEO:")
         traceback.print_exc()
-        return JsonResponse({"status": "error", "message": str(e)}, status=500)
+        return JsonResponse({"status": "error", "message": str(e)}, status=400)
 
 
 @csrf_exempt
