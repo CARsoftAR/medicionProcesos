@@ -214,9 +214,10 @@ def escanear_planilla_view(request):
         logger.info(f"[OCR] Tarea {task_id} iniciada desde /api/calidad/escanear/")
 
         return JsonResponse({
-            "status":  "recibido",
-            "message": "Imagen recibida correctamente. El procesamiento OCR se ejecuta en segundo plano.",
-            "task_id": task_id,
+            "status": "success",
+            "message": "Imagen recibida correctamente",
+            "data": {},
+            "task_id": task_id
         }, status=200)
     except Exception as e:
         print("❌ ERROR CRÍTICO EN EL ESCANEO:")
