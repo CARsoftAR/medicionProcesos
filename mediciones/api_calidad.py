@@ -151,66 +151,77 @@ def escanear_planilla_view(request):
     Guarda la imagen en disco, lanza el OCR en un hilo daemon y
     responde INMEDIATAMENTE con {"status": "recibido", "task_id": "..."}.
     """
+    print("--- [DEBUG] PETICIÓN DE ESCANEO RECIBIDA ---")
+    print("Método:", request.method)
+    print("FILES:", request.FILES)
+    print("POST:", request.POST)
+
     if request.method != 'POST':
         return JsonResponse({"error": "Método no permitido"}, status=405)
 
+    import traceback
     try:
-        import google.generativeai  # noqa: solo verificar disponibilidad
-    except ImportError:
+        try:
+            import google.generativeai  # noqa: solo verificar disponibilidad
+        except ImportError:
+            return JsonResponse({
+                "status": "error",
+                "message": "Librería google-generativeai no instalada en el servidor."
+            }, status=500)
+
+        imagen = request.FILES.get('imagen') or request.FILES.get('file') or request.FILES.get('photo')
+        if not imagen:
+            return JsonResponse({
+                "status": "error",
+                "message": "No se encontró ninguna imagen. Enviá el archivo con el campo 'imagen', 'file' o 'photo'."
+            }, status=400)
+
+        gemini_config = SystemConfig.objects.filter(key="GEMINI_API_KEY").first()
+        api_key = gemini_config.value if gemini_config else None
+        if not api_key:
+            return JsonResponse({
+                "status": "error",
+                "message": "API Key de Gemini no configurada en el sistema."
+            }, status=500)
+
+        # Guardar imagen en disco de forma segura
+        from django.conf import settings as django_settings
+        tmp_dir = os.path.join(getattr(django_settings, 'MEDIA_ROOT', '.'), 'temporales')
+        os.makedirs(tmp_dir, exist_ok=True)
+
+        task_id  = str(uuid.uuid4())
+        ext      = os.path.splitext(imagen.name)[1] if imagen.name else '.jpg'
+        img_path = os.path.join(tmp_dir, f"ocr_{task_id}{ext}")
+
+        with open(img_path, 'wb') as f:
+            for chunk in imagen.chunks():
+                f.write(chunk)
+
+        mime_type = imagen.content_type or 'image/jpeg'
+
+        # Importar el motor asíncrono y el registro de tareas desde views.py
+        from .views import process_ocr_background_task, _set_task_status
+
+        _set_task_status(task_id, 'pending')
+
+        thread = threading.Thread(
+            target=process_ocr_background_task,
+            args=(task_id, img_path, mime_type, api_key),
+            daemon=True
+        )
+        thread.start()
+
+        logger.info(f"[OCR] Tarea {task_id} iniciada desde /api/calidad/escanear/")
+
         return JsonResponse({
-            "status": "error",
-            "message": "Librería google-generativeai no instalada en el servidor."
-        }, status=500)
-
-    imagen = request.FILES.get('imagen') or request.FILES.get('file') or request.FILES.get('photo')
-    if not imagen:
-        return JsonResponse({
-            "status": "error",
-            "message": "No se encontró ninguna imagen. Enviá el archivo con el campo 'imagen', 'file' o 'photo'."
-        }, status=400)
-
-    gemini_config = SystemConfig.objects.filter(key="GEMINI_API_KEY").first()
-    api_key = gemini_config.value if gemini_config else None
-    if not api_key:
-        return JsonResponse({
-            "status": "error",
-            "message": "API Key de Gemini no configurada en el sistema."
-        }, status=500)
-
-    # Guardar imagen en disco de forma segura
-    from django.conf import settings as django_settings
-    tmp_dir = os.path.join(getattr(django_settings, 'MEDIA_ROOT', '.'), 'temporales')
-    os.makedirs(tmp_dir, exist_ok=True)
-
-    task_id  = str(uuid.uuid4())
-    ext      = os.path.splitext(imagen.name)[1] if imagen.name else '.jpg'
-    img_path = os.path.join(tmp_dir, f"ocr_{task_id}{ext}")
-
-    with open(img_path, 'wb') as f:
-        for chunk in imagen.chunks():
-            f.write(chunk)
-
-    mime_type = imagen.content_type or 'image/jpeg'
-
-    # Importar el motor asíncrono y el registro de tareas desde views.py
-    from .views import process_ocr_background_task, _set_task_status
-
-    _set_task_status(task_id, 'pending')
-
-    thread = threading.Thread(
-        target=process_ocr_background_task,
-        args=(task_id, img_path, mime_type, api_key),
-        daemon=True
-    )
-    thread.start()
-
-    logger.info(f"[OCR] Tarea {task_id} iniciada desde /api/calidad/escanear/")
-
-    return JsonResponse({
-        "status":  "recibido",
-        "message": "Imagen recibida correctamente. El procesamiento OCR se ejecuta en segundo plano.",
-        "task_id": task_id,
-    }, status=200)
+            "status":  "recibido",
+            "message": "Imagen recibida correctamente. El procesamiento OCR se ejecuta en segundo plano.",
+            "task_id": task_id,
+        }, status=200)
+    except Exception as e:
+        print("❌ ERROR CRÍTICO EN EL ESCANEO:")
+        traceback.print_exc()
+        return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
 @csrf_exempt
