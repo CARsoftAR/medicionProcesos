@@ -129,3 +129,119 @@ class OperarioLoginAPIView(APIView):
         token, _ = Token.objects.get_or_create(user=user)
         logger.info(f"Login exitoso para legajo {legajo}.")
         return Response({'token': token.key}, status=status.HTTP_200_OK)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VISTAS DE ESCANEO OCR — /api/calidad/escanear/
+# Delegan en el motor asíncrono definido en views.py
+# ─────────────────────────────────────────────────────────────────────────────
+import os
+import uuid
+import threading
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import SystemConfig
+
+
+@csrf_exempt
+def escanear_planilla_view(request):
+    """
+    POST /api/calidad/escanear/
+    Recibe la foto de la planilla desde la app móvil.
+    Guarda la imagen en disco, lanza el OCR en un hilo daemon y
+    responde INMEDIATAMENTE con {"status": "recibido", "task_id": "..."}.
+    """
+    if request.method != 'POST':
+        return JsonResponse({"error": "Método no permitido"}, status=405)
+
+    try:
+        import google.generativeai  # noqa: solo verificar disponibilidad
+    except ImportError:
+        return JsonResponse({
+            "status": "error",
+            "message": "Librería google-generativeai no instalada en el servidor."
+        }, status=500)
+
+    imagen = request.FILES.get('imagen') or request.FILES.get('file') or request.FILES.get('photo')
+    if not imagen:
+        return JsonResponse({
+            "status": "error",
+            "message": "No se encontró ninguna imagen. Enviá el archivo con el campo 'imagen', 'file' o 'photo'."
+        }, status=400)
+
+    gemini_config = SystemConfig.objects.filter(key="GEMINI_API_KEY").first()
+    api_key = gemini_config.value if gemini_config else None
+    if not api_key:
+        return JsonResponse({
+            "status": "error",
+            "message": "API Key de Gemini no configurada en el sistema."
+        }, status=500)
+
+    # Guardar imagen en disco de forma segura
+    from django.conf import settings as django_settings
+    tmp_dir = os.path.join(getattr(django_settings, 'MEDIA_ROOT', '.'), 'temporales')
+    os.makedirs(tmp_dir, exist_ok=True)
+
+    task_id  = str(uuid.uuid4())
+    ext      = os.path.splitext(imagen.name)[1] if imagen.name else '.jpg'
+    img_path = os.path.join(tmp_dir, f"ocr_{task_id}{ext}")
+
+    with open(img_path, 'wb') as f:
+        for chunk in imagen.chunks():
+            f.write(chunk)
+
+    mime_type = imagen.content_type or 'image/jpeg'
+
+    # Importar el motor asíncrono y el registro de tareas desde views.py
+    from .views import process_ocr_background_task, _set_task_status
+
+    _set_task_status(task_id, 'pending')
+
+    thread = threading.Thread(
+        target=process_ocr_background_task,
+        args=(task_id, img_path, mime_type, api_key),
+        daemon=True
+    )
+    thread.start()
+
+    logger.info(f"[OCR] Tarea {task_id} iniciada desde /api/calidad/escanear/")
+
+    return JsonResponse({
+        "status":  "recibido",
+        "message": "Imagen recibida correctamente. El procesamiento OCR se ejecuta en segundo plano.",
+        "task_id": task_id,
+    }, status=200)
+
+
+@csrf_exempt
+def estado_escaneo_view(request, task_id):
+    """
+    GET /api/calidad/escanear/estado/<task_id>/
+    Polling: devuelve el estado actual del procesamiento OCR.
+    Posibles valores de 'status': pending | processing | done | error
+    """
+    from .views import _ocr_tasks, _ocr_tasks_lock
+
+    with _ocr_tasks_lock:
+        task = _ocr_tasks.get(task_id)
+
+    if task is None:
+        return JsonResponse({
+            "status": "not_found",
+            "message": "Tarea no encontrada. Verificá el task_id."
+        }, status=404)
+
+    response_data = {"status": task["status"], "task_id": task_id}
+
+    if task["status"] == "done":
+        response_data["result"]  = task["result"]
+        response_data["message"] = "Procesamiento completado. La planilla fue guardada en el sistema."
+    elif task["status"] == "error":
+        response_data["error"]   = task["error"]
+        response_data["message"] = "Ocurrió un error durante el procesamiento."
+    elif task["status"] == "processing":
+        response_data["message"] = "El motor OCR está analizando la imagen. Volvé a consultar en unos segundos."
+    else:
+        response_data["message"] = "La tarea está en cola, aguardando procesamiento."
+
+    return JsonResponse(response_data)
