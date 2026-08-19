@@ -282,7 +282,28 @@
         // AUTO-SUBMIT SEARCH (AJAX VERSION)
         const tableContainer = document.getElementById('dashboard-table-container');
         
+        function renderSparklines() {
+            document.querySelectorAll('.spc-sparkline:not(.rendered)').forEach(el => {
+                const rawData = el.getAttribute('data-series');
+                if (!rawData || rawData === '[]') return;
+                try {
+                    const seriesData = JSON.parse(rawData);
+                    if (seriesData.length > 0) {
+                        new ApexCharts(el, {
+                            series: [{ data: seriesData }],
+                            chart: { type: 'line', width: 100, height: 30, sparkline: { enabled: true } },
+                            stroke: { curve: 'smooth', width: 2 },
+                            colors: ['#0F4C81'],
+                            tooltip: { fixed: { enabled: false }, x: { show: false }, y: { title: { formatter: function (seriesName) { return '' } } }, marker: { show: false } }
+                        }).render();
+                    }
+                } catch(e) {}
+                el.classList.add('rendered');
+            });
+        }
+        
         function bindDashboardSearch() {
+            renderSparklines();
             const searchInput = document.getElementById('dashboardSearchInput');
             if (!searchInput) return;
 

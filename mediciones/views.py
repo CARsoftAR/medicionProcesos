@@ -214,6 +214,7 @@ def index(request):
     from django.db.models import Count, Q
     from django.utils import timezone
     from datetime import timedelta
+    import json
     
     q = request.GET.get('q', '').strip()
     planillas_qs = PlanillaMedicion.objects.all().order_by('-id')
@@ -239,6 +240,18 @@ def index(request):
     hoy = timezone.now()
     hace_30_dias = hoy - timedelta(days=30)
     total_ops = planillas_qs.count()
+    
+    # Enrich planillas with sparkline data (SPC trend)
+    for p in planillas:
+        # Find the first numerical control for this OP
+        tols = Tolerancia.objects.filter(planilla=p, control__pnp=False).order_by('posicion')
+        if tols.exists():
+            first_tol = tols.first()
+            vals = ValorMedicion.objects.filter(planilla=p, control=first_tol.control).exclude(valor_pieza__isnull=True).order_by('pieza')
+            pts = [float(v.valor_pieza) for v in vals][-20:] # Last 20 points
+            p.sparkline_data = json.dumps(pts)
+        else:
+            p.sparkline_data = "[]"
     
     if is_filtered:
         mediciones_base = valores_qs
@@ -1132,7 +1145,24 @@ def guardar_medicion_ajax(request):
                     val_obj.valor_pieza = None
                     val_obj.valor_pnp = None
             val_obj.save()
-            return JsonResponse({'status': 'success', 'saved_value': val_obj.valor_pieza if not tol.control.pnp else val_obj.valor_pnp})
+            
+            spc_alert = None
+            if not tol.control.pnp and val_obj.valor_pieza is not None:
+                from .utils_spc import SPCAnalyzer
+                valores_qy = ValorMedicion.objects.filter(planilla=tol.planilla, control=tol.control).order_by('pieza')
+                pts = [float(v.valor_pieza) for v in valores_qy if v.valor_pieza is not None]
+                if len(pts) >= 3:
+                    min_l, max_l = tol.get_absolute_limits()
+                    analyzer = SPCAnalyzer(pts, nominal=tol.nominal, min_limit=min_l, max_limit=max_l, subgroup_size=5)
+                    violations = analyzer.check_nelson_rules()
+                    if violations:
+                        spc_alert = violations[0]['title'] + ': ' + violations[0]['desc']
+            
+            return JsonResponse({
+                'status': 'success', 
+                'saved_value': val_obj.valor_pieza if not tol.control.pnp else val_obj.valor_pnp,
+                'spc_alert': spc_alert
+            })
         except Exception as e: return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
     return JsonResponse({'status': 'error', 'message': 'Only POST allowed'}, status=405)
 

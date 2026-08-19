@@ -25,6 +25,7 @@
                     <th>Cliente</th>
                     <th>Artículo</th>
                     <th>Fecha</th>
+                    <th>Tendencia SPC</th>
                     <th style="text-align: right;">Acciones</th>
                 </tr>
             </thead>
@@ -38,6 +39,9 @@
                     <td>{{ p.cliente.nombre|default:"-" }}</td>
                     <td>{{ p.articulo.nombre|default:"-" }}</td>
                     <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ p.fecha_creacion|date:"d/m/y" }}</td>
+                    <td style="width: 120px;">
+                        <div class="spc-sparkline" data-series="{{ p.sparkline_data|default:'[]' }}" style="height: 30px; width: 100px;"></div>
+                    </td>
                     <td style="text-align: right;" onclick="event.stopPropagation();">
                         <div class="d-flex justify-content-end gap-2">
                             <a href="{% url 'nueva_medicion_op' %}?proy={{ p.proyecto }}&op={{ p.num_op }}&proc={{ p.proceso.id }}" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: 10px;">

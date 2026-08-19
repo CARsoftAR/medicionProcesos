@@ -26,8 +26,8 @@
                 <i class="ri-error-warning-fill" style="font-size: 1.2rem;"></i>
             </button>
             
-            <button onclick="toggleFullScreen()" class="btn shadow-sm d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; border-radius: 14px; border: 1px solid rgba(225, 29, 72, 0.15); background: rgba(255,255,255,0.9);" title="Pantalla Completa">
-                <i class="ri-fullscreen-line" id="fsIcon" style="font-size: 1.2rem; color: var(--stitch-primary);"></i>
+            <button onclick="toggleAutoRefresh()" id="btnAutoRefresh" class="btn shadow-sm d-flex align-items-center justify-content-center gap-2" style="height: 42px; border-radius: 14px; border: 1px solid rgba(15, 76, 129, 0.15); background: rgba(255,255,255,0.9); font-weight: 700; font-size: 0.8rem; color: #475569;" title="Modo Monitor">
+                <i class="ri-refresh-line" id="refreshIcon" style="font-size: 1.2rem;"></i> <span id="refreshText">MONITOR OFF</span>
             </button>
 
             <a id="btnVolver" href="{% url 'ingreso_mediciones' tolerancia.planilla.id %}" class="btn" style="background-color: var(--stitch-primary); color: white; padding: 0.6rem 1.5rem; border-radius: 14px; font-size: 0.9rem; font-family: 'Outfit', sans-serif; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: var(--stitch-btn-shadow); text-transform: uppercase; letter-spacing: 0.05em;">
@@ -627,6 +627,39 @@
         }
         document.body.style.overflowX = 'hidden';
     })();
+</script>
+
+<!-- Auto Refresh Logic -->
+<script>
+    let autoRefreshInterval = null;
+    function toggleAutoRefresh() {
+        const btn = document.getElementById('btnAutoRefresh');
+        const icon = document.getElementById('refreshIcon');
+        const text = document.getElementById('refreshText');
+        
+        if (autoRefreshInterval) {
+            clearInterval(autoRefreshInterval);
+            autoRefreshInterval = null;
+            btn.style.color = '#475569';
+            btn.style.borderColor = 'rgba(15, 76, 129, 0.15)';
+            icon.classList.remove('fa-spin');
+            text.innerText = 'MONITOR OFF';
+            localStorage.setItem('spcMonitorMode', 'false');
+        } else {
+            autoRefreshInterval = setInterval(() => { window.location.reload(); }, 30000);
+            btn.style.color = '#10b981';
+            btn.style.borderColor = '#10b981';
+            icon.classList.add('fa-spin');
+            text.innerText = 'MONITOR ON';
+            localStorage.setItem('spcMonitorMode', 'true');
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('spcMonitorMode') === 'true') {
+            toggleAutoRefresh();
+        }
+    });
 </script>
 
 <!-- Chart.js -->
