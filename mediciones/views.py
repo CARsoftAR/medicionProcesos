@@ -50,7 +50,7 @@ def process_ocr_background_task(task_id, img_path, mime_type, api_key):
         import json
         import re
         from django.utils import timezone
-        import google.generativeai as genai
+        from google import genai
 
         _set_task_status(task_id, 'processing')
 
@@ -62,8 +62,7 @@ def process_ocr_background_task(task_id, img_path, mime_type, api_key):
         except Exception:
             pass
 
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        client = genai.Client(api_key=api_key)
 
         image_part = {"mime_type": mime_type, "data": img_data}
 
@@ -96,7 +95,10 @@ El JSON debe tener la siguiente estructura exacta:
 Asegúrate de leer tanto el texto impreso como las anotaciones hechas a mano (valores de medición).
 Si un campo no tiene valor, envíalo como "". Solo responde con el JSON puro sin bloques markdown (sin ```json ... ```).
 """
-        response = model.generate_content([prompt, image_part])
+        response = client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=[prompt, image_part]
+        )
         response_text = response.text.strip()
 
         # Limpiar posible markdown que el modelo añada de todos modos
@@ -286,9 +288,9 @@ def api_procesar_planilla(request):
     Responde de inmediato con {"status": "recibido", "task_id": "..."}.
     """
     try:
-        import google.generativeai  # noqa: verificar librería disponible
+        from google import genai  # noqa: verificar librería disponible
     except ImportError:
-        return JsonResponse({'status': 'error', 'message': 'Librería google-generativeai no instalada.'}, status=500)
+        return JsonResponse({'status': 'error', 'message': 'Librería google.genai no instalada.'}, status=500)
 
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Solo POST permitido.'}, status=405)

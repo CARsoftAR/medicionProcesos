@@ -162,11 +162,11 @@ def escanear_planilla_view(request):
     import traceback
     try:
         try:
-            import google.generativeai  # noqa: solo verificar disponibilidad
+            from google import genai  # noqa: solo verificar disponibilidad
         except ImportError:
             return JsonResponse({
                 "status": "error",
-                "message": "Librería google-generativeai no instalada en el servidor."
+                "message": "Librería google.genai no instalada en el servidor."
             }, status=500)
 
         imagen = request.FILES.get('imagen') or request.FILES.get('file') or request.FILES.get('photo')
