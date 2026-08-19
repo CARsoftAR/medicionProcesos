@@ -179,8 +179,31 @@ def escanear_planilla_view(request):
                 "message": "API Key de Gemini no configurada en el sistema."
             }, status=400)
 
-        img_data = imagen.read()
-        mime_type = imagen.content_type or 'image/jpeg'
+        # --- Manejo seguro y compresión de la imagen ---
+        import io
+        from PIL import Image
+
+        try:
+            img = Image.open(imagen)
+            # Convertir a RGB si es necesario
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+            
+            # Redimensionar conservando proporción si excede los 1920px
+            img.thumbnail((1920, 1920), Image.Resampling.LANCZOS)
+            
+            # Comprimir a JPEG con calidad 85 para alivianar el payload
+            img_byte_arr = io.BytesIO()
+            img.save(img_byte_arr, format='JPEG', quality=85)
+            img_data = img_byte_arr.getvalue()
+            mime_type = 'image/jpeg'
+        except Exception as img_err:
+            print("❌ ERROR AL COMPRIMIR LA IMAGEN:")
+            traceback.print_exc()
+            return JsonResponse({
+                "status": "error",
+                "message": f"Error al leer o comprimir la imagen: {str(img_err)}"
+            }, status=400)
 
         client = genai.Client(api_key=api_key)
         image_part = {"mime_type": mime_type, "data": img_data}
@@ -214,11 +237,21 @@ El JSON debe tener la siguiente estructura exacta:
 Asegúrate de leer tanto el texto impreso como las anotaciones hechas a mano (valores de medición).
 Si un campo no tiene valor, envíalo como "". Solo responde con el JSON puro sin bloques markdown (sin ```json ... ```).
 """
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[prompt, image_part]
-        )
-        response_text = response.text.strip()
+        
+        # --- Llamada al SDK envuelta de forma robusta ---
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=[prompt, image_part]
+            )
+            response_text = response.text.strip()
+        except Exception as api_err:
+            print("❌ ERROR CRÍTICO EN LA IA (GEMINI SDK):")
+            traceback.print_exc()
+            return JsonResponse({
+                "status": "error", 
+                "message": f"La Inteligencia Artificial no pudo procesar la imagen: {str(api_err)}"
+            }, status=400)
 
         # Limpiar posible markdown
         if response_text.startswith("```json"):
@@ -237,9 +270,9 @@ Si un campo no tiene valor, envíalo como "". Solo responde con el JSON puro sin
         }, status=200)
 
     except Exception as e:
-        print("❌ ERROR CRÍTICO EN EL ESCANEO:")
+        print("❌ ERROR NO CONTROLADO EN EL ESCANEO:")
         traceback.print_exc()
-        return JsonResponse({"status": "error", "message": str(e)}, status=400)
+        return JsonResponse({"status": "error", "message": f"Fallo general del servidor: {str(e)}"}, status=400)
 
 
 @csrf_exempt
