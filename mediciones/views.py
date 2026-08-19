@@ -21,6 +21,339 @@ import re
 import os
 import json
 import time
+import threading
+import uuid
+import os
+
+# ─────────────────────────────────────────────────────────────────────────────
+# REGISTRO DE TAREAS OCR EN MEMORIA
+# Estructura: { task_id: { 'status': 'pending|processing|done|error', 'result': {...}, 'error': '...' } }
+# ─────────────────────────────────────────────────────────────────────────────
+_ocr_tasks = {}
+_ocr_tasks_lock = threading.Lock()
+
+def _set_task_status(task_id, status, result=None, error=None):
+    """Actualiza el estado de una tarea OCR de forma thread-safe."""
+    with _ocr_tasks_lock:
+        _ocr_tasks[task_id] = {
+            'status': status,
+            'result': result,
+            'error': error,
+        }
+
+def process_ocr_background_task(task_id, img_path, mime_type, api_key):
+    """
+    Tarea de fondo: lee la imagen guardada en disco, invoca Gemini Vision
+    para extraer la planilla, guarda los datos en la DB y actualiza el estado.
+    """
+    try:
+        import json
+        import re
+        from django.utils import timezone
+        import google.generativeai as genai
+
+        _set_task_status(task_id, 'processing')
+
+        # Leer imagen desde disco y limpiar archivo temporal
+        with open(img_path, 'rb') as f:
+            img_data = f.read()
+        try:
+            os.remove(img_path)
+        except Exception:
+            pass
+
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+
+        image_part = {"mime_type": mime_type, "data": img_data}
+
+        prompt = """
+Extrae toda la información de esta planilla de medición de calidad y devuélvela EXCLUSIVAMENTE en formato JSON válido.
+El JSON debe tener la siguiente estructura exacta:
+{
+  "header": {
+    "cliente": "Nombre del cliente",
+    "proyecto": "Nombre del proyecto",
+    "op": "Numero de OP (solo dígitos)",
+    "articulo": "Articulo",
+    "denominacion": "Denominacion o proceso",
+    "operacion": "Operacion o elemento"
+  },
+  "piezas": ["1", "2", "3", "4", "5"],
+  "matrix": [
+    {
+      "control": "Nombre del control o parámetro",
+      "nominal": "Valor nominal numérico o '-'",
+      "tolerancia": "Texto de tolerancia (ej: ±0.1, +0.2/-0.1)",
+      "instrumento": "Instrumento usado",
+      "valores": [
+        {"val": "Valor medido para la pieza 1"},
+        {"val": "Valor medido para la pieza 2"}
+      ]
+    }
+  ]
+}
+Asegúrate de leer tanto el texto impreso como las anotaciones hechas a mano (valores de medición).
+Si un campo no tiene valor, envíalo como "". Solo responde con el JSON puro sin bloques markdown (sin ```json ... ```).
+"""
+        response = model.generate_content([prompt, image_part])
+        response_text = response.text.strip()
+
+        # Limpiar posible markdown que el modelo añada de todos modos
+        if response_text.startswith("```json"):
+            response_text = response_text.replace("```json", "", 1)
+        if response_text.startswith("```"):
+            response_text = response_text[3:]
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+
+        data = json.loads(response_text.strip())
+
+        header      = data.get('header', {})
+        matrix      = data.get('matrix', [])
+        piezas_cols = data.get('piezas', [])
+
+        if not header or not matrix:
+            _set_task_status(task_id, 'error', error='El modelo no retornó datos estructurados válidos')
+            return
+
+        # ── helpers ──────────────────────────────────────────────────────────
+        proyecto_nombre = header.get('proyecto', 'OCR App')
+        op_str    = ''.join(filter(str.isdigit, str(header.get('op', '0'))))
+        op_numero = int(op_str) if op_str else 0
+
+        def match_or_create(model_class, name_val):
+            if not name_val: return None
+            obj = (model_class.objects.filter(nombre__iexact=name_val.strip()).first()
+                   or model_class.objects.filter(nombre__icontains=name_val.strip()[:10]).first())
+            if not obj: obj = model_class.objects.create(nombre=name_val.strip())
+            return obj.id
+
+        # ── crear / actualizar planilla ───────────────────────────────────────
+        cliente_id  = match_or_create(Cliente,  header.get('cliente'))
+        articulo_id = match_or_create(Articulo, header.get('articulo'))
+        proceso_id  = match_or_create(Proceso,  header.get('denominacion'))
+        elemento_id = match_or_create(Elemento, header.get('operacion'))
+
+        planilla = PlanillaMedicion.objects.filter(num_op=op_numero).first()
+        created  = False
+        if not planilla:
+            planilla = PlanillaMedicion.objects.create(
+                num_op=op_numero, proyecto=proyecto_nombre,
+                fecha_elaborador=timezone.now().date(),
+                observaciones='Generado desde app móvil via AI OCR'
+            )
+            created = True
+        else:
+            if proyecto_nombre and (not planilla.proyecto
+                                    or planilla.proyecto in ('OCR App', 'OCR Import')):
+                planilla.proyecto = proyecto_nombre
+
+        if not created:
+            planilla.tolerancia_set.all().delete()
+            ValorMedicion.objects.filter(planilla=planilla).delete()
+
+        if proceso_id  and str(proceso_id ).isdigit(): planilla.proceso_id  = int(proceso_id)
+        if articulo_id and str(articulo_id).isdigit(): planilla.articulo_id = int(articulo_id)
+        if elemento_id and str(elemento_id).isdigit(): planilla.elemento_id = int(elemento_id)
+        if cliente_id  and str(cliente_id ).isdigit(): planilla.cliente_id  = int(cliente_id)
+        planilla.save()
+
+        # ── insertar controles y valores ──────────────────────────────────────
+        for i, row in enumerate(matrix):
+            raw_control = row.get('control', '').strip()
+            if not raw_control: continue
+            control_nombre = re.sub(r'^\d+[\.\)\-\s]+', '', raw_control).strip().replace(']','').replace('[','').replace('|','').strip()
+            control = (Control.objects.filter(nombre__iexact=control_nombre).first()
+                       or Control.objects.create(nombre=control_nombre))
+
+            valores = row.get('valores', [])
+            has_pnp = any(
+                any(str(v.get('val') if isinstance(v, dict) else v).strip().upper().startswith(x)
+                    for x in ['OK', 'PAS', 'ACEP', 'NOK', 'FAL', 'FAI'])
+                for v in valores
+            )
+            if has_pnp and not control.pnp:
+                control.pnp = True
+                control.save()
+
+            try:
+                nom_str  = str(row.get('nominal', '0')).replace(',', '.')
+                nom_nums = (re.findall(r"[-+]?\d*\.\d+|\d+", re.sub(r'\(?\d+[xX]\)?', '', nom_str).strip())
+                            or re.findall(r"[-+]?\d*\.\d+|\d+", nom_str))
+                nominal_val = float(nom_nums[0]) if nom_nums else 0.0
+
+                tol_clean  = re.sub(r'([-+])\s+(\d)', r'\1\2', str(row.get('tolerancia', '')).replace(',', '.').strip())
+                limit_max  = limit_min = 0.0
+                if '±' in tol_clean:
+                    vals = re.findall(r"\d*\.?\d+", tol_clean)
+                    if vals: limit_max = abs(float(vals[0])); limit_min = -abs(float(vals[0]))
+                else:
+                    floats = [float(m) for m in re.findall(r"[-+]?\d*\.?\d+", tol_clean) if m not in ['.', '-', '+']]
+                    if len(floats) >= 2:
+                        limit_max, limit_min = max(floats), min(floats)
+                    elif len(floats) == 1:
+                        v = floats[0]
+                        if '+' not in tol_clean and '-' not in tol_clean:
+                            limit_max, limit_min = abs(v), -abs(v)
+                        else:
+                            limit_max = v if '+' in tol_clean and v > 0 else 0.0
+                            limit_min = v if '-' in tol_clean and v < 0 else (-abs(v) if v != 0 else 0.0)
+            except:
+                nominal_val = limit_max = limit_min = 0.0
+
+            instrumento_nombre = row.get('instrumento', '').strip()
+            instrumento_obj = None
+            if instrumento_nombre:
+                instrumento_obj = (
+                    Instrumento.objects.filter(codigo__iexact=instrumento_nombre).first()
+                    or Instrumento.objects.filter(nombre__iexact=instrumento_nombre).first()
+                    or Instrumento.objects.create(nombre=instrumento_nombre, codigo=instrumento_nombre, tipo='OTRO')
+                )
+
+            tolerancia, _ = Tolerancia.objects.update_or_create(
+                planilla=planilla, control=control,
+                defaults={'nominal': nominal_val, 'minimo': limit_min, 'maximo': limit_max,
+                          'posicion': i + 1, 'instrumento': instrumento_obj}
+            )
+
+            limit = min(len(valores), len(piezas_cols))
+            for idx in range(limit):
+                pieza_num_raw = str(piezas_cols[idx])
+                try:
+                    pieza_num = int(re.sub(r'\D', '', pieza_num_raw.split('_')[0]))
+                except:
+                    pieza_num = idx + 1
+                if pieza_num == 0: pieza_num = 1
+
+                val_raw = valores[idx].get('val') if isinstance(valores[idx], dict) else valores[idx]
+                if val_raw is None or str(val_raw).strip() == '': continue
+
+                try:
+                    val_float = val_pnp = None
+                    val_clean = str(val_raw).strip().upper().replace(']','').replace('[','').replace('|','')
+                    if any(val_clean.startswith(x) for x in ['OK','PAS','ACEP']) or val_clean == 'P':
+                        val_pnp = 'OK'
+                    elif any(val_clean.startswith(x) for x in ['NOK','FAL','FAI','RECH']) or val_clean == 'R':
+                        val_pnp = 'NOK'
+                    else:
+                        num_str = re.sub(r'[^\d\.\,]', '', str(val_raw)).replace(',', '.')
+                        if num_str:
+                            val_float = float(num_str)
+                            min_l, max_l = tolerancia.get_absolute_limits()
+                            if min_l is not None and max_l is not None:
+                                if min_l != 0.0 or max_l != 0.0:
+                                    if val_float < (min_l - max(max_l - min_l, 0.5) * 4) or val_float > (max_l + max(max_l - min_l, 0.5) * 4):
+                                        continue
+                                val_pnp = 'OK' if min_l <= val_float <= max_l else 'NOK'
+                            else:
+                                val_pnp = 'OK'
+                        else:
+                            continue
+
+                    if val_pnp is not None or val_float is not None:
+                        ValorMedicion.objects.update_or_create(
+                            planilla=planilla, control=control, pieza=pieza_num,
+                            defaults={'tolerancia': tolerancia, 'valor_pieza': val_float,
+                                      'valor_pnp': val_pnp, 'op': str(planilla.num_op)}
+                        )
+                except:
+                    continue
+
+        result = {
+            'op':         op_numero,
+            'proy':       planilla.proyecto,
+            'proc_id':    planilla.proceso_id,
+            'planilla_id': planilla.id,
+            'controles_importados': len(matrix),
+        }
+        _set_task_status(task_id, 'done', result=result)
+        print(f"[OCR] ✓ Tarea {task_id} completada — OP {op_numero}")
+
+    except Exception as e:
+        _set_task_status(task_id, 'error', error=str(e))
+        print(f"[OCR] ✗ Tarea {task_id} falló: {e}")
+    finally:
+        from django.db import connection
+        connection.close()
+
+
+@csrf_exempt
+def api_procesar_planilla(request):
+    """
+    POST /api/procesar-planilla/
+    Recibe la imagen, la guarda en disco y lanza el OCR en background.
+    Responde de inmediato con {"status": "recibido", "task_id": "..."}.
+    """
+    try:
+        import google.generativeai  # noqa: verificar librería disponible
+    except ImportError:
+        return JsonResponse({'status': 'error', 'message': 'Librería google-generativeai no instalada.'}, status=500)
+
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Solo POST permitido.'}, status=405)
+
+    imagen = request.FILES.get('imagen') or request.FILES.get('file')
+    if not imagen:
+        return JsonResponse({'status': 'error', 'message': 'No se encontró ninguna imagen en la petición.'}, status=400)
+
+    gemini_config = SystemConfig.objects.filter(key="GEMINI_API_KEY").first()
+    api_key = gemini_config.value if gemini_config else None
+    if not api_key:
+        return JsonResponse({'status': 'error', 'message': 'API Key de Gemini no configurada.'}, status=500)
+
+    # Guardar imagen en disco temporalmente
+    from django.conf import settings as django_settings
+    tmp_dir = os.path.join(getattr(django_settings, 'MEDIA_ROOT', '.'), 'temporales')
+    os.makedirs(tmp_dir, exist_ok=True)
+
+    task_id  = str(uuid.uuid4())
+    ext      = os.path.splitext(imagen.name)[1] or '.jpg'
+    img_path = os.path.join(tmp_dir, f"ocr_{task_id}{ext}")
+
+    with open(img_path, 'wb') as f:
+        for chunk in imagen.chunks():
+            f.write(chunk)
+
+    mime_type = imagen.content_type or 'image/jpeg'
+
+    # Registrar tarea como pendiente y arrancar hilo
+    _set_task_status(task_id, 'pending')
+    thread = threading.Thread(
+        target=process_ocr_background_task,
+        args=(task_id, img_path, mime_type, api_key),
+        daemon=True
+    )
+    thread.start()
+
+    print(f"[OCR] Tarea {task_id} iniciada — imagen guardada en {img_path}")
+
+    return JsonResponse({
+        'status':  'recibido',
+        'message': 'Imagen recibida. El procesamiento OCR se está ejecutando en segundo plano.',
+        'task_id': task_id,
+    }, status=200)
+
+
+@csrf_exempt
+def api_estado_planilla(request, task_id):
+    """
+    GET /api/procesar-planilla/estado/<task_id>/
+    Endpoint de polling: devuelve el estado actual de la tarea OCR.
+    """
+    with _ocr_tasks_lock:
+        task = _ocr_tasks.get(task_id)
+
+    if task is None:
+        return JsonResponse({'status': 'not_found', 'message': 'Tarea no encontrada.'}, status=404)
+
+    response = {'status': task['status'], 'task_id': task_id}
+    if task['status'] == 'done':
+        response['result'] = task['result']
+    elif task['status'] == 'error':
+        response['error'] = task['error']
+
+    return JsonResponse(response)
 
 # CONEXIÓN CORREGIDA: Motor OCR 100% Local sin IA
 from .lector_local import extraer_datos_de_pdf
@@ -1872,3 +2205,216 @@ def eliminar_operario(request, id):
         return redirect('lista_operarios')
         
     return render(request, 'mediciones/operarios_list.html')
+
+import threading
+import uuid
+
+def process_ocr_background_task(img_data, mime_type, api_key):
+    try:
+        import json
+        import re
+        from django.utils import timezone
+        import google.generativeai as genai
+        
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        
+        image_parts = [{"mime_type": mime_type, "data": img_data}]
+        
+        prompt = """
+Extrae toda la información de esta planilla de medición de calidad y devuélvela EXCLUSIVAMENTE en formato JSON válido.
+El JSON debe tener la siguiente estructura exacta:
+{
+  "header": {
+    "cliente": "Nombre del cliente",
+    "proyecto": "Nombre del proyecto",
+    "op": "Numero de OP (solo dígitos)",
+    "articulo": "Articulo",
+    "denominacion": "Denominacion o proceso",
+    "operacion": "Operacion o elemento"
+  },
+  "piezas": ["1", "2", "3", "4", "5"],
+  "matrix": [
+    {
+      "control": "Nombre del control o parámetro",
+      "nominal": "Valor nominal numérico o '-'",
+      "tolerancia": "Texto de tolerancia (ej: ±0.1, +0.2/-0.1)",
+      "instrumento": "Instrumento usado",
+      "valores": [
+        {"val": "Valor medido para la pieza 1"},
+        {"val": "Valor medido para la pieza 2"}
+      ]
+    }
+  ]
+}
+Asegúrate de leer tanto el texto impreso como las anotaciones hechas a mano (valores de medición). 
+Si un campo no tiene valor, envíalo como "". Solo responde con el JSON puro sin bloques markdown (sin ```json ... ```).
+"""
+        response = model.generate_content([prompt, image_parts[0]])
+        response_text = response.text.strip()
+        
+        if response_text.startswith("```json"):
+            response_text = response_text.replace("```json", "", 1)
+        if response_text.endswith("```"):
+            response_text = response_text[:-3]
+            
+        data = json.loads(response_text.strip())
+        
+        header = data.get('header', {})
+        matrix = data.get('matrix', [])
+        piezas_cols = data.get('piezas', [])
+        
+        if not header or not matrix: 
+            print("[OCR] Error: El modelo no retornó datos estructurados válidos")
+            return
+
+        proyecto_nombre = header.get('proyecto', 'OCR App')
+        op_str = ''.join(filter(str.isdigit, str(header.get('op', '0'))))
+        op_numero = int(op_str) if op_str else 0
+        
+        def match_or_create(model_class, name_val):
+            if not name_val: return None
+            obj = model_class.objects.filter(nombre__iexact=name_val.strip()).first() or model_class.objects.filter(nombre__icontains=name_val.strip()[:10]).first()
+            if not obj: obj = model_class.objects.create(nombre=name_val.strip())
+            return obj.id
+
+        cliente_id = match_or_create(Cliente, header.get('cliente'))
+        articulo_id = match_or_create(Articulo, header.get('articulo'))
+        proceso_id = match_or_create(Proceso, header.get('denominacion'))
+        elemento_id = match_or_create(Elemento, header.get('operacion'))
+        
+        planilla = PlanillaMedicion.objects.filter(num_op=op_numero).first()
+        created = False
+        if not planilla:
+            planilla = PlanillaMedicion.objects.create(num_op=op_numero, proyecto=proyecto_nombre, fecha_elaborador=timezone.now().date(), observaciones='Generado desde app móvil via AI OCR')
+            created = True
+        else:
+            if proyecto_nombre and (not planilla.proyecto or planilla.proyecto == 'OCR App' or planilla.proyecto == 'OCR Import'): 
+                planilla.proyecto = proyecto_nombre
+        
+        if not created:
+            planilla.tolerancia_set.all().delete()
+            ValorMedicion.objects.filter(planilla=planilla).delete()
+        
+        if proceso_id and str(proceso_id).isdigit(): planilla.proceso_id = int(proceso_id)
+        if articulo_id and str(articulo_id).isdigit(): planilla.articulo_id = int(articulo_id)
+        if elemento_id and str(elemento_id).isdigit(): planilla.elemento_id = int(elemento_id)
+        if cliente_id and str(cliente_id).isdigit(): planilla.cliente_id = int(cliente_id)
+        planilla.save()
+
+        for i, row in enumerate(matrix):
+            raw_control = row.get('control', '').strip()
+            if not raw_control: continue
+            control_nombre = re.sub(r'^\d+[\.\)\-\s]+', '', raw_control).strip().replace(']', '').replace('[', '').replace('|', '').strip()
+            control = Control.objects.filter(nombre__iexact=control_nombre).first() or Control.objects.create(nombre=control_nombre)
+
+            valores = row.get('valores', [])
+            has_pnp_values = any(any(str(v.get('val') if isinstance(v, dict) else v).strip().upper().startswith(x) for x in ['OK', 'PAS', 'ACEP', 'NOK', 'FAL', 'FAI']) for v in valores)
+            if has_pnp_values and not control.pnp: 
+                control.pnp = True
+                control.save()
+
+            try:
+                nom_str = str(row.get('nominal', '0')).replace(',', '.')
+                nom_nums = re.findall(r"[-+]?\d*\.\d+|\d+", re.sub(r'\(?\d+[xX]\)?', '', nom_str).strip()) or re.findall(r"[-+]?\d*\.\d+|\d+", nom_str)
+                nominal_val = float(nom_nums[0]) if nom_nums else 0.0
+                tol_str_clean = re.sub(r'([-+])\s+(\d)', r'\1\2', str(row.get('tolerancia', '')).replace(',', '.').strip())
+                limit_max = limit_min = 0.0
+                
+                if '±' in tol_str_clean:
+                    vals = re.findall(r"\d*\.?\d+", tol_str_clean)
+                    if vals: limit_max = abs(float(vals[0])); limit_min = -abs(float(vals[0]))
+                else:
+                    floats = [float(m) for m in re.findall(r"[-+]?\d*\.?\d+", tol_str_clean) if m not in ['.', '-', '+']]
+                    if len(floats) >= 2: limit_max, limit_min = max(floats), min(floats)
+                    elif len(floats) == 1:
+                        val = floats[0]
+                        if '+' not in tol_str_clean and '-' not in tol_str_clean:
+                            limit_max = abs(val)
+                            limit_min = -abs(val)
+                        else:
+                            limit_max = val if '+' in tol_str_clean and val > 0 else 0.0
+                            limit_min = val if '-' in tol_str_clean and val < 0 else (-abs(val) if val != 0 else 0.0)
+            except: 
+                nominal_val = limit_max = limit_min = 0.0
+
+            instrumento_nombre = row.get('instrumento', '').strip()
+            instrumento_obj = None
+            if instrumento_nombre:
+                instrumento_obj = Instrumento.objects.filter(codigo__iexact=instrumento_nombre).first() or Instrumento.objects.filter(nombre__iexact=instrumento_nombre).first() or Instrumento.objects.create(nombre=instrumento_nombre, codigo=instrumento_nombre, tipo='OTRO')
+
+            tolerancia, _ = Tolerancia.objects.update_or_create(planilla=planilla, control=control, defaults={'nominal': nominal_val, 'minimo': limit_min, 'maximo': limit_max, 'posicion': i + 1, 'instrumento': instrumento_obj})
+            limit = min(len(valores), len(piezas_cols))
+            
+            for idx in range(limit):
+                pieza_num_raw = str(piezas_cols[idx])
+                try:
+                    pieza_num = int(re.sub(r'\D', '', pieza_num_raw.split('_')[0]))
+                except:
+                    pieza_num = idx + 1
+                
+                if pieza_num == 0: pieza_num = 1
+                val_raw = valores[idx].get('val') if isinstance(valores[idx], dict) else valores[idx]
+                if val_raw is None or str(val_raw).strip() == '': continue
+
+                try:
+                    val_float = val_pnp = None
+                    val_clean = str(val_raw).strip().upper().replace(']', '').replace('[', '').replace('|', '')
+                    if any(val_clean.startswith(x) for x in ['OK', 'PAS', 'ACEP']) or val_clean == 'P': val_pnp = 'OK'
+                    elif any(val_clean.startswith(x) for x in ['NOK', 'FAL', 'FAI', 'RECH']) or val_clean == 'R': val_pnp = 'NOK'
+                    else:
+                        val_numeric_str = re.sub(r'[^\d\.\,]', '', str(val_raw)).replace(',', '.')
+                        if val_numeric_str:
+                            val_float = float(val_numeric_str)
+                            min_l, max_l = tolerancia.get_absolute_limits()
+                            if min_l is not None and max_l is not None:
+                                if min_l != 0.0 or max_l != 0.0:
+                                    if val_float < (min_l - max(max_l-min_l, 0.5)*4) or val_float > (max_l + max(max_l-min_l, 0.5)*4): continue
+                                val_pnp = 'OK' if min_l <= val_float <= max_l else 'NOK'
+                            else: val_pnp = 'OK'
+                        else: continue
+
+                    if val_pnp is not None or val_float is not None:
+                        ValorMedicion.objects.update_or_create(planilla=planilla, control=control, pieza=pieza_num, defaults={'tolerancia': tolerancia, 'valor_pieza': val_float, 'valor_pnp': val_pnp, 'op': str(planilla.num_op)})
+                except: continue
+                
+        print(f"[OCR] Planilla guardada exitosamente para la OP {op_numero}")
+    except Exception as e:
+        print(f"[OCR] Error en procesamiento background: {str(e)}")
+    finally:
+        from django.db import connection
+        connection.close()
+
+@csrf_exempt
+def api_procesar_planilla(request):
+    try:
+        import google.generativeai as genai
+    except ImportError:
+        return JsonResponse({'status': 'error', 'message': 'Librería google-generativeai no está instalada.'}, status=500)
+        
+    if request.method == 'POST':
+        imagen = request.FILES.get('imagen') or request.FILES.get('file')
+        if not imagen:
+            return JsonResponse({'status': 'error', 'message': 'No se encontró ninguna imagen en la petición.'}, status=400)
+        
+        gemini_config = SystemConfig.objects.filter(key="GEMINI_API_KEY").first()
+        api_key = gemini_config.value if gemini_config else None
+        
+        if not api_key:
+            return JsonResponse({'status': 'error', 'message': 'No hay API Key de Gemini configurada.'}, status=500)
+            
+        img_data = imagen.read()
+        mime_type = imagen.content_type
+        job_id = str(uuid.uuid4())
+        
+        thread = threading.Thread(target=process_ocr_background_task, args=(img_data, mime_type, api_key))
+        thread.daemon = True
+        thread.start()
+        
+        return JsonResponse({
+            'status': 'processing', 
+            'message': 'Imagen recibida. Procesamiento OCR iniciado en segundo plano.',
+            'job_id': job_id
+        }, status=200)
+        
+    return JsonResponse({'status': 'error', 'message': 'Solo POST permitido'}, status=405)

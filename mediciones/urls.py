@@ -81,6 +81,7 @@ urlpatterns = [
     path('api/herramientas/ocr/importar/', views.importar_datos_ocr, name='importar_datos_ocr'),
     path('configuracion/', views.configuracion_sistema, name='configuracion_sistema'),
     path('api/procesar-planilla/', views.api_procesar_planilla, name='api_procesar_planilla'),
+    path('api/procesar-planilla/estado/<str:task_id>/', views.api_estado_planilla, name='api_estado_planilla'),
 ]
 
 
