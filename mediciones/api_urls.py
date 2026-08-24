@@ -16,7 +16,7 @@ urlpatterns = [
     path('mediciones/op/<int:op_num>/pieza/<int:pieza>/', api_calidad.BorrarPiezaAPIView.as_view(), name='api_borrar_pieza'),
     
     # 5. Endpoint POST de Escaneo OCR (App Móvil → Planilla)
-    path('escanear/', api_calidad.escanear_planilla_view, name='api_escanear_planilla'),
+    path('escanear/', api_calidad.EscanearPlanillaView.as_view(), name='escanear_planilla'),
     
     # 6. Polling: estado del procesamiento OCR
     path('escanear/estado/<str:task_id>/', api_calidad.estado_escaneo_view, name='api_estado_escaneo'),
