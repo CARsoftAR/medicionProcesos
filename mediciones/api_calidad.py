@@ -425,44 +425,48 @@ class OperarioLoginAPIView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request, format=None):
-        legajo = request.data.get('legajo')
-        pin = request.data.get('pin')
+        legajo = str(request.data.get('legajo') or request.data.get('username') or request.data.get('user') or '').strip()
+        pin = str(request.data.get('pin') or request.data.get('password') or request.data.get('pass') or '').strip()
         
+        print(f"[MOBILE-API-LOGIN] Incoming request for user/legajo: '{legajo}' from IP: {request.META.get('REMOTE_ADDR')}")
+
         if not legajo or not pin:
-            logger.warning("Login fallido: Legajo o PIN no proporcionados.")
-            return Response({'error': 'Legajo y PIN son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
+            logger.warning("Login fallido: Legajo/Usuario o PIN/Password no proporcionados.")
+            return Response({'error': 'Legajo/Usuario y PIN/Password son requeridos'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            user = User.objects.get(username=legajo)
-        except User.DoesNotExist:
-            logger.warning(f"Login fallido: Legajo inexistente ({legajo}).")
-            return Response({'error': 'Legajo incorrecto'}, status=status.HTTP_404_NOT_FOUND)
-        except User.MultipleObjectsReturned:
-            logger.error(f"Login fallido: Múltiples usuarios encontrados para el legajo {legajo}. Intentando buscar activo.")
-            users = User.objects.filter(username=legajo, is_active=True)
-            if users.exists():
-                user = users.first()
-            else:
-                return Response({'error': 'Legajo duplicado o inactivo.'}, status=status.HTTP_400_BAD_REQUEST)
+            user = User.objects.filter(username__iexact=legajo).first()
+            if not user:
+                user = User.objects.filter(username=legajo).first()
         except Exception as e:
-            logger.exception(f"Error interno en login para legajo {legajo}: {str(e)}")
+            logger.exception(f"Error en consulta de usuario {legajo}: {str(e)}")
             return Response({'error': 'Error interno del servidor'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        if not user:
+            logger.warning(f"Login fallido: Usuario inexistente ({legajo}).")
+            return Response({'error': 'Usuario o legajo incorrecto'}, status=status.HTTP_404_NOT_FOUND)
+
         if not user.check_password(pin):
-            logger.warning(f"Login fallido: PIN incorrecto para legajo {legajo}.")
-            return Response({'error': 'PIN incorrecto'}, status=status.HTTP_401_UNAUTHORIZED)
+            logger.warning(f"Login fallido: PIN/Contraseña incorrecto para usuario {legajo}.")
+            return Response({'error': 'PIN o contraseña incorrectos'}, status=status.HTTP_401_UNAUTHORIZED)
             
         if not user.is_active:
             logger.warning(f"Login fallido: Usuario {legajo} inactivo (is_active=False).")
             return Response({'error': 'Usuario inactivo'}, status=status.HTTP_403_FORBIDDEN)
 
-        if hasattr(user, 'operario') and not user.operario.activo:
+        if not user.is_superuser and hasattr(user, 'operario') and not user.operario.activo:
             logger.warning(f"Login fallido: Operario {legajo} inactivo (operario.activo=False).")
             return Response({'error': 'Operario inactivo'}, status=status.HTTP_403_FORBIDDEN)
             
         token, _ = Token.objects.get_or_create(user=user)
-        logger.info(f"Login exitoso para legajo {legajo}.")
-        return Response({'token': token.key}, status=status.HTTP_200_OK)
+        logger.info(f"Login exitoso para usuario {legajo}.")
+        print(f"[MOBILE-API-LOGIN] SUCCESS for user '{user.username}'. Token generated.")
+        return Response({
+            'token': token.key,
+            'user_id': user.id,
+            'username': user.username,
+            'is_superuser': user.is_superuser
+        }, status=status.HTTP_200_OK)
 
 
 # ─────────────────────────────────────────────────────────────────────────────

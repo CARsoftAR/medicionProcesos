@@ -7,7 +7,7 @@ class AutoLoginMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        if settings.DEBUG and not request.user.is_authenticated:
+        if settings.DEBUG and not request.user.is_authenticated and not request.path.startswith('/api/'):
             # We try to find 'admin' user, if not, 'administrador', or the first superuser
             user = User.objects.filter(username='admin').first()
             if not user:
