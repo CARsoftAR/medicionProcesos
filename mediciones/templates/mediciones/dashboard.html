@@ -73,7 +73,7 @@
 {% block content %}
 <div class="premium-page-container container-fluid py-4 animate__animated animate__fadeIn" style="max-width: 1400px;">
     <!-- EXECUTIVE DASHBOARD HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-5">
+    <!-- <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
             <h1 class="premium-title" style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.25rem; letter-spacing: -0.02em; color: #102A43; margin: 0;">Dashboard Operativo</h1>
             <p style="color: #486581; font-weight: 500; font-size: 0.95rem; margin: 0; margin-top: 5px;">Resumen de calidad y producción en tiempo real</p>
@@ -81,7 +81,7 @@
         <a href="{% url 'asignar_op' %}" class="btn-premium-primary">
             <i class="ri-add-line" style="font-size: 1.2rem;"></i> Nueva OP
         </a>
-    </div>
+    </div> -->
 
     <!-- KPI CARDS GRID -->
     <div class="row g-4 mb-5">
@@ -178,6 +178,9 @@
             }, {
                 name: 'Piezas OK',
                 data: {{ stats_oks|safe }}
+            }, {
+                name: 'Piezas Mal',
+                data: {{ stats_noks|safe }}
             }],
             chart: {
                 height: 320,
@@ -187,7 +190,7 @@
                 background: 'transparent',
                 foreColor: '#486581'
             },
-            colors: ['#0F4C81', '#0E7C4A'],
+            colors: ['#0F4C81', '#0E7C4A', '#B91C1C'],
             dataLabels: { enabled: false },
             stroke: { curve: 'smooth', width: 3 },
             fill: {

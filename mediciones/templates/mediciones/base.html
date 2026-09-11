@@ -89,6 +89,11 @@
                                          <span class="badge bg-danger rounded-pill ms-2" style="font-size: 0.6em; letter-spacing: 0;"></span>
                                      </a>
                                  </li>
+                                 <li>
+                                     <a href="{% url 'reportes_calidad' %}" class="active-indigo {% if request.resolver_match.url_name == 'reportes_calidad' %}active{% endif %}">
+                                         Reportes de Calidad
+                                     </a>
+                                 </li>
                                  {% comment %}
                                  <li>
                                      <a href="#" class="active-indigo">

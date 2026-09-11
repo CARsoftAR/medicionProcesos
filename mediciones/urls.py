@@ -11,6 +11,8 @@ urlpatterns = [
     path('mediciones/<int:planilla_id>/procesos/', views.crear_procesos, name='crear_procesos'),
     path('mediciones/<int:planilla_id>/tolerancias/', views.asignar_tolerancias, name='asignar_tolerancias'),
     path('mediciones/<int:planilla_id>/ingresar/', views.ingreso_mediciones, name='ingreso_mediciones'),
+    # Ruta de Reportes de Calidad
+    path('mediciones/reportes/', views.reportes_calidad, name='reportes_calidad'),
     path('mediciones/estructuras/', views.lista_estructuras, name='lista_estructuras'),
     path('mediciones/estructuras/eliminar/', views.eliminar_estructura, name='eliminar_estructura'),
     path('mediciones/configurar/', views.configurar_estructura, name='configurar_estructura'),
@@ -80,6 +82,7 @@ urlpatterns = [
     # Herramientas
     path('herramientas/ocr/', views.ocr_lector_planos, name='ocr_lector_planos'),
     path('api/herramientas/ocr/importar/', views.importar_datos_ocr, name='importar_datos_ocr'),
+    path('api/herramientas/ocr/certificado/', views.generar_certificado_ocr_pdf, name='generar_certificado_ocr_pdf'),
     path('configuracion/', views.configuracion_sistema, name='configuracion_sistema'),
     path('api/procesar-planilla/', views.api_procesar_planilla, name='api_procesar_planilla'),
     path('api/procesar-planilla/estado/<str:task_id>/', views.api_estado_planilla, name='api_estado_planilla'),

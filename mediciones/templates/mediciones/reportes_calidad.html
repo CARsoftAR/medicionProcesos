@@ -1,0 +1,94 @@
+{% extends 'mediciones/base.html' %}
+{% load static %}
+
+{% block title %}Reportes de Calidad y Certificados CoA{% endblock %}
+
+{% block extra_head %}
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+    .premium-page-container {
+        padding: 1.5rem 2.5rem;
+    }
+    .data-table thead th {
+        background: #FFFFFF !important;
+        color: #102A43 !important;
+        font-family: 'Outfit', 'Inter', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.1em;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 2px solid #BCCCDC;
+    }
+    .data-table tbody tr {
+        border-bottom: 1px solid #DBE6F0 !important;
+        background: #FFFFFF !important;
+    }
+    .data-table td {
+        padding: 1.25rem 1.5rem;
+        color: #102A43 !important;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="premium-page-container container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h1 style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 2.25rem; color: #102A43; margin: 0;">Reportes de Calidad</h1>
+            <p style="color: #486581; font-weight: 500; font-size: 0.95rem; margin: 0; margin-top: 5px;">Gestión de Certificados CoA y Reportes SPC</p>
+        </div>
+    </div>
+
+    <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 style="font-size: 1.1rem; font-weight: 700; color: #102A43;">Historial de Lotes</h3>
+            <form method="GET" class="d-flex gap-2">
+                <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Buscar OP, Proyecto o Cliente..." style="width: 300px;">
+                <button type="submit" class="btn btn-primary" style="background-color: #0F4C81; border: none;">Buscar</button>
+            </form>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>OP / Proyecto</th>
+                        <th>Proceso</th>
+                        <th>Cliente</th>
+                        <th>Artículo</th>
+                        <th>Fecha</th>
+                        <th style="text-align: right;">Descargar Reportes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in planillas %}
+                    <tr>
+                        <td style="font-weight: 600; color: #0F4C81;">
+                            {% if p.num_op %}{{ p.num_op }} / {% endif %}{{ p.proyecto|default:"-" }}
+                        </td>
+                        <td>{{ p.proceso.nombre }}</td>
+                        <td>{{ p.cliente.nombre|default:"-" }}</td>
+                        <td>{{ p.articulo.nombre|default:"-" }}</td>
+                        <td style="font-size: 0.8rem; color: #486581;">{{ p.fecha_creacion|date:"d/m/y" }}</td>
+                        <td style="text-align: right;">
+                            <a href="{% url 'exportar_pdf' p.id %}" target="_blank" class="btn btn-sm btn-outline-primary" style="margin-right: 5px;" title="Certificado Estándar">
+                                <i class="ri-file-pdf-line"></i> CoA Estándar
+                            </a>
+                            <a href="{% url 'exportar_pdf_pro' p.id %}" target="_blank" class="btn btn-sm btn-primary" style="background-color: #0F4C81; border: none;" title="Reporte SPC Completo">
+                                <i class="ri-bar-chart-grouped-line"></i> Reporte SPC
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: #829AB1;">No se encontraron resultados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

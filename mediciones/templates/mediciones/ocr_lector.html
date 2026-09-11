@@ -46,7 +46,7 @@
       .metric-cell:hover { transform: translateY(-1px); box-shadow: 0 4px 8px -2px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col bg-slate-50 text-slate-800 selection:bg-cyan-500/20 selection:text-cyan-900">
+<body class="antialiased min-h-screen flex flex-col bg-slate-50 text-slate-800 selection:bg-cyan-500/20 selection:text-cyan-900" style="-webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;">
 
     {% csrf_token %}
 
@@ -78,9 +78,17 @@
 
             <!-- Action Toolbar -->
             <div class="flex items-center gap-2.5 flex-wrap">
+                <a href="{% url 'index' %}" class="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition shadow-sm" title="Volver al Menú Principal">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    Volver
+                </a>
+                <button id="btn-exportar-pdf" class="hidden items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition shadow-sm" type="button">
+                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 9h1.5m1.5 0H12m-3 3h3m-3 3h3"/></svg>
+                    Certificado CoA
+                </button>
                 <button id="btn-exportar" class="hidden items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 transition shadow-sm" type="button">
                     <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Exportar CSV/Excel
+                    Exportar CSV
                 </button>
                 <button id="btn-confirmar" class="hidden items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-md" type="button">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -207,13 +215,13 @@
             <!-- Main Results Table Container with Sticky Columns -->
             <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                 <div class="overflow-x-auto max-h-[600px]">
-                    <table id="ocr-table" class="w-max table-fixed border-collapse text-left text-xs">
+                    <table id="ocr-table" class="w-max table-fixed border-collapse text-left text-sm" style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;">
                         <thead>
-                            <tr id="table-head-row" class="bg-slate-100 border-b border-slate-200 text-slate-600 text-[11px] uppercase tracking-wider font-bold sticky top-0 z-30">
+                            <tr id="table-head-row" class="bg-slate-100 border-b border-slate-200 text-slate-600 text-xs uppercase tracking-wider font-bold sticky top-0 z-30">
                                 <th class="py-3.5 px-4 w-[180px] sticky left-0 z-40 bg-slate-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] border-r border-slate-200/60">Control Detectado</th>
                                 <th class="py-3.5 px-3 text-center w-[80px] sticky left-[180px] z-40 bg-slate-100">Nominal</th>
-                                <th class="py-3.5 px-3 text-center w-[80px] sticky left-[260px] z-40 bg-slate-100">Tol.</th>
-                                <th class="py-3.5 px-3 text-center w-[70px] sticky left-[340px] z-40 bg-slate-100 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">Instr.</th>
+                                <th class="py-3.5 px-3 text-center w-[160px] sticky left-[260px] z-40 bg-slate-100">Tol.</th>
+                                <th class="py-3.5 px-3 text-center w-[70px] sticky left-[420px] z-40 bg-slate-100 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">Instr.</th>
                                 <!-- Las columnas de piezas se inyectan dinámicamente aquí -->
                             </tr>
                         </thead>
@@ -331,11 +339,11 @@
             if (!inputEl) return;
 
             if (res.status === 'empty') {
-                inputEl.className = "metric-cell ocr-edit-val w-20 text-center font-sans font-medium text-xs py-1 px-1.5 rounded border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:border-cyan-600 focus:bg-white";
+                inputEl.className = "metric-cell ocr-edit-val w-20 text-center font-sans font-medium text-sm py-1 px-1.5 rounded border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:border-cyan-600 focus:bg-white";
                 inputEl.removeAttribute('title');
             } else if (!res.valid || res.status === 'nok') {
                 // DESVIACIÓN / FUERA DE TOLERANCIA -> ESTILO ROJO ALERTA
-                inputEl.className = "metric-cell ocr-edit-val w-20 text-center font-sans font-semibold text-xs py-1 px-1.5 rounded border border-rose-400 bg-rose-50 text-rose-700 shadow-sm focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-400";
+                inputEl.className = "metric-cell ocr-edit-val w-20 text-center font-sans font-semibold text-sm py-1 px-1.5 rounded border border-rose-400 bg-rose-50 text-rose-700 shadow-sm focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-400";
                 if (res.min !== undefined && res.max !== undefined) {
                     inputEl.setAttribute('title', `¡Desviación fuera de rango! Límite: [${res.min.toFixed(3)} a ${res.max.toFixed(3)}]`);
                 } else {
@@ -343,7 +351,7 @@
                 }
             } else {
                 // CONFORME -> ESTILO VERDE ESTÁNDAR
-                inputEl.className = "metric-cell ocr-edit-val w-20 text-center font-sans font-medium text-xs py-1 px-1.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-500";
+                inputEl.className = "metric-cell ocr-edit-val w-20 text-center font-sans font-medium text-sm py-1 px-1.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-500";
                 if (res.min !== undefined && res.max !== undefined) {
                     inputEl.setAttribute('title', `Conforme. Rango: [${res.min.toFixed(3)} a ${res.max.toFixed(3)}]`);
                 } else {
@@ -443,6 +451,7 @@
         const loadingContainer = document.getElementById('loading-container');
         const btnConfirmar = document.getElementById('btn-confirmar');
         const btnExportar = document.getElementById('btn-exportar');
+        const btnExportarPdf = document.getElementById('btn-exportar-pdf');
         const searchInput = document.getElementById('search-cotas');
 
         // Mostrar nombre del archivo seleccionado
@@ -580,8 +589,8 @@
             let headHTML = `
                 <th class="py-3.5 px-4 w-[180px] sticky left-0 z-40 bg-slate-100 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] border-r border-slate-200/60">Control Detectado</th>
                 <th class="py-3.5 px-3 text-center w-[80px] sticky left-[180px] z-40 bg-slate-100">Nominal</th>
-                <th class="py-3.5 px-3 text-center w-[80px] sticky left-[260px] z-40 bg-slate-100">Tol.</th>
-                <th class="py-3.5 px-3 text-center w-[70px] sticky left-[340px] z-40 bg-slate-100 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">Instr.</th>
+                <th class="py-3.5 px-3 text-center w-[160px] sticky left-[260px] z-40 bg-slate-100">Tol.</th>
+                <th class="py-3.5 px-3 text-center w-[70px] sticky left-[420px] z-40 bg-slate-100 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">Instr.</th>
             `;
 
             piezasList.forEach(pNum => {
@@ -609,21 +618,21 @@
                         <td class="py-2.5 px-3 font-semibold text-slate-800 sticky left-0 z-20 bg-white group-hover:bg-slate-50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
                             <div class="flex items-center gap-2">
                                 <span class="w-1.5 h-1.5 rounded-full bg-cyan-600"></span>
-                                <input type="text" value="${controlNombre}" class="ocr-edit-control bg-transparent border-none focus:bg-slate-100 font-sans font-medium tracking-tight text-slate-900 w-full text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-cyan-600 rounded px-1"/>
+                                <input type="text" value="${controlNombre}" class="ocr-edit-control bg-transparent border-none focus:bg-slate-100 font-sans font-semibold tracking-tight text-slate-900 w-full text-sm focus:outline-none focus:ring-1 focus:ring-cyan-600 rounded px-1"/>
                             </div>
                         </td>
                         <td class="py-2.5 px-3 text-center sticky left-[180px] z-20 bg-white group-hover:bg-slate-50">
-                            <input type="text" value="${nominalVal}" class="ocr-edit-nominal bg-transparent border-none focus:bg-slate-100 font-sans font-semibold text-cyan-800 w-full text-center text-xs focus:outline-none focus:ring-1 focus:ring-cyan-600 rounded px-1"/>
+                            <input type="text" value="${nominalVal}" class="ocr-edit-nominal bg-transparent border-none focus:bg-slate-100 font-sans font-semibold text-cyan-800 w-full text-center text-sm focus:outline-none focus:ring-1 focus:ring-cyan-600 rounded px-1"/>
                         </td>
                         <td class="py-2.5 px-3 text-center sticky left-[260px] z-20 bg-white group-hover:bg-slate-50">
-                            <input type="text" value="${tolVal}" class="ocr-edit-tol bg-transparent border-none focus:bg-slate-100 font-sans font-medium text-slate-600 text-[11px] w-full text-center focus:outline-none focus:ring-1 focus:ring-cyan-600 rounded px-1"/>
+                            <input type="text" value="${tolVal}" class="ocr-edit-tol bg-transparent border-none focus:bg-slate-100 font-sans font-medium text-slate-600 text-[13px] w-full text-center focus:outline-none focus:ring-1 focus:ring-cyan-600 rounded px-1"/>
                         </td>
-                        <td class="py-2.5 px-3 text-center sticky left-[340px] z-20 bg-white group-hover:bg-slate-50 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
-                            <input type="text" value="${instrVal}" class="ocr-edit-instr bg-transparent border-none focus:bg-slate-100 font-sans font-medium text-[10px] text-slate-600 w-full text-center focus:outline-none focus:ring-1 focus:ring-cyan-600 rounded px-1"/>
+                        <td class="py-2.5 px-3 text-center sticky left-[420px] z-20 bg-white group-hover:bg-slate-50 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                            <input type="text" value="${instrVal}" class="ocr-edit-instr bg-transparent border-none focus:bg-slate-100 font-sans font-medium text-xs text-slate-600 w-full text-center focus:outline-none focus:ring-1 focus:ring-cyan-600 rounded px-1"/>
                         </td>
                 `;
 
-                piezasList.forEach(pNum => {
+                piezasList.forEach((pNum, colIdx) => {
                     let valorPieza = '';
                     if (ctrl.piezas && ctrl.piezas[pNum] !== undefined) {
                         const vItem = ctrl.piezas[pNum];
@@ -632,9 +641,8 @@
                         const vItem = ctrl.valores[pNum];
                         valorPieza = (vItem && typeof vItem === 'object') ? (vItem.val !== undefined ? vItem.val : '') : vItem;
                     } else if (ctrl.valores && Array.isArray(ctrl.valores)) {
-                        const idx = typeof pNum === 'number' ? pNum - 1 : parseInt(pNum) - 1;
-                        if (ctrl.valores[idx] !== undefined) {
-                            const vItem = ctrl.valores[idx];
+                        if (ctrl.valores[colIdx] !== undefined) {
+                            const vItem = ctrl.valores[colIdx];
                             valorPieza = (vItem && typeof vItem === 'object') ? (vItem.val !== undefined ? vItem.val : '') : vItem;
                         }
                     }
@@ -642,15 +650,15 @@
                     const valStr = valorPieza !== null ? String(valorPieza) : '';
                     const tolRes = validarToleranceValue(nominalVal, tolVal, valStr);
                     
-                    let cellClass = "metric-cell ocr-edit-val w-20 text-center font-sans font-medium text-xs py-1 px-1.5 rounded border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:border-cyan-600 focus:bg-white";
+                    let cellClass = "metric-cell ocr-edit-val w-20 text-center font-sans font-medium text-sm py-1 px-1.5 rounded border border-slate-200 bg-slate-50 text-slate-700 focus:outline-none focus:border-cyan-600 focus:bg-white";
                     let titleAttr = '';
 
                     if (valStr && valStr.trim() !== '' && valStr.trim() !== '-') {
                         if (!tolRes.valid || tolRes.status === 'nok') {
-                            cellClass = "metric-cell ocr-edit-val w-20 text-center font-sans font-semibold text-xs py-1 px-1.5 rounded border border-rose-400 bg-rose-50 text-rose-700 shadow-sm focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-400";
+                            cellClass = "metric-cell ocr-edit-val w-20 text-center font-sans font-semibold text-sm py-1 px-1.5 rounded border border-rose-400 bg-rose-50 text-rose-700 shadow-sm focus:outline-none focus:border-rose-600 focus:ring-1 focus:ring-rose-400";
                             titleAttr = tolRes.min !== undefined && tolRes.max !== undefined ? `title="¡Desviación fuera de rango! Límite: [${tolRes.min.toFixed(3)} a ${tolRes.max.toFixed(3)}]"` : 'title="¡Desviación fuera de tolerancia!"';
                         } else {
-                            cellClass = "metric-cell ocr-edit-val w-20 text-center font-sans font-medium text-xs py-1 px-1.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-500";
+                            cellClass = "metric-cell ocr-edit-val w-20 text-center font-sans font-medium text-sm py-1 px-1.5 rounded border border-emerald-300 bg-emerald-50 text-emerald-800 focus:outline-none focus:border-cyan-600 focus:ring-1 focus:ring-cyan-500";
                             titleAttr = tolRes.min !== undefined && tolRes.max !== undefined ? `title="Conforme. Rango: [${tolRes.min.toFixed(3)} a ${tolRes.max.toFixed(3)}]"` : '';
                         }
                     }
@@ -683,6 +691,10 @@
             if (btnExportar) {
                 btnExportar.classList.remove('hidden');
                 btnExportar.classList.add('inline-flex');
+            }
+            if (btnExportarPdf) {
+                btnExportarPdf.classList.remove('hidden');
+                btnExportarPdf.classList.add('inline-flex');
             }
             if (btnConfirmar) {
                 btnConfirmar.classList.remove('hidden');
@@ -827,6 +839,86 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
+            });
+        }
+
+        // Exportar a PDF (Certificado CoA)
+        if (btnExportarPdf) {
+            btnExportarPdf.addEventListener('click', function () {
+                if (!window.currentOcrData) {
+                    alert("Primero debe procesar un archivo PDF válido.");
+                    return;
+                }
+
+                const header = {
+                    cliente: document.getElementById('meta-cliente-articulo').textContent.split('/')[0].trim(),
+                    articulo: (document.getElementById('meta-cliente-articulo').textContent.split('/')[1] || '').trim(),
+                    proyecto: document.getElementById('meta-proyecto').textContent.trim(),
+                    op: document.getElementById('op-badge').textContent.replace('#', '').trim(),
+                    denominacion: document.getElementById('meta-proceso').textContent.trim(),
+                    operacion: document.getElementById('meta-operacion').textContent.trim()
+                };
+
+                const ths = document.querySelectorAll('#table-head-row th');
+                const piezasCols = [];
+                for (let i = 4; i < ths.length; i++) {
+                    const txt = ths[i].querySelector('span') ? ths[i].querySelector('span').textContent.replace('P', '').trim() : (i - 3).toString();
+                    piezasCols.push(txt);
+                }
+
+                const matrix = [];
+                document.querySelectorAll('.ocr-table-row').forEach(tr => {
+                    const rowData = {
+                        control: tr.querySelector('.ocr-edit-control') ? tr.querySelector('.ocr-edit-control').value : '',
+                        nominal: tr.querySelector('.ocr-edit-nominal') ? tr.querySelector('.ocr-edit-nominal').value : '',
+                        tolerancia: tr.querySelector('.ocr-edit-tol') ? tr.querySelector('.ocr-edit-tol').value : '',
+                        instrumento: tr.querySelector('.ocr-edit-instr') ? tr.querySelector('.ocr-edit-instr').value : '',
+                        valores: []
+                    };
+                    tr.querySelectorAll('.ocr-edit-val').forEach(input => {
+                        rowData.valores.push(input.value);
+                    });
+                    matrix.push(rowData);
+                });
+
+                const payload = {
+                    header: header,
+                    piezas: piezasCols,
+                    matrix: matrix
+                };
+
+                const btn = this;
+                const originalHtml = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = `<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" class="opacity-25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" class="opacity-75"></path></svg> Generando...`;
+
+                fetch("{% url 'generar_certificado_ocr_pdf' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken') || ''
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => res.blob())
+                .then(blob => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    a.download = `Certificado_CoA_OP_${header.op}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                })
+                .catch(err => {
+                    console.error("Error al generar PDF:", err);
+                    alert("Ocurrió un error al generar el certificado.");
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                });
             });
         }
     </script>

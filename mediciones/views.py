@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from .models import PlanillaMedicion, Cliente, Articulo, Proceso, Elemento, Control, Tolerancia, ValorMedicion, Maquina, Instrumento, Profile, HistorialCalibracion
 from .forms import PlanillaForm, ClienteForm, ArticuloForm, ProcesoForm, ElementoForm, ControlForm, UserForm, InstrumentoForm, MaquinaForm
+from .views_coa import generar_certificado_ocr_pdf
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.forms import AuthenticationForm
@@ -78,7 +79,7 @@ El JSON debe tener la siguiente estructura exacta:
     "denominacion": "Denominacion o proceso",
     "operacion": "Operacion o elemento"
   },
-  "piezas": ["1", "2", "3", "4", "5"],
+  "piezas": ["Lista con TODOS los números de piezas manuscritos detectados en la cabecera (ej: '1', '6', '14') sin importar si hay saltos o no son consecutivos"],
   "matrix": [
     {
       "control": "Nombre del control o parámetro",
@@ -86,12 +87,14 @@ El JSON debe tener la siguiente estructura exacta:
       "tolerancia": "Texto de tolerancia (ej: ±0.1, +0.2/-0.1)",
       "instrumento": "Instrumento usado",
       "valores": [
-        {"val": "Valor medido para la pieza 1"},
-        {"val": "Valor medido para la pieza 2"}
+        {"val": "Valor para la primera pieza de la lista"},
+        {"val": "Valor para la segunda pieza de la lista"},
+        {"val": "..."}
       ]
     }
   ]
 }
+IMPORTANTE: Escanea horizontalmente TODA la grilla y extrae CADA UNA de las columnas de piezas manuscritas existentes, sin importar si los números no son consecutivos. El arreglo 'valores' debe tener exactamente la misma longitud que el arreglo 'piezas'.
 Asegúrate de leer tanto el texto impreso como las anotaciones hechas a mano (valores de medición).
 Si un campo no tiene valor, envíalo como "". Solo responde con el JSON puro sin bloques markdown (sin ```json ... ```).
 """
@@ -636,14 +639,17 @@ def index(request):
     dias = []
     mediciones_por_dia = []
     oks_por_dia = []
+    noks_por_dia = []
     
     for i in range(6, -1, -1):
         fecha = hoy - timedelta(days=i)
         dias.append(fecha.strftime('%d/%m'))
         count = valores_qs.filter(fecha__date=fecha.date()).count()
         oks = valores_qs.filter(fecha__date=fecha.date(), valor_pnp='OK').count()
+        noks = valores_qs.filter(fecha__date=fecha.date(), valor_pnp='NOK').count()
         mediciones_por_dia.append(count)
         oks_por_dia.append(oks)
+        noks_por_dia.append(noks)
 
     instrumentos_activos = Instrumento.objects.filter(es_obsoleto=False)
     inst_vencidos = [i for i in instrumentos_activos if i.is_calibracion_vencida()]
@@ -658,6 +664,7 @@ def index(request):
         'stats_dias': dias,
         'stats_mediciones': mediciones_por_dia,
         'stats_oks': oks_por_dia,
+        'stats_noks': noks_por_dia,
         'inst_vencidos_count': len(inst_vencidos),
         'inst_alerta_count': len(inst_alerta),
         'total_vencidos_alerta': len(inst_vencidos) + len(inst_alerta),
@@ -668,6 +675,29 @@ def index(request):
     if request.GET.get('partial') == '1' or request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return render(request, 'mediciones/partials/dashboard_table.html', context)
     return render(request, 'mediciones/dashboard.html', context)
+
+@login_required
+def reportes_calidad(request):
+    from django.db.models import Q
+    q = request.GET.get('q', '').strip()
+    planillas_qs = PlanillaMedicion.objects.all().order_by('-id')
+    
+    is_filtered = False
+    if q:
+        planillas_qs = planillas_qs.filter(
+            Q(num_op__icontains=q) | 
+            Q(proyecto__icontains=q) |
+            Q(cliente__nombre__icontains=q) |
+            Q(articulo__nombre__icontains=q)
+        )
+        is_filtered = True
+
+    context = {
+        'planillas': planillas_qs[:50],
+        'is_filtered': is_filtered,
+        'search_query': q
+    }
+    return render(request, 'mediciones/reportes_calidad.html', context)
 
 @login_required
 def asignar_op(request):
@@ -1943,190 +1973,190 @@ def eliminar_archivo_seguro(ruta, intentos=3):
             time.sleep(0.5)
 
 @login_required
-def ocr_lector_planos(request):
-    import json, os, traceback
-    from django.http import JsonResponse
-    from .models import Proceso, Articulo, Elemento, Cliente, SystemConfig
-    
-    if request.method == 'POST':
-        uploaded_file_path = None
-        try:
-            # 1. Validar la recepción del archivo PDF
-            pdf_file = request.FILES.get('pdf') or request.FILES.get('archivo') or request.FILES.get('file') or request.FILES.get('pdf_file')
-            if not pdf_file and len(request.FILES) > 0:
-                pdf_file = list(request.FILES.values())[0]
-
-            if not pdf_file:
-                return JsonResponse({'status': 'error', 'message': 'No se recibió ningún archivo PDF en la petición POST.'}, status=400)
-            
-            # Guardar temporalmente en disco
-            from django.core.files.storage import FileSystemStorage
-            fs = FileSystemStorage(location=os.path.join('media', 'temporales'))
-            filename = fs.save(pdf_file.name, pdf_file)
-            uploaded_file_path = fs.path(filename)
-            
-            try:
-                # 2. Validar API Key de Gemini
-                api_key = os.environ.get("GEMINI_API_KEY", "")
-                if not api_key:
-                    sys_key = SystemConfig.objects.filter(key="GEMINI_API_KEY").first()
-                    api_key = sys_key.value if sys_key else None
-                    
-                if not api_key:
-                    return JsonResponse({'status': 'error', 'message': 'API Key de Gemini no configurada en el sistema.'}, status=400)
-
-                prompt = """
-Sos un experto en lectura de planillas de control de calidad industrial y metrología.
-Analizá este documento / planilla y extraé ÚNICAMENTE los datos en formato JSON válido, sin bloques markdown.
-
-Estructura esperada:
-{
-  "total_piezas_detectadas": "Número exacto de columnas de piezas físicamente impresas (ej. 10 o 20)",
-  "op_num": "Número de Orden de Producción (solo dígitos, sin texto)",
-  "cliente": "Nombre del cliente, o vacío si no se encuentra",
-  "proyecto": "Nombre del proyecto, o vacío",
-  "articulo": "Nombre del artículo, o vacío",
-  "proceso": "Proceso o denominación, o vacío",
-  "operacion": "Operación o fase (ej: Terminacion Torno), o vacío",
-  "mediciones": [
-    {
-      "nombre_control": "Nombre del parámetro o cota medida (texto exacto del encabezado de fila)",
-      "nominal": "Valor nominal numérico o '-' si no hay",
-      "tolerancia": "Texto de tolerancia (ej: ±0.1, +0.2/-0.1) o vacío",
-      "instrumento": "Instrumento de medición indicado (ej: calibre, micrómetro, pasa/no pasa) o vacío",
-      "valores_por_pieza": {
-        "1": "valor numérico manuscrito o estado (OK/NOK) medido para la pieza 1",
-        "2": "valor numérico manuscrito o estado (OK/NOK) medido para la pieza 2",
-        "3": "valor numérico manuscrito o estado (OK/NOK) medido para la pieza 3, y así sucesivamente para TODAS las piezas presentes con datos manuscritos..."
-      }
-    }
-  ]
-}
-
-Reglas importantes:
-- op_num: solo el número, sin "OP", sin "Nº", sin texto extra.
-- operacion: Busca obligatoriamente la etiqueta literal "OPERACIÓN:" o "Op:" (justo encima de NÚMERO DE PIEZAS) en la cabecera y extrae el texto que está inmediatamente al lado o debajo.
-- nombre_control: copialo exactamente como aparece en la planilla.
-- MATRIZ DE MEDICIONES Y VALORES MANUSCRITOS: Analiza meticulosamente la tabla o matriz principal de la planilla. Debes extraer TODAS las columnas de piezas (Pieza 1, 2, 3, etc.) y los valores numéricos manuscritos o marcas (OK/NOK) anotados a mano dentro de las celdas para cada control.
-- REGLA ESTRICTA DE PIEZAS: PROHIBIDO INVENTAR, EXTRAPOLAR O COMPLETAR SERIES. Extrae ÚNICAMENTE los números de pieza que físicamente tengan celdas impresas o manuscritas.
-- valores_por_pieza: Incluye el valor numérico manuscrito exacto o el estado PNP (ej. OK, NOK, Acep, Rech) anotado a mano para cada control en cada pieza.
-- Usá punto decimal (no coma). Ej: "12.5", no "12,5".
-- Devolvé SOLO el JSON puro. Sin texto adicional, sin ```json, sin explicaciones.
-"""
-
-                try:
-                    from google import genai
-                    from google.genai import types
-                except ImportError:
-                    return JsonResponse({'status': 'error', 'message': 'Librería google.genai no instalada en el servidor.'}, status=500)
-                
-                pdf_bytes = abrir_archivo_seguro(uploaded_file_path)
-                client = genai.Client(api_key=api_key)
-                doc_part = types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf")
-                
-                try:
-                    response = client.models.generate_content(
-                        model='gemini-3.6-flash',
-                        contents=[prompt, doc_part]
-                    )
-                except Exception as model_err:
-                    print(f"[OCR-WARN] Error llamando a Gemini: {model_err}")
-                    raise model_err
-
-                resp_text = response.text.strip()
-                if resp_text.startswith("```json"): resp_text = resp_text.replace("```json", "", 1)
-                if resp_text.startswith("```"): resp_text = resp_text[3:]
-                if resp_text.endswith("```"): resp_text = resp_text[:-3]
-                
-                try:
-                    ia_data = json.loads(resp_text.strip())
-                except json.JSONDecodeError as json_err:
-                    return JsonResponse({'status': 'error', 'message': f'Error al decodificar la respuesta JSON de Gemini: {str(json_err)}'}, status=400)
-                
-                try:
-                    max_piezas = int(ia_data.get("total_piezas_detectadas", 20))
-                except (ValueError, TypeError):
-                    max_piezas = 20
-
-                controles = []
-                todas_piezas = set()
-                for item in ia_data.get("mediciones", []):
-                    piezas_dict = item.get("valores_por_pieza", {})
-                    filtered_piezas = {}
-                    
-                    for p, val in piezas_dict.items():
-                        try:
-                            if int(p) <= max_piezas:
-                                filtered_piezas[str(p)] = val
-                                todas_piezas.add(str(p))
-                        except ValueError:
-                            filtered_piezas[str(p)] = val
-                            todas_piezas.add(str(p))
-                    
-                    controles.append({
-                        "control": item.get("nombre_control", ""),
-                        "nominal": item.get("nominal", ""),
-                        "tolerancia": item.get("tolerancia", ""),
-                        "instrumento": item.get("instrumento", ""),
-                        "piezas": filtered_piezas
-                    })
-                
-                piezas_lista = sorted(list(todas_piezas), key=lambda x: int(x) if x.isdigit() else 999)
-                if not piezas_lista:
-                    piezas_lista = [str(i) for i in range(1, 11)]
-                
-                # 3. Estructura JSON exacta esperada por renderizarResultadosOCR(data)
-                resultado = {
-                    'status': 'success',
-                    'cliente': ia_data.get('cliente', ''),
-                    'proyecto': ia_data.get('proyecto', ''),
-                    'op': ia_data.get('op_num', ''),
-                    'articulo': ia_data.get('articulo', ''),
-                    'denominacion': ia_data.get('proceso', ''),
-                    'proceso': ia_data.get('proceso', ''),
-                    'operacion': ia_data.get('operacion', ''),
-                    'piezas': piezas_lista,
-                    'controles': controles
-                }
-                
-                return JsonResponse(resultado)
-            finally:
-                if uploaded_file_path:
-                    eliminar_archivo_seguro(uploaded_file_path)
-                
-        except Exception as e:
-            err_str = str(e)
-            print(f"[OCR-ERROR] Excepción capturada en ocr_lector_planos: {traceback.format_exc()}")
-            
-            title_msg = "Atención"
-            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
-                user_msg = "Se ha superado temporalmente el límite de consultas a la inteligencia artificial. Por favor, espere unos 30 segundos y vuelva a intentarlo."
-                title_msg = "Límite alcanzado"
-            elif "503" in err_str or "service unavailable" in err_str.lower() or "overloaded" in err_str.lower():
-                user_msg = "El servicio de IA está experimentando alta demanda. Por favor, intente nuevamente en unos instantes."
-                title_msg = "Servidor ocupado"
-            elif "404" in err_str or "not found" in err_str.lower():
-                user_msg = "El modelo de IA solicitado no se encuentra disponible temporalmente. Intente nuevamente."
-                title_msg = "Servicio no disponible"
-            else:
-                user_msg = "Ocurrió un inconveniente al procesar la planilla con IA. Por favor, verifique el archivo e intente nuevamente."
-                title_msg = "Error de Procesamiento"
-
-            return JsonResponse({
-                'status': 'error',
-                'title': title_msg,
-                'message': user_msg
-            }, status=400)
-
-    context = {
-        'procesos': Proceso.objects.all().order_by('nombre'),
-        'articulos': Articulo.objects.all().order_by('nombre'),
-        'elementos': Elemento.objects.all().order_by('nombre'),
-        'clientes': Cliente.objects.all().order_by('nombre'),
-        'success': False
-    }
-    return render(request, 'mediciones/ocr_lector.html', context)
-
+def ocr_lector_planos(request):
+    import json, os, traceback
+    from django.http import JsonResponse
+    from .models import Proceso, Articulo, Elemento, Cliente, SystemConfig
+    
+    if request.method == 'POST':
+        uploaded_file_path = None
+        try:
+            # 1. Validar la recepción del archivo PDF
+            pdf_file = request.FILES.get('pdf') or request.FILES.get('archivo') or request.FILES.get('file') or request.FILES.get('pdf_file')
+            if not pdf_file and len(request.FILES) > 0:
+                pdf_file = list(request.FILES.values())[0]
+
+            if not pdf_file:
+                return JsonResponse({'status': 'error', 'message': 'No se recibió ningún archivo PDF en la petición POST.'}, status=400)
+            
+            # Guardar temporalmente en disco
+            from django.core.files.storage import FileSystemStorage
+            fs = FileSystemStorage(location=os.path.join('media', 'temporales'))
+            filename = fs.save(pdf_file.name, pdf_file)
+            uploaded_file_path = fs.path(filename)
+            
+            try:
+                # 2. Validar API Key de Gemini
+                api_key = os.environ.get("GEMINI_API_KEY", "")
+                if not api_key:
+                    sys_key = SystemConfig.objects.filter(key="GEMINI_API_KEY").first()
+                    api_key = sys_key.value if sys_key else None
+                    
+                if not api_key:
+                    return JsonResponse({'status': 'error', 'message': 'API Key de Gemini no configurada en el sistema.'}, status=400)
+
+                prompt = """
+Sos un experto en lectura de planillas de control de calidad industrial y metrología.
+Analizá este documento / planilla y extraé ÚNICAMENTE los datos en formato JSON válido, sin bloques markdown.
+
+Estructura esperada:
+{
+  "total_piezas_detectadas": "Número exacto de columnas de piezas físicamente impresas (ej. 10 o 20)",
+  "op_num": "Número de Orden de Producción (solo dígitos, sin texto)",
+  "cliente": "Nombre del cliente, o vacío si no se encuentra",
+  "proyecto": "Nombre del proyecto, o vacío",
+  "articulo": "Nombre del artículo, o vacío",
+  "proceso": "Proceso o denominación, o vacío",
+  "operacion": "Operación o fase (ej: Terminacion Torno), o vacío",
+  "mediciones": [
+    {
+      "nombre_control": "Nombre del parámetro o cota medida (texto exacto del encabezado de fila)",
+      "nominal": "Valor nominal numérico o '-' si no hay",
+      "tolerancia": "Texto de tolerancia (ej: ±0.1, +0.2/-0.1) o vacío",
+      "instrumento": "Instrumento de medición indicado (ej: calibre, micrómetro, pasa/no pasa) o vacío",
+      "valores_por_pieza": {
+        "1": "valor numérico manuscrito o estado (OK/NOK) medido para la pieza 1",
+        "2": "valor numérico manuscrito o estado (OK/NOK) medido para la pieza 2",
+        "3": "valor numérico manuscrito o estado (OK/NOK) medido para la pieza 3, y así sucesivamente para TODAS las piezas presentes con datos manuscritos..."
+      }
+    }
+  ]
+}
+
+Reglas importantes:
+- op_num: solo el número, sin "OP", sin "Nº", sin texto extra.
+- operacion: Busca obligatoriamente la etiqueta literal "OPERACIÓN:" o "Op:" (justo encima de NÚMERO DE PIEZAS) en la cabecera y extrae el texto que está inmediatamente al lado o debajo.
+- nombre_control: copialo exactamente como aparece en la planilla.
+- MATRIZ DE MEDICIONES Y VALORES MANUSCRITOS: Analiza meticulosamente la tabla o matriz principal de la planilla. Debes extraer TODAS las columnas de piezas (Pieza 1, 2, 3, etc.) y los valores numéricos manuscritos o marcas (OK/NOK) anotados a mano dentro de las celdas para cada control.
+- REGLA ESTRICTA DE PIEZAS: PROHIBIDO INVENTAR, EXTRAPOLAR O COMPLETAR SERIES. Extrae ÚNICAMENTE los números de pieza que físicamente tengan celdas impresas o manuscritas.
+- valores_por_pieza: Incluye el valor numérico manuscrito exacto o el estado PNP (ej. OK, NOK, Acep, Rech) anotado a mano para cada control en cada pieza.
+- Usá punto decimal (no coma). Ej: "12.5", no "12,5".
+- Devolvé SOLO el JSON puro. Sin texto adicional, sin ```json, sin explicaciones.
+"""
+
+                try:
+                    from google import genai
+                    from google.genai import types
+                except ImportError:
+                    return JsonResponse({'status': 'error', 'message': 'Librería google.genai no instalada en el servidor.'}, status=500)
+                
+                pdf_bytes = abrir_archivo_seguro(uploaded_file_path)
+                client = genai.Client(api_key=api_key)
+                doc_part = types.Part.from_bytes(data=pdf_bytes, mime_type="application/pdf")
+                
+                try:
+                    response = client.models.generate_content(
+                        model='gemini-3.6-flash',
+                        contents=[prompt, doc_part]
+                    )
+                except Exception as model_err:
+                    print(f"[OCR-WARN] Error llamando a Gemini: {model_err}")
+                    raise model_err
+
+                resp_text = response.text.strip()
+                if resp_text.startswith("```json"): resp_text = resp_text.replace("```json", "", 1)
+                if resp_text.startswith("```"): resp_text = resp_text[3:]
+                if resp_text.endswith("```"): resp_text = resp_text[:-3]
+                
+                try:
+                    ia_data = json.loads(resp_text.strip())
+                except json.JSONDecodeError as json_err:
+                    return JsonResponse({'status': 'error', 'message': f'Error al decodificar la respuesta JSON de Gemini: {str(json_err)}'}, status=400)
+                
+                try:
+                    max_piezas = int(ia_data.get("total_piezas_detectadas", 20))
+                except (ValueError, TypeError):
+                    max_piezas = 20
+
+                controles = []
+                todas_piezas = set()
+                for item in ia_data.get("mediciones", []):
+                    piezas_dict = item.get("valores_por_pieza", {})
+                    filtered_piezas = {}
+                    
+                    for p, val in piezas_dict.items():
+                        try:
+                            if int(p) <= max_piezas:
+                                filtered_piezas[str(p)] = val
+                                todas_piezas.add(str(p))
+                        except ValueError:
+                            filtered_piezas[str(p)] = val
+                            todas_piezas.add(str(p))
+                    
+                    controles.append({
+                        "control": item.get("nombre_control", ""),
+                        "nominal": item.get("nominal", ""),
+                        "tolerancia": item.get("tolerancia", ""),
+                        "instrumento": item.get("instrumento", ""),
+                        "piezas": filtered_piezas
+                    })
+                
+                piezas_lista = sorted(list(todas_piezas), key=lambda x: int(x) if x.isdigit() else 999)
+                if not piezas_lista:
+                    piezas_lista = [str(i) for i in range(1, 11)]
+                
+                # 3. Estructura JSON exacta esperada por renderizarResultadosOCR(data)
+                resultado = {
+                    'status': 'success',
+                    'cliente': ia_data.get('cliente', ''),
+                    'proyecto': ia_data.get('proyecto', ''),
+                    'op': ia_data.get('op_num', ''),
+                    'articulo': ia_data.get('articulo', ''),
+                    'denominacion': ia_data.get('proceso', ''),
+                    'proceso': ia_data.get('proceso', ''),
+                    'operacion': ia_data.get('operacion', ''),
+                    'piezas': piezas_lista,
+                    'controles': controles
+                }
+                
+                return JsonResponse(resultado)
+            finally:
+                if uploaded_file_path:
+                    eliminar_archivo_seguro(uploaded_file_path)
+                
+        except Exception as e:
+            err_str = str(e)
+            print(f"[OCR-ERROR] Excepción capturada en ocr_lector_planos: {traceback.format_exc()}")
+            
+            title_msg = "Atención"
+            if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str or "quota" in err_str.lower():
+                user_msg = "Se ha superado temporalmente el límite de consultas a la inteligencia artificial. Por favor, espere unos 30 segundos y vuelva a intentarlo."
+                title_msg = "Límite alcanzado"
+            elif "503" in err_str or "service unavailable" in err_str.lower() or "overloaded" in err_str.lower():
+                user_msg = "El servicio de IA está experimentando alta demanda. Por favor, intente nuevamente en unos instantes."
+                title_msg = "Servidor ocupado"
+            elif "404" in err_str or "not found" in err_str.lower():
+                user_msg = "El modelo de IA solicitado no se encuentra disponible temporalmente. Intente nuevamente."
+                title_msg = "Servicio no disponible"
+            else:
+                user_msg = "Ocurrió un inconveniente al procesar la planilla con IA. Por favor, verifique el archivo e intente nuevamente."
+                title_msg = "Error de Procesamiento"
+
+            return JsonResponse({
+                'status': 'error',
+                'title': title_msg,
+                'message': user_msg
+            }, status=400)
+
+    context = {
+        'procesos': Proceso.objects.all().order_by('nombre'),
+        'articulos': Articulo.objects.all().order_by('nombre'),
+        'elementos': Elemento.objects.all().order_by('nombre'),
+        'clientes': Cliente.objects.all().order_by('nombre'),
+        'success': False
+    }
+    return render(request, 'mediciones/ocr_lector.html', context)
+
 @csrf_exempt
 def importar_datos_ocr(request):
     if request.method == 'POST':

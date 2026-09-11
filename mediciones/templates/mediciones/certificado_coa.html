@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Certificado de Análisis (CoA)</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 2cm;
+            @frame footer_frame {
+                -pdf-frame-content: footer_content;
+                left: 2cm; width: 17cm; top: 27cm; height: 1cm;
+            }
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 10px;
+            color: #333333;
+            line-height: 1.4;
+        }
+        .header {
+            width: 100%;
+            border-bottom: 2px solid #0369a1;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .header td {
+            vertical-align: middle;
+        }
+        .title {
+            text-align: right;
+            color: #0369a1;
+        }
+        .title h1 {
+            margin: 0;
+            font-size: 20px;
+            text-transform: uppercase;
+        }
+        .title p {
+            margin: 2px 0 0 0;
+            font-size: 10px;
+            color: #666;
+        }
+        .metadata-box {
+            width: 100%;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        .metadata-box td {
+            padding: 4px;
+            vertical-align: top;
+        }
+        .label {
+            font-weight: bold;
+            color: #555;
+            width: 80px;
+        }
+        .table-data {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .table-data th {
+            background-color: #0369a1;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 6px;
+            text-align: center;
+            border: 1px solid #02507a;
+            font-size: 9px;
+        }
+        .table-data td {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+            font-size: 9px;
+        }
+        .table-data td.text-left {
+            text-align: left;
+        }
+        .dictamen {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 30px;
+        }
+        .signatures {
+            width: 100%;
+            margin-top: 50px;
+        }
+        .signatures td {
+            text-align: center;
+            vertical-align: bottom;
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            width: 200px;
+            margin: 0 auto;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="footer_content" style="text-align: right; font-size: 8px; color: #666;">
+        Página <pdf:pagenumber> de <pdf:pagecount> - Generado automáticamente
+    </div>
+
+    <table class="header">
+        <tr>
+            <td width="40%">
+                <h2 style="margin: 0; color: #333;">CARsoftAR</h2>
+                <p style="margin: 0; color: #666;">Sistema de Calidad</p>
+            </td>
+            <td width="60%" class="title">
+                <h1>Certificado de Análisis (CoA)</h1>
+                <p>Inspección Dimensional y Control de Calidad</p>
+            </td>
+        </tr>
+    </table>
+
+    <table class="metadata-box">
+        <tr>
+            <td class="label">Cliente:</td>
+            <td width="40%">{{ header.cliente|default:"-" }}</td>
+            <td class="label">O.P. / Lote:</td>
+            <td width="40%">{{ header.op|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Artículo:</td>
+            <td>{{ header.articulo|default:"-" }}</td>
+            <td class="label">Proyecto:</td>
+            <td>{{ header.proyecto|default:"-" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Denominación:</td>
+            <td>{{ header.denominacion|default:"-" }}</td>
+            <td class="label">Operación:</td>
+            <td>{{ header.operacion|default:"-" }}</td>
+        </tr>
+    </table>
+
+    <table class="table-data">
+        <thead>
+            <tr>
+                <th width="30%">Control / Cota</th>
+                <th width="12%">Nominal</th>
+                <th width="12%">Tolerancia</th>
+                <th width="12%">Instrumento</th>
+                {% for p in piezas %}
+                <th>P {{ p }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in matrix %}
+            <tr>
+                <td class="text-left">{{ row.control|default:"-" }}</td>
+                <td>{{ row.nominal|default:"-" }}</td>
+                <td>{{ row.tolerancia|default:"-" }}</td>
+                <td>{{ row.instrumento|default:"-" }}</td>
+                {% for val in row.valores %}
+                <td>{{ val|default:"-" }}</td>
+                {% endfor %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="100">No hay datos de medición registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="dictamen">
+        <strong style="color: #0369a1;">DICTAMEN DE CALIDAD:</strong><br><br>
+        Se certifica que los productos detallados en este documento han sido inspeccionados y verificados bajo los estándares de calidad vigentes. Los resultados aquí expuestos reflejan fielmente las mediciones obtenidas sobre el lote procesado.
+    </div>
+
+    <table class="signatures">
+        <tr>
+            <td>
+                <div class="signature-line">
+                    Firma Operario / Inspector
+                </div>
+            </td>
+            <td>
+                <div class="signature-line">
+                    Aprobación Control de Calidad
+                </div>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

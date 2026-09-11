@@ -203,7 +203,7 @@
                                 <th style="width: 50px;">#</th>
                                 <th>PARÁMETRO / CONTROL</th>
                                 <th class="text-center">NOMINAL</th>
-                                <th class="text-center">TOLERANCIA</th>
+                                <th class="text-center" style="width: 280px; min-width: 280px;">TOLERANCIA</th>
                                 <th class="text-center" style="width: 200px;">VALOR</th>
                                 <th class="text-center" style="width: 80px;">ESTADO</th>
                                 <th class="text-center" style="width: 100px;">ANÁLISIS</th>
@@ -214,10 +214,14 @@
                             <tr class="stitch-table-row animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|add:1 }}0ms;" data-id="{{ row.tolerancia.id }}">
                                 <td class="font-monospace opacity-50">{{ forloop.counter }}</td>
                                 <td>
-                                    <div>{{ row.tolerancia.control.nombre }}</div>
+                                    <div style="display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: 700; background: rgba(59, 130, 246, 0.12); color: #2563eb; border: 1.5px solid rgba(59, 130, 246, 0.4);">
+                                        {{ row.tolerancia.control.nombre }}
+                                    </div>
                                 </td>
-                                <td class="text-center font-monospace fw-bold" style="color: var(--stitch-secondary);">
-                                    {% if row.tolerancia.nominal != None %}{{ row.tolerancia.nominal|floatformat:3 }}{% else %}0.000{% endif %}
+                                <td class="text-center">
+                                    <div style="display: inline-block; padding: 4px 12px; border-radius: 6px; font-family: monospace; font-weight: 700; background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1.5px solid rgba(245, 158, 11, 0.4);">
+                                        {% if row.tolerancia.nominal != None %}{{ row.tolerancia.nominal|floatformat:3 }}{% else %}0.000{% endif %}
+                                    </div>
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex justify-content-center gap-2 font-monospace small">
@@ -874,13 +878,20 @@
                         tr.appendChild(tdIndex);
 
                         const tdParam = document.createElement('td');
-                        tdParam.innerHTML = `<div>${row.control_nombre}</div>`;
+                        tdParam.innerHTML = `
+                            <div style="display: inline-block; padding: 4px 12px; border-radius: 6px; font-weight: 700; background: rgba(59, 130, 246, 0.12); color: #2563eb; border: 1.5px solid rgba(59, 130, 246, 0.4);">
+                                ${row.control_nombre}
+                            </div>
+                        `;
                         tr.appendChild(tdParam);
 
                         const tdNom = document.createElement('td');
-                        tdNom.className = 'text-center font-monospace fw-bold';
-                        tdNom.style.color = 'var(--stitch-secondary)';
-                        tdNom.textContent = row.nominal !== null ? row.nominal.toFixed(3) : '0.000';
+                        tdNom.className = 'text-center';
+                        tdNom.innerHTML = `
+                            <div style="display: inline-block; padding: 4px 12px; border-radius: 6px; font-family: monospace; font-weight: 700; background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1.5px solid rgba(245, 158, 11, 0.4);">
+                                ${row.nominal !== null ? row.nominal.toFixed(3) : '0.000'}
+                            </div>
+                        `;
                         tr.appendChild(tdNom);
 
                         const tdTol = document.createElement('td');
